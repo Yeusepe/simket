@@ -1,7 +1,11 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { TopBar } from './TopBar';
+
+vi.mock('./notifications', () => ({
+  NotificationBell: () => <button aria-label="Notifications">🔔</button>,
+}));
 
 function renderWithRouter(ui: React.ReactElement, { route = '/' } = {}) {
   return render(<MemoryRouter initialEntries={[route]}>{ui}</MemoryRouter>);

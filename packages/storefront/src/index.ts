@@ -7,6 +7,9 @@
 export { App } from './App';
 export * from './builder';
 export * from './components/discovery';
+export * from './components/notifications';
 export * from './components/settings';
 export * from './components/today';
+export * from './hooks/use-notifications';
 export * from './store';
+export * from './types/notifications';

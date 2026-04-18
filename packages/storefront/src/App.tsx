@@ -4,6 +4,7 @@ import { HomePage } from './pages/HomePage';
 import { ProductDetailPage } from './pages/ProductDetailPage';
 import { CartPage } from './pages/CartPage';
 import { LibraryPage } from './pages/LibraryPage';
+import { NotificationsPage } from './pages/NotificationsPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { CreatorDashboardPage } from './pages/CreatorDashboardPage';
 import { NotFoundPage } from './pages/NotFoundPage';
@@ -55,6 +56,7 @@ export function AppRoutes({ hostname }: AppRoutesProps) {
         <Route path="product/:slug" element={<ProductDetailPage />} />
         <Route path="cart" element={<CartPage />} />
         <Route path="library" element={<LibraryPage />} />
+        <Route path="notifications" element={<NotificationsPage />} />
         <Route path="profile" element={<ProfilePage />} />
         <Route path="dashboard/*" element={<CreatorDashboardPage />} />
         <Route path="*" element={<NotFoundPage />} />

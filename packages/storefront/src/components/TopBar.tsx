@@ -8,6 +8,7 @@ import {
 } from '@heroui/react';
 import { useTheme } from '../hooks/use-theme';
 import { useCartState } from '../state/cart-state';
+import { NotificationBell } from './notifications';
 
 /**
  * Top navigation bar with:
@@ -75,12 +76,7 @@ export function TopBar() {
           </Badge.Anchor>
 
           {/* Notifications */}
-          <Badge.Anchor>
-            <Button variant="ghost" size="sm" aria-label="Notifications">
-              🔔
-            </Button>
-            <Badge color="warning" size="sm">0</Badge>
-          </Badge.Anchor>
+          <NotificationBell />
 
           {/* Library */}
           <Button

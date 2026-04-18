@@ -11,7 +11,10 @@
  *   - packages/storefront/src/components/dashboard/licenses/use-licenses.test.ts
  *   - packages/storefront/src/components/dashboard/licenses/LicenseListPage.test.tsx
  */
-import { LicenseListPage, LicensePoliciesPage, type LicensePolicy, type LicenseProductOption, type LicenseRecord, useLicenses } from '../../components/dashboard';
+import { LicenseListPage } from '../../components/dashboard/licenses/LicenseListPage';
+import { LicensePoliciesPage } from '../../components/dashboard/licenses/LicensePoliciesPage';
+import type { LicensePolicy, LicenseProductOption, LicenseRecord } from '../../components/dashboard/licenses/license-types';
+import { useLicenses } from '../../components/dashboard/licenses/use-licenses';
 
 const AVAILABLE_PRODUCTS: readonly LicenseProductOption[] = [
   { id: 'product-brush-pack', name: 'Brush Pack' },

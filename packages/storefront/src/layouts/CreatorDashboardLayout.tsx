@@ -11,8 +11,8 @@
  */
 import type { ReactNode } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { DashboardLayout } from '../components/dashboard';
-import type { DashboardSection } from '../components/dashboard';
+import { DashboardLayout } from '../components/dashboard/DashboardLayout';
+import type { DashboardSection } from '../components/dashboard/dashboard-types';
 
 interface CreatorDashboardLayoutProps {
   readonly children: ReactNode;
