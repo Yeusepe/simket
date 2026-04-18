@@ -11,10 +11,13 @@
 import { act, renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { useCheckout } from './use-checkout';
+import { resetCartState, useCartState } from '../../state/cart-state';
+import { storeExperimentAssignment } from '../../hooks/useExperimentVariant';
 
 describe('useCheckout', () => {
   beforeEach(() => {
-    // no-op placeholder for future shared state reset if needed
+    resetCartState();
+    window.sessionStorage.clear();
   });
 
   it('initial state is review', () => {
@@ -127,5 +130,55 @@ describe('useCheckout', () => {
       step: 'review',
       isProcessing: false,
     });
+  });
+
+  it('tracks purchase events for cart items with stored experiment assignments', async () => {
+    const trackExperimentEvent = async () => undefined;
+    const calls: unknown[] = [];
+
+    useCartState.getState().replaceItems([
+      {
+        productId: 'product-1',
+        variantId: 'variant-1',
+        name: 'Brush Pack',
+        price: 1900,
+        currencyCode: 'USD',
+        quantity: 1,
+        heroImageUrl: null,
+        slug: 'brush-pack',
+      },
+    ]);
+    storeExperimentAssignment('product-1', {
+      experimentId: 'exp-1',
+      productId: 'product-1',
+      variantName: 'variant-b',
+      config: { ctaText: 'Get instant access' },
+    });
+
+    const { result } = renderHook(() =>
+      useCheckout({
+        trackExperimentEvent: async (payload) => {
+          calls.push(payload);
+          await trackExperimentEvent();
+        },
+      }),
+    );
+
+    act(() => {
+      result.current.goToPayment();
+    });
+
+    await act(async () => {
+      await result.current.processPayment('order_999');
+    });
+
+    expect(calls).toEqual([
+      {
+        experimentId: 'exp-1',
+        variantName: 'variant-b',
+        productId: 'product-1',
+        event: 'purchase',
+      },
+    ]);
   });
 });

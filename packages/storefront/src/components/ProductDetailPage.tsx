@@ -32,6 +32,10 @@ import {
 import type { ProductDetail } from '../types/product';
 import { formatPrice } from './ProductCard';
 import { useCart } from '../hooks/use-cart';
+import {
+  useExperimentVariant,
+  type UseExperimentVariantOptions,
+} from '../hooks/useExperimentVariant';
 
 export type ProductDetailFetcher = (slug: string) => Promise<ProductDetail>;
 
@@ -39,17 +43,20 @@ interface ProductDetailPageProps {
   readonly fetcher: ProductDetailFetcher;
   readonly slug: string;
   readonly buildProductHref?: (productSlug: string) => string;
+  readonly experimentOptions?: UseExperimentVariantOptions;
 }
 
 export function ProductDetailPage({
   fetcher,
   slug,
   buildProductHref = (productSlug) => `/product/${productSlug}`,
+  experimentOptions,
 }: ProductDetailPageProps) {
   const [product, setProduct] = useState<ProductDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const { addBundle, addItem } = useCart();
+  const experimentVariant = useExperimentVariant(product?.id ?? null, experimentOptions);
 
   useEffect(() => {
     let cancelled = false;
@@ -93,9 +100,18 @@ export function ProductDetailPage({
   if (!product) return null;
 
   const primaryVariant = product.variants[0];
-  const price = primaryVariant
+  const experimentConfig = (experimentVariant.variant?.config ?? {}) as Record<string, unknown>;
+  const price = typeof experimentConfig.priceDisplay === 'string'
+    ? experimentConfig.priceDisplay
+    : primaryVariant
     ? formatPrice(primaryVariant.price, primaryVariant.currencyCode)
     : 'Free';
+  const description = typeof experimentConfig.description === 'string'
+    ? experimentConfig.description
+    : product.description;
+  const ctaText = typeof experimentConfig.ctaText === 'string'
+    ? experimentConfig.ctaText
+    : 'Add to cart';
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-8">
@@ -162,6 +178,8 @@ export function ProductDetailPage({
                 return;
               }
 
+              void experimentVariant.trackEvent('click');
+
               addItem({
                 productId: product.id,
                 variantId: primaryVariant.id,
@@ -176,7 +194,7 @@ export function ProductDetailPage({
               });
             }}
           >
-            Add to cart
+            {ctaText}
           </Button>
 
           {product.availableBundles.length > 0 && (
@@ -277,7 +295,7 @@ export function ProductDetailPage({
         <h2 className="mb-4 text-xl font-semibold">Description</h2>
         {/* TODO: Replace with TipTap read-only renderer when TipTap is integrated (task 6-01) */}
         <div className="prose max-w-none dark:prose-invert">
-          <p>{product.description}</p>
+          <p>{description}</p>
         </div>
       </section>
 

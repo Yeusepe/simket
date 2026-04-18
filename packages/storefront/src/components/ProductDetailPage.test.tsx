@@ -20,6 +20,7 @@ import {
 import type { ProductDetail } from '../types/product';
 import { formatPrice } from './ProductCard';
 import { resetCartState, useCartState } from '../state/cart-state';
+import type { ExperimentVariantAssignment } from '../hooks/useExperimentVariant';
 
 export type ProductDetailFetcher = (slug: string) => Promise<ProductDetail>;
 
@@ -270,6 +271,53 @@ describe('ProductDetailPage', () => {
 
     await waitFor(() => {
       expect(screen.getByTestId('hero-placeholder')).toBeInTheDocument();
+    });
+  });
+
+  it('applies experiment variant config and auto-tracks the displayed view', async () => {
+    const trackEvent = vi.fn().mockResolvedValue(undefined);
+    const product = makeProductDetail({
+      description: 'Default description',
+    });
+    mockFetcher.mockResolvedValue(product);
+
+    const variant: ExperimentVariantAssignment = {
+      experimentId: 'exp-1',
+      productId: product.id,
+      variantName: 'variant-b',
+      config: {
+        ctaText: 'Get instant access',
+        description: 'Experiment description',
+        priceDisplay: '$14.99',
+      },
+    };
+
+    render(
+      <MemoryRouter>
+        <ProductDetailPage
+          fetcher={mockFetcher}
+          slug={product.slug}
+          experimentOptions={{
+            userId: 'user-1',
+            fetchVariant: vi.fn().mockResolvedValue(variant),
+            trackEvent,
+          }}
+        />
+      </MemoryRouter>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Experiment description')).toBeInTheDocument();
+    });
+
+    expect(screen.getByRole('button', { name: 'Get instant access' })).toBeInTheDocument();
+    expect(screen.getByText('$14.99')).toBeInTheDocument();
+    expect(trackEvent).toHaveBeenCalledWith({
+      experimentId: 'exp-1',
+      variantName: 'variant-b',
+      productId: product.id,
+      userId: 'user-1',
+      event: 'view',
     });
   });
 });

@@ -1,5 +1,6 @@
 import { VendureConfig } from '@vendure/core';
 import path from 'node:path';
+import { AbTestingPlugin } from '../plugins/ab-testing/index.js';
 import { NotificationPlugin } from '../plugins/notification/index.js';
 
 /**
@@ -52,5 +53,5 @@ export const config: VendureConfig = {
     paymentMethodHandlers: [],
   },
 
-  plugins: [NotificationPlugin],
+  plugins: [NotificationPlugin, AbTestingPlugin],
 };

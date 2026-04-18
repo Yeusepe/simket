@@ -10,6 +10,11 @@
  */
 import { useCallback, useState } from 'react';
 import type { CheckoutState } from './checkout-types';
+import { useCartState } from '../../state/cart-state';
+import {
+  readStoredExperimentAssignment,
+  type ExperimentEventPayload,
+} from '../../hooks/useExperimentVariant';
 
 const INITIAL_CHECKOUT_STATE: CheckoutState = {
   step: 'review',
@@ -25,7 +30,11 @@ export interface UseCheckoutResult {
   readonly setError: (error?: string) => void;
 }
 
-export function useCheckout(): UseCheckoutResult {
+export interface UseCheckoutOptions {
+  readonly trackExperimentEvent?: (payload: ExperimentEventPayload) => Promise<void>;
+}
+
+export function useCheckout(options: UseCheckoutOptions = {}): UseCheckoutResult {
   const [state, setState] = useState<CheckoutState>(INITIAL_CHECKOUT_STATE);
 
   const goToPayment = useCallback(() => {
@@ -72,6 +81,23 @@ export function useCheckout(): UseCheckoutResult {
     });
 
     await Promise.resolve();
+
+    if (options.trackExperimentEvent) {
+      const cartItems = useCartState.getState().items;
+      for (const item of cartItems) {
+        const assignment = readStoredExperimentAssignment(item.productId);
+        if (!assignment) {
+          continue;
+        }
+
+        await options.trackExperimentEvent({
+          experimentId: assignment.experimentId,
+          variantName: assignment.variantName,
+          productId: item.productId,
+          event: 'purchase',
+        });
+      }
+    }
 
     setState((current) => {
       if (current.step !== 'payment' || current.error) {

@@ -48,7 +48,7 @@ describe('StoreLayout', () => {
     renderStoreRoute('/store/alex-artist');
 
     await waitFor(() => {
-      expect(screen.getByText('Alex Artist')).toBeInTheDocument();
+      expect(screen.getByRole('link', { name: 'Alex Artist' })).toBeInTheDocument();
     });
 
     expect(screen.getByTestId('store-layout')).toHaveAttribute(
@@ -80,7 +80,7 @@ describe('StoreLayout', () => {
     });
 
     expect(screen.getByText(/No custom landing page yet/i)).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'FX Matte Pack' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: /FX Matte Pack/ })).toHaveAttribute(
       'href',
       '/store/pixel-lab/product/fx-matte-pack',
     );
