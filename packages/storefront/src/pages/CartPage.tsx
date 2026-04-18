@@ -1,22 +1,26 @@
-import { Button } from '@heroui/react';
-import { useNavigate } from 'react-router-dom';
-
 /**
- * Cart page — items, dependency checks, checkout button.
+ * Purpose: Buyer checkout page entry point.
+ * Governing docs:
+ *   - docs/architecture.md (§6.2 Purchase flow)
+ *   - docs/service-architecture.md (Storefront -> Stripe)
+ * External references:
+ *   - https://docs.stripe.com/payments/payment-element
+ * Tests:
+ *   - packages/storefront/src/components/checkout/CheckoutPage.test.tsx
  */
+import { CheckoutPage } from '../components/checkout';
+
 export function CartPage() {
-  const navigate = useNavigate();
-
   return (
-    <div className="mx-auto max-w-3xl px-4 py-8">
-      <h1 className="mb-6 text-3xl font-bold">Your Cart</h1>
-
-      <div className="rounded-xl border border-divider p-8 text-center">
-        <p className="mb-4 text-muted-foreground">Your cart is empty.</p>
-        <Button variant="secondary" onPress={() => navigate('/')}>
-          Continue Browsing
-        </Button>
-      </div>
-    </div>
+    <CheckoutPage
+      stripePublishableKey={import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY}
+      clientSecret={import.meta.env.VITE_STRIPE_CLIENT_SECRET}
+      returnUrl={import.meta.env.VITE_STRIPE_RETURN_URL}
+      createOrderSummary={async () => {
+        throw new Error(
+          'Order finalization is not connected yet. Pass a real createOrderSummary implementation from the storefront payment integration.',
+        );
+      }}
+    />
   );
 }

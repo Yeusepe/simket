@@ -128,6 +128,11 @@ export const SERVICE_POLICIES = {
     timeout: 10_000,
     retry: { maxAttempts: 3, initialDelay: 500, maxDelay: 5_000 },
   }),
+  clamav: createResiliencePolicy('clamav', {
+    timeout: 10_000,
+    retry: { maxAttempts: 2, initialDelay: 200, maxDelay: 2_000 },
+    circuitBreaker: { threshold: 0.25, duration: 30_000, minimumRps: 1 },
+  }),
   stripe: createResiliencePolicy('stripe', {
     timeout: 15_000,
     retry: { maxAttempts: 2, initialDelay: 1_000, maxDelay: 5_000 },

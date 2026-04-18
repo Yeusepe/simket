@@ -5,3 +5,4 @@
  * Use `pnpm dev` to start the development server.
  */
 export { App } from './App';
+export * from './builder';

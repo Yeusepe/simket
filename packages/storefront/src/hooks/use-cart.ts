@@ -8,7 +8,8 @@
  * Tests:
  *   - packages/storefront/src/hooks/use-cart.test.ts
  */
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo } from 'react';
+import { useCartState } from '../state/cart-state';
 import type { Cart, CartItem } from '../types/cart';
 
 /** Options for addItem — allows dependency checking before adding. */
@@ -26,65 +27,38 @@ export interface UseCartReturn {
 }
 
 export function useCart(): UseCartReturn {
-  const [items, setItems] = useState<readonly CartItem[]>([]);
+  const items = useCartState((state) => state.items);
+  const addStoredItem = useCartState((state) => state.addItem);
+  const removeStoredItem = useCartState((state) => state.removeItem);
+  const updateStoredQuantity = useCartState((state) => state.updateQuantity);
+  const clearStoredCart = useCartState((state) => state.clearCart);
 
   const addItem = useCallback((item: CartItem, options?: AddItemOptions) => {
     // Dependency check: ensure all required products are already in the cart
     if (options?.requiredProductIds && options.requiredProductIds.length > 0) {
-      setItems((current) => {
-        const productIdsInCart = new Set(current.map((i) => i.productId));
-        const missing = options.requiredProductIds!.filter(
-          (id) => !productIdsInCart.has(id),
-        );
-        if (missing.length > 0) {
-          throw new Error(`Required products missing from cart: ${missing.join(', ')}`);
-        }
-        // Dependency check passed — add the item
-        const existing = current.find((i) => i.variantId === item.variantId);
-        if (existing) {
-          return current.map((i) =>
-            i.variantId === item.variantId
-              ? { ...i, quantity: i.quantity + item.quantity }
-              : i,
-          );
-        }
-        return [...current, item];
-      });
-      return;
+      const productIdsInCart = new Set(items.map((entry) => entry.productId));
+      const missing = options.requiredProductIds.filter(
+        (id) => !productIdsInCart.has(id),
+      );
+      if (missing.length > 0) {
+        throw new Error(`Required products missing from cart: ${missing.join(', ')}`);
+      }
     }
 
-    setItems((current) => {
-      const existing = current.find((i) => i.variantId === item.variantId);
-      if (existing) {
-        return current.map((i) =>
-          i.variantId === item.variantId
-            ? { ...i, quantity: i.quantity + item.quantity }
-            : i,
-        );
-      }
-      return [...current, item];
-    });
-  }, []);
+    addStoredItem(item);
+  }, [addStoredItem, items]);
 
   const removeItem = useCallback((variantId: string) => {
-    setItems((current) => current.filter((i) => i.variantId !== variantId));
-  }, []);
+    removeStoredItem(variantId);
+  }, [removeStoredItem]);
 
   const updateQuantity = useCallback((variantId: string, quantity: number) => {
-    if (quantity <= 0) {
-      setItems((current) => current.filter((i) => i.variantId !== variantId));
-      return;
-    }
-    setItems((current) =>
-      current.map((i) =>
-        i.variantId === variantId ? { ...i, quantity } : i,
-      ),
-    );
-  }, []);
+    updateStoredQuantity(variantId, quantity);
+  }, [updateStoredQuantity]);
 
   const clearCart = useCallback(() => {
-    setItems([]);
-  }, []);
+    clearStoredCart();
+  }, [clearStoredCart]);
 
   const cart = useMemo<Cart>(() => {
     const totalItems = items.reduce((sum, i) => sum + i.quantity, 0);

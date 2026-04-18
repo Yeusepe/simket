@@ -1,29 +1,81 @@
-import { Card } from '@heroui/react';
-
 /**
- * Dashboard home — overview cards with key metrics.
+ * Purpose: Route-level container for the creator dashboard overview page.
+ * Governing docs:
+ *   - docs/architecture.md
+ *   - docs/service-architecture.md
+ *   - docs/domain-model.md
+ * External references:
+ *   - https://heroui.com/react/llms.txt
+ * Tests:
+ *   - packages/storefront/src/components/dashboard/DashboardHome.test.tsx
  */
+import { useNavigate } from 'react-router-dom';
+import { DashboardHome } from '../../components/dashboard';
+
 export function DashboardHomePage() {
-  const metrics = [
-    { label: 'Total Sales', value: '0' },
-    { label: 'Revenue', value: '$0.00' },
-    { label: 'Products', value: '0' },
-    { label: 'Views', value: '0' },
-  ];
+  const navigate = useNavigate();
 
   return (
-    <div>
-      <h1 className="mb-6 text-2xl font-bold">Dashboard</h1>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {metrics.map((m) => (
-          <Card key={m.label}>
-            <Card.Content className="p-6">
-              <p className="text-sm text-muted-foreground">{m.label}</p>
-              <p className="text-2xl font-bold">{m.value}</p>
-            </Card.Content>
-          </Card>
-        ))}
-      </div>
-    </div>
+    <DashboardHome
+      creatorName="Alex Creator"
+      stats={{
+        totalRevenue: 1287450,
+        totalSales: 324,
+        totalViews: 18420,
+        conversionRate: 4.1,
+        revenueChange: 12.8,
+        salesChange: 6.3,
+      }}
+      activityItems={[
+        {
+          id: 'sale-1',
+          type: 'sale',
+          title: 'New bundle sale',
+          description: 'Starter Creator Bundle was purchased.',
+          timestamp: '2025-02-01T11:00:00.000Z',
+        },
+        {
+          id: 'review-1',
+          type: 'review',
+          title: 'Fresh review posted',
+          description: 'A buyer left feedback on Modular Shader Pack.',
+          timestamp: '2025-02-01T09:30:00.000Z',
+        },
+        {
+          id: 'collaboration-1',
+          type: 'collaboration',
+          title: 'Collaboration accepted',
+          description: 'Mika joined your upcoming environment pack release.',
+          timestamp: '2025-01-31T18:15:00.000Z',
+        },
+      ]}
+      quickActions={[
+        {
+          id: 'new-product',
+          label: 'New Product',
+          icon: 'plus',
+          href: '/dashboard/products',
+        },
+        {
+          id: 'view-analytics',
+          label: 'View Analytics',
+          icon: 'chart',
+          href: '/dashboard',
+        },
+        {
+          id: 'manage-collaborations',
+          label: 'Manage Collaborations',
+          icon: 'collaboration',
+          href: '/dashboard/collaborations',
+        },
+        {
+          id: 'edit-store',
+          label: 'Edit Store',
+          icon: 'edit',
+          href: '/dashboard/settings',
+        },
+      ]}
+      onNavigate={(href) => navigate(href)}
+    />
   );
 }

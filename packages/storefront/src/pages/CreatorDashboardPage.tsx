@@ -4,9 +4,17 @@ import { DashboardHomePage } from './dashboard/DashboardHomePage';
 import { DashboardProductsPage } from './dashboard/DashboardProductsPage';
 import { DashboardCollaborationsPage } from './dashboard/DashboardCollaborationsPage';
 import { DashboardFlowsPage } from './dashboard/DashboardFlowsPage';
+import { DashboardSettingsPage } from './dashboard/DashboardSettingsPage';
 
 /**
- * Creator Dashboard — nested routes for Home, Products, Collaborations, Flows.
+ * Purpose: Nested creator dashboard routes for overview, products, collaborations, flows, and settings.
+ * Governing docs:
+ *   - docs/architecture.md
+ *   - docs/service-architecture.md
+ * External references:
+ *   - https://reactrouter.com/start/declarative/routing
+ * Tests:
+ *   - packages/storefront/src/components/dashboard/DashboardLayout.test.tsx
  */
 export function CreatorDashboardPage() {
   return (
@@ -16,6 +24,7 @@ export function CreatorDashboardPage() {
         <Route path="products" element={<DashboardProductsPage />} />
         <Route path="collaborations" element={<DashboardCollaborationsPage />} />
         <Route path="flows" element={<DashboardFlowsPage />} />
+        <Route path="settings" element={<DashboardSettingsPage />} />
       </Routes>
     </CreatorDashboardLayout>
   );

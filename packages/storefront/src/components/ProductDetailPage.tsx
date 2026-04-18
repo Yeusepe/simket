@@ -22,7 +22,6 @@
 import { useState, useEffect } from 'react';
 import {
   Button,
-  Card,
   Chip,
   Separator,
   Spinner,
@@ -30,6 +29,7 @@ import {
 } from '@heroui/react';
 import type { ProductDetail } from '../types/product';
 import { formatPrice } from './ProductCard';
+import { useCartState } from '../state/cart-state';
 
 export type ProductDetailFetcher = (slug: string) => Promise<ProductDetail>;
 
@@ -42,6 +42,7 @@ export function ProductDetailPage({ fetcher, slug }: ProductDetailPageProps) {
   const [product, setProduct] = useState<ProductDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const addItem = useCartState((state) => state.addItem);
 
   useEffect(() => {
     let cancelled = false;
@@ -137,6 +138,22 @@ export function ProductDetailPage({ fetcher, slug }: ProductDetailPageProps) {
             size="lg"
             className="w-full"
             isDisabled={primaryVariant?.stockLevel === 'OUT_OF_STOCK'}
+            onPress={() => {
+              if (!primaryVariant) {
+                return;
+              }
+
+              addItem({
+                productId: product.id,
+                variantId: primaryVariant.id,
+                name: product.name,
+                price: primaryVariant.price,
+                currencyCode: primaryVariant.currencyCode,
+                quantity: 1,
+                heroImageUrl: product.heroMediaType === 'image' ? product.heroMediaUrl : null,
+                slug: product.slug,
+              });
+            }}
           >
             Add to cart
           </Button>
@@ -167,14 +184,14 @@ export function ProductDetailPage({ fetcher, slug }: ProductDetailPageProps) {
       </section>
 
       {/* Terms of Service */}
-      {product.termsOfService && (
+      {Boolean(product.termsOfService) && (
         <>
           <Separator className="my-8" />
           <section>
             <h2 className="mb-4 text-xl font-semibold">Terms of Service</h2>
             <div className="prose max-w-none dark:prose-invert">
               {/* TODO: Replace with TipTap read-only renderer (task 6-01) */}
-              <p>{String(product.termsOfService)}</p>
+              <p>{String(product.termsOfService ?? '')}</p>
             </div>
           </section>
         </>

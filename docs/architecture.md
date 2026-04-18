@@ -518,7 +518,7 @@ recovers.
 | ---------------------------------------- | ---------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
 | **Order total = sum of line items**      | Computed in Vendure state machine transition. Assertion on every mutation.                     | Reconciliation job (daily) flags mismatches → DLQ.               |
 | **Collaboration splits = 100%**          | Validated at product save time. Vendure custom field validator rejects invalid splits.         | N/A (prevented at write time).                                   |
-| **No orphan assets**                     | CDNgine reference count. Weekly GC job deletes unreferenced assets.                            | Manual review via CDNgine dashboard.                             |
+| **No orphan assets**                     | Vendure `asset_reference` records + soft-delete grace period govern whether a CDNgine asset is still in use. Weekly reconciliation compares reference rows to CDNgine objects. | Manual review via CDNgine dashboard before purge.                |
 | **License entitlement matches order**    | Keygen license created only on order completion webhook. Idempotent replay if webhook retried. | Reconciliation: compare Vendure orders ↔ Keygen licenses.        |
 | **Search index consistent with catalog** | Evet-driven indexing on product CRUD. Daily full reindex as safety net.                        | Full reindex from Vendure DB (takes minutes, not hours).         |
 | **Vector embeddings match catalog**      | Triggered on product CRUD alongside search index. Daily full re-embed.                         | Full re-embed from product descriptions.                         |
@@ -602,7 +602,7 @@ and repairs drift independently of the real-time sync pipeline.
 | **Vector embeddings**  | Daily 04:00 UTC      | Compare Qdrant point count vs Vendure product count. Sample embedding checksums.                           | Re-embed missing/stale products.                                                                            |
 | **Customer sync**      | Daily 06:00 UTC      | Compare Better Auth user count vs Vendure Customer count. Check `lastLoginAt` for recently active users.   | Create missing Customers. Update stale profiles.                                                            |
 | **License integrity**  | Daily 05:00 UTC      | Compare Vendure completed orders with software products vs Keygen active licenses.                         | Create missing licenses. Flag orphan licenses for review.                                                   |
-| **CDNgine references** | Weekly Sun 02:00 UTC | Compare Vendure asset IDs vs CDNgine stored objects.                                                       | Flag orphan assets (CDNgine objects with no Vendure reference). Do NOT auto-delete queue for manual review. |
+| **CDNgine references** | Weekly Sun 02:00 UTC | Compare Vendure `asset_reference.assetId` values (including recent soft-deletes still inside the grace period) vs CDNgine stored objects. | Flag orphan assets outside the grace period for manual review before purge. |
 
 **Reconciliation rules**:
 

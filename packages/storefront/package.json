@@ -18,6 +18,8 @@
     "@heroui/react": "^3.0.3",
     "@heroui/styles": "^3.0.3",
     "@simket/shared": "workspace:*",
+    "@stripe/react-stripe-js": "^6.2.0",
+    "@stripe/stripe-js": "^9.2.0",
     "@tiptap/core": "3.22.4",
     "@tiptap/extension-image": "^3.22.4",
     "@tiptap/extension-link": "^3.22.4",
@@ -30,7 +32,8 @@
     "@uppy/tus": "^5.1.1",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
-    "react-router-dom": "^7.14.1"
+    "react-router-dom": "^7.14.1",
+    "zustand": "^5.0.12"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.2.2",

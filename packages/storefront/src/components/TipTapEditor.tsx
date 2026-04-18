@@ -7,6 +7,7 @@
  *   - https://tiptap.dev/docs/editor/getting-started/install/react
  *   - https://tiptap.dev/docs/editor/api/editor
  *   - https://tiptap.dev/docs/editor/extensions/overview
+ *   - https://cavalry.studio/docs/web-player/
  * Tests:
  *   - packages/storefront/src/components/TipTapEditor.test.tsx
  */
@@ -16,6 +17,7 @@ import Link from '@tiptap/extension-link';
 import Image from '@tiptap/extension-image';
 import Placeholder from '@tiptap/extension-placeholder';
 import { IframelyEmbed } from '../extensions/iframely-embed';
+import { CavalryEmbed } from '../extensions/cavalry-extension';
 
 /**
  * TipTap JSON content structure.
@@ -77,6 +79,7 @@ export function TipTapEditor({
       }),
       Image,
       IframelyEmbed,
+      CavalryEmbed,
       Placeholder.configure({
         placeholder: placeholder ?? 'Start writing…',
       }),

@@ -7,6 +7,7 @@ import {
   Avatar,
 } from '@heroui/react';
 import { useTheme } from '../hooks/use-theme';
+import { useCartState } from '../state/cart-state';
 
 /**
  * Top navigation bar with:
@@ -17,6 +18,7 @@ import { useTheme } from '../hooks/use-theme';
 export function TopBar() {
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
+  const totalItems = useCartState((state) => state.totalItems);
 
   return (
     <header className="sticky top-0 z-50 border-b border-divider bg-background/80 backdrop-blur-lg">
@@ -69,7 +71,7 @@ export function TopBar() {
             >
               Cart
             </Button>
-            <Badge color="danger" size="sm">0</Badge>
+            <Badge color="danger" size="sm">{totalItems}</Badge>
           </Badge.Anchor>
 
           {/* Notifications */}

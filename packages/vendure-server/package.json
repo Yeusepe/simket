@@ -42,7 +42,9 @@
     "@vendure/email-plugin": "^3.6.2",
     "better-auth": "^1.6.5",
     "bullmq": "^5.74.1",
+    "clamscan": "^2.4.0",
     "cockatiel": "^3.2.1",
+    "exiftool-vendored": "^35.18.0",
     "ioredis": "^5.10.1",
     "jose": "^6.2.2",
     "pg": "^8.20.0",
@@ -53,6 +55,7 @@
     "typeorm": "^0.3.28"
   },
   "devDependencies": {
+    "@types/clamscan": "^2.4.1",
     "@types/express": "^5.0.6",
     "@types/node": "^22.0.0",
     "rimraf": "^6.0.0",

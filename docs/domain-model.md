@@ -29,6 +29,7 @@ identity model, and ownership rules.
 | `EditorialArticle`      | Editorial              | PayloadCMS DB                 | PayloadCMS auto ID                               | A "Today" section article written by the editorial team.                                                 |
 | `CuratedCollection`     | Editorial              | PayloadCMS DB                 | PayloadCMS auto ID                               | A curated group of products for the editorial section.                                                   |
 | `Asset`                 | CDNgine                | CDNgine DB                    | CDNgine asset ID (UUID)                          | A binary artefact (image, video, package file).                                                          |
+| `AssetReference`        | Vendure asset refs     | Vendure DB                    | UUID                                             | A persisted reference from a Simket entity slot (`product`, `storePage`, `description`, etc.) to a CDNgine asset ID. |
 | `User`                  | Better Auth            | Better Auth DB                | Better Auth user ID (UUID)                       | The canonical identity record.                                                                           |
 | `RecommendationProfile` | Recommend              | Recommend service DB / Qdrant | User ID (from Better Auth)                       | User embeddings, interaction history, and preference signals.                                            |
 | `License`               | Licensing              | Keygen                        | Keygen license ID (UUID)                         | A software license key tied to a product purchase. Validated via Keygen API.                             |
@@ -153,6 +154,15 @@ erDiagram
         uuid creatorId
     }
 
+    AssetReference {
+        uuid id
+        uuid assetId
+        string entityType
+        string entityId
+        string refType
+        int version
+    }
+
     EditorialArticle {
         int id
         string title
@@ -186,6 +196,17 @@ The central entity. A product represents a single sellable digital good.
 | **Visibility**  | State machine: Draft → Published → Unpublished → Suspended.                                                       |
 | **Ownership**   | Product creator is the Vendure `Customer` who created it.                                                         |
 | **Tags**        | Many-to-many via `ProductTag` join table.                                                                         |
+
+### 4.1.1 AssetReference
+
+Tracks where a CDNgine asset is actively used inside Vendure-owned records.
+
+| Responsibility      | Details                                                                                                                           |
+| ------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| **Reference slot**  | `entityType + entityId + refType` identifies where the asset is used (for example product hero, gallery item, inline description). |
+| **Usage guard**     | Prevents deletion of in-use CDNgine assets and powers orphan detection.                                                           |
+| **Version lineage** | `version` increments when an entity slot replaces one asset with another so cleanup can honor a grace period for old versions.    |
+| **Ownership split** | CDNgine owns the binary object; Vendure owns the usage graph and cleanup eligibility.                                             |
 
 ### 4.2 Bundle
 

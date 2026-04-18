@@ -58,6 +58,11 @@ Key operations used by Simket:
 | `GET /asset/:id/meta`         | Fetch asset metadata (dimensions, format, URLs)                |
 | Webhook: `transform.complete` | Notify Simket that asset transformation is done                |
 
+Vendure persists asset usage in the `asset_reference` table keyed by
+`entityType + entityId + refType`. Asset replacement soft-deletes the
+previous row so cleanup jobs can detect orphaned assets only after the
+configured grace period expires.
+
 ### 1.4 Better Auth API
 
 See [Better Auth documentation](https://www.better-auth.com/docs)
@@ -158,6 +163,12 @@ Policies are version-controlled and deployed alongside the service code.
 | Validate license  | Client-side activation, offline validation           |
 | List entitlements | Creator dashboard → view active licenses per product |
 | Revoke license    | Refund or GDPR flows                                 |
+
+Implementation notes:
+
+- Simket issues `perpetual`, `subscription`, and `trial` licenses through Keygen policies. Policy duration and policy constraints (machine limits, expiry, offline-capable schemes) remain the source of truth.
+- Renewal uses Keygen's native renew action when policy duration is sufficient, and explicit expiry updates when Simket needs subscription-period alignment that Keygen's policy-basis renewal does not guarantee.
+- Webhook events such as `license.created`, `license.renewed`, `license.expired`, `license.revoked`, `license.validation.succeeded`, and `license.validation.failed` are asynchronous signals for analytics, reconciliation, and creator-facing diagnostics. They must not block the request path.
 
 ### 1.12 Scalar (API docs)
 
@@ -773,6 +784,7 @@ sequenceDiagram
 
         CDN-->>V: webhook: transform.done { assetId, urls }
         V->>V: update Product custom fields with asset URLs
+        V->>V: upsert asset_reference row for the affected entity slot
     end
 ```
 
@@ -879,6 +891,7 @@ Each Vendure plugin injects the policy for its dependency:
 | Typesense  | 2s      | 2       | 10 / 20  | Read-heavy, fast failover via Raft      |
 | Qdrant     | 2s      | 2       | 10 / 20  | Vector queries are read-only            |
 | CDNgine    | 10s     | 3       | 5 / 10   | Large uploads need longer timeout       |
+| ClamAV     | 10s     | 2       | 10 / 50  | Fail-closed; quarantine on scan error   |
 | Stripe     | 5s      | 0       | 5 / 10   | No retry idempotency key handles        |
 | Keygen     | 2s      | 3       | 5 / 10   | License checks are idempotent           |
 | Cedar      | 1s      | 2       | 15 / 30  | Authz on every request, must be fast    |

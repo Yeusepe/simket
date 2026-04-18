@@ -10,10 +10,12 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useCart } from './use-cart';
 import { makeCartItem, resetCartCounter } from '../types/cart.factory';
+import { resetCartState } from '../state/cart-state';
 
 describe('useCart', () => {
   beforeEach(() => {
     resetCartCounter();
+    resetCartState();
   });
 
   it('initial cart is empty', () => {
