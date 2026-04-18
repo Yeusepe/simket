@@ -11,7 +11,7 @@
  * Tests:
  *   - packages/storefront/src/hooks/use-notifications.test.ts
  */
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   type AppNotification,
   type NotificationConnection,
@@ -105,7 +105,9 @@ const MARK_ALL_NOTIFICATIONS_READ_MUTATION = `
 `;
 
 function getShopApiUrl(): string {
-  const configuredUrl = import.meta.env.VITE_SIMKET_SHOP_API_URL;
+  const configuredUrl = (import.meta as ImportMeta & {
+    readonly env?: Record<string, string | undefined>;
+  }).env?.VITE_SIMKET_SHOP_API_URL;
   if (typeof configuredUrl === 'string' && configuredUrl.length > 0) {
     return configuredUrl;
   }
@@ -254,6 +256,7 @@ export function useNotifications(options: UseNotificationsOptions = {}): UseNoti
   const [typeFilter, setTypeFilter] = useState<NotificationTypeFilter>(
     options.initialTypeFilter ?? 'all',
   );
+  const requestedCountRef = useRef(pageSize);
 
   const type = typeFilter === 'all' ? undefined : typeFilter;
 
@@ -275,7 +278,7 @@ export function useNotifications(options: UseNotificationsOptions = {}): UseNoti
       }
       await loadPage(
         {
-          first: Math.max(pageSize, notifications.length || pageSize),
+          first: requestedCountRef.current,
           type,
         },
         'replace',
@@ -289,7 +292,7 @@ export function useNotifications(options: UseNotificationsOptions = {}): UseNoti
     } finally {
       setIsLoading(false);
     }
-  }, [loadPage, notifications.length, pageSize, type]);
+  }, [loadPage, type]);
 
   useEffect(() => {
     if (!autoLoad) {
@@ -330,6 +333,7 @@ export function useNotifications(options: UseNotificationsOptions = {}): UseNoti
         },
         'append',
       );
+      requestedCountRef.current += pageSize;
     } catch (caughtError) {
       setError(normalizeError(caughtError));
     } finally {
@@ -377,6 +381,11 @@ export function useNotifications(options: UseNotificationsOptions = {}): UseNoti
     }
   }, [api]);
 
+  const updateTypeFilter = useCallback((nextType: NotificationTypeFilter) => {
+    requestedCountRef.current = pageSize;
+    setTypeFilter(nextType);
+  }, [pageSize]);
+
   return {
     notifications,
     unreadCount,
@@ -386,7 +395,7 @@ export function useNotifications(options: UseNotificationsOptions = {}): UseNoti
     isSubmitting,
     error,
     typeFilter,
-    setTypeFilter,
+    setTypeFilter: updateTypeFilter,
     refresh,
     loadMore,
     markNotificationRead,

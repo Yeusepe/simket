@@ -24,11 +24,12 @@ import {
 
 export interface NotificationsPageProps {
   readonly api?: NotificationsApi;
+  readonly pollIntervalMs?: number;
 }
 
 const FILTERS: readonly NotificationTypeFilter[] = ['all', ...NOTIFICATION_TYPES];
 
-export function NotificationsPage({ api }: NotificationsPageProps) {
+export function NotificationsPage({ api, pollIntervalMs }: NotificationsPageProps) {
   const navigate = useNavigate();
   const {
     notifications,
@@ -43,7 +44,7 @@ export function NotificationsPage({ api }: NotificationsPageProps) {
     loadMore,
     markNotificationRead,
     markAllAsRead,
-  } = useNotifications({ api, pageSize: 20 });
+  } = useNotifications({ api, pageSize: 20, pollIntervalMs });
 
   return (
     <div className="mx-auto max-w-5xl space-y-6 px-4 py-8">

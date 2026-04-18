@@ -55,20 +55,20 @@ describe('NotificationBell', () => {
 
     render(
       <MemoryRouter>
-        <NotificationBell api={api} onNavigateTo={onNavigateTo} />
+        <NotificationBell api={api} onNavigateTo={onNavigateTo} pollIntervalMs={0} />
       </MemoryRouter>,
     );
 
     await waitFor(() => expect(screen.getByText('2')).toBeInTheDocument());
 
-    await user.click(screen.getByLabelText('Notifications'));
+    await user.click(screen.getAllByRole('button', { name: 'Notifications' })[1]!);
     expect(await screen.findByText('Recent notifications')).toBeInTheDocument();
     expect(screen.getByText('Purchase complete')).toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: /purchase complete/i }));
-    expect(onNavigateTo).toHaveBeenCalledWith('/library');
-
     await user.click(screen.getByRole('button', { name: /mark all as read/i }));
     expect(api.markAllNotificationsRead).toHaveBeenCalled();
+
+    await user.click(screen.getByRole('button', { name: /purchase complete/i }));
+    expect(onNavigateTo).toHaveBeenCalledWith('/library');
   });
 });

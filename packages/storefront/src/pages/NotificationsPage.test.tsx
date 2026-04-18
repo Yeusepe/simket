@@ -72,7 +72,7 @@ describe('NotificationsPage', () => {
 
     render(
       <MemoryRouter>
-        <NotificationsPage api={api} />
+        <NotificationsPage api={api} pollIntervalMs={0} />
       </MemoryRouter>,
     );
 

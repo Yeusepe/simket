@@ -113,7 +113,7 @@ function createApi(): NotificationsApi {
 describe('useNotifications', () => {
   it('loads notifications, paginates, and filters by type', async () => {
     const api = createApi();
-    const { result } = renderHook(() => useNotifications({ api, pageSize: 2 }));
+    const { result } = renderHook(() => useNotifications({ api, pageSize: 2, pollIntervalMs: 0 }));
 
     await waitFor(() => expect(result.current.isLoading).toBe(false));
     expect(result.current.notifications.map((item) => item.id)).toEqual([
@@ -146,7 +146,7 @@ describe('useNotifications', () => {
 
   it('marks single notifications and all notifications as read in local state', async () => {
     const api = createApi();
-    const { result } = renderHook(() => useNotifications({ api, pageSize: 2 }));
+    const { result } = renderHook(() => useNotifications({ api, pageSize: 2, pollIntervalMs: 0 }));
 
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 

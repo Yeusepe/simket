@@ -25,11 +25,13 @@ import {
 export interface NotificationBellProps {
   readonly api?: NotificationsApi;
   readonly onNavigateTo?: (href: string) => void;
+  readonly pollIntervalMs?: number;
 }
 
 export function NotificationBell({
   api,
   onNavigateTo,
+  pollIntervalMs,
 }: NotificationBellProps) {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
@@ -43,6 +45,7 @@ export function NotificationBell({
   } = useNotifications({
     api,
     pageSize: 5,
+    pollIntervalMs,
   });
 
   const navigateTo = useCallback((href: string) => {
