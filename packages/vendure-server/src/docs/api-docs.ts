@@ -436,10 +436,12 @@ export function mountApiDocs(
   const mountPath = opts?.path ?? '/docs';
   const spec = buildOpenApiSpec();
 
+  // Scalar accepts content as Record<string, any> (SourceConfiguration.content)
+  // Docs: https://github.com/scalar/scalar/tree/main/packages/express-api-reference
   app.use(
     mountPath,
     apiReference({
-      spec: { content: spec },
+      content: spec as unknown as Record<string, any>,
     }),
   );
 }

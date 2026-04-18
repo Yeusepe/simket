@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@cedar-policy/cedar-wasm": "^4.9.1",
+    "@crowdsec/nodejs-bouncer": "^0.2.0",
     "@nestjs/common": "^11.1.19",
     "@nestjs/core": "^11.1.19",
     "@nestjs/platform-express": "^11.1.19",
@@ -39,6 +40,7 @@
     "@vendure/common": "^3.6.2",
     "@vendure/core": "^3.6.2",
     "@vendure/email-plugin": "^3.6.2",
+    "better-auth": "^1.6.5",
     "bullmq": "^5.74.1",
     "cockatiel": "^3.2.1",
     "ioredis": "^5.10.1",

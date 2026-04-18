@@ -59,7 +59,7 @@ describe('buildOpenApiSpec', () => {
 
   it('should have the expected number of endpoint paths', () => {
     const pathCount = Object.keys(spec.paths).length;
-    expect(pathCount).toBe(8);
+    expect(pathCount).toBe(9);
   });
 
   it('should have required fields on each endpoint', () => {

@@ -102,7 +102,7 @@ describe('InMemoryProvider', () => {
       userTier: 'free',
     });
     expect(result.value).toBe(false);
-    expect(result.reason).toBe('DEFAULT');
+    expect(result.reason).toBe('STATIC');
   });
 });
 
