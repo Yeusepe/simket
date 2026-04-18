@@ -1,4 +1,4 @@
-# Simket
+# ![Simket](https://github.com/user-attachments/assets/cd058809-504c-45f6-ac4e-0bee69850b4c)
 
 A digital-goods marketplace where creators sell products (Unity packages,
 images, templates, tools) and buyers discover them through editorial
