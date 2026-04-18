@@ -46,14 +46,14 @@ describe('IframelyEmbed', () => {
 
     element.setAttribute('data-iframely-url', 'https://example.com/embed');
     element.className = 'iframely-embed';
-    element.innerHTML = '<iframe src="https://player.example.com/embed/123"></iframe>';
+    element.innerHTML = '<iframe src="https://cdn.iframe.ly/widget"></iframe>';
 
     expect(parseRule?.tag).toBe('div[data-iframely-url]');
     expect(
       typeof parseRule?.getAttrs === 'function' ? parseRule.getAttrs(element) : null,
     ).toEqual({
       url: 'https://example.com/embed',
-      html: '<iframe src="https://player.example.com/embed/123"></iframe>',
+      html: '<iframe src="https://cdn.iframe.ly/widget"></iframe>',
     });
   });
 
@@ -62,7 +62,7 @@ describe('IframelyEmbed', () => {
       node: { attrs: {} } as never,
       HTMLAttributes: {
         url: 'https://example.com/embed',
-        html: '<iframe src="https://player.example.com/embed/123"></iframe>',
+        html: '<iframe src="https://cdn.iframe.ly/widget"></iframe>',
       },
     });
 
@@ -73,7 +73,20 @@ describe('IframelyEmbed', () => {
     );
     expect((rendered as HTMLElement).className).toContain('iframely-embed');
     expect((rendered as HTMLElement).innerHTML).toContain(
-      'https://player.example.com/embed/123',
+      'https://cdn.iframe.ly/widget',
     );
+  });
+
+  it('falls back to a safe link when embed HTML uses a disallowed iframe host', () => {
+    const rendered = IframelyEmbed.config.renderHTML?.call(extensionContext, {
+      node: { attrs: {} } as never,
+      HTMLAttributes: {
+        url: 'https://example.com/embed',
+        html: '<iframe src="https://evil.example.com/embed"></iframe>',
+      },
+    });
+
+    expect((rendered as HTMLElement).innerHTML).toContain('https://example.com/embed');
+    expect((rendered as HTMLElement).innerHTML).not.toContain('evil.example.com');
   });
 });

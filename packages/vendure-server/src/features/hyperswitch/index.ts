@@ -9,6 +9,7 @@
  *   - packages/vendure-server/src/features/hyperswitch/hyperswitch.service.test.ts
  */
 export { HyperswitchService } from './hyperswitch.service.js';
+export { StripeService } from '../stripe/stripe.service.js';
 export type {
   CaptureHyperswitchPaymentParams,
   ConfirmHyperswitchPaymentParams,

@@ -12,7 +12,7 @@
  */
 import { describe, expect, it, vi } from 'vitest';
 import type { TransactionalConnection } from '@vendure/core';
-import { StripeService } from '../../features/stripe/index.js';
+import { StripeService } from '../../features/hyperswitch/index.js';
 import { RevenueSplitService, type CollaborativeOrder } from './revenue-split.service.js';
 import { SettlementEntity, SettlementStatus } from './settlement.entity.js';
 import { SettlementService } from './settlement.service.js';

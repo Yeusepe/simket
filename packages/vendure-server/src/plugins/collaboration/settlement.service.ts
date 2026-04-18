@@ -15,7 +15,7 @@
 import { Injectable, Optional } from '@nestjs/common';
 import { SpanStatusCode, trace } from '@opentelemetry/api';
 import type { RequestContext, TransactionalConnection } from '@vendure/core';
-import { StripeService } from '../../features/stripe/index.js';
+import { StripeService } from '../../features/hyperswitch/index.js';
 import {
   RevenueSplitService,
   type CollaborativeOrder,
