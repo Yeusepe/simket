@@ -10,15 +10,15 @@
 
 ## 2. Test layers
 
-| Layer | Primary purpose | Tools |
-| --- | --- | --- |
-| Docs checks | Architecture, links, contract alignment | Custom scripts |
-| Schema and contract tests | Bebop schema compatibility, API contract drift | Bebop compiler, snapshot tests |
-| Unit tests | Pure logic: pricing calculation, collaboration split, validation rules | Vitest |
-| Integration tests | Vendure plugin behaviour, Convex function behaviour, auth flows, Cedar policies | Vitest + TestContainers + Convex dev |
-| API integration tests | Route contracts, auth, validation, idempotent mutations | Vitest + supertest |
-| E2E tests | Visible user outcomes: browse, search, cart, checkout, creator dashboard | Playwright |
-| Load and soak tests | Throughput, saturation, degradation behaviour | k6 or Artillery |
+| Layer                     | Primary purpose                                                                 | Tools                                |
+| ------------------------- | ------------------------------------------------------------------------------- | ------------------------------------ |
+| Docs checks               | Architecture, links, contract alignment                                         | Custom scripts                       |
+| Schema and contract tests | Bebop schema compatibility, API contract drift                                  | Bebop compiler, snapshot tests       |
+| Unit tests                | Pure logic: pricing calculation, collaboration split, validation rules          | Vitest                               |
+| Integration tests         | Vendure plugin behaviour, Convex function behaviour, auth flows, Cedar policies | Vitest + TestContainers + Convex dev |
+| API integration tests     | Route contracts, auth, validation, idempotent mutations                         | Vitest + supertest                   |
+| E2E tests                 | Visible user outcomes: browse, search, cart, checkout, creator dashboard        | Playwright                           |
+| Load and soak tests       | Throughput, saturation, degradation behaviour                                   | k6 or Artillery                      |
 
 ## 3. High-risk behaviours that must be tested
 

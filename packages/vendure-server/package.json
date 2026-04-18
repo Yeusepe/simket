@@ -1,0 +1,42 @@
+{
+  "name": "@simket/vendure-server",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc --build",
+    "dev": "ts-node --esm src/index.ts",
+    "start": "node dist/index.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint src/",
+    "typecheck": "tsc --noEmit",
+    "clean": "rimraf dist *.tsbuildinfo",
+    "migration:generate": "ts-node --esm -e \"console.log('TypeORM migration generate')\"",
+    "migration:run": "ts-node --esm -e \"console.log('TypeORM migration run')\""
+  },
+  "dependencies": {
+    "@nestjs/common": "^11.1.19",
+    "@nestjs/core": "^11.1.19",
+    "@nestjs/platform-express": "^11.1.19",
+    "@nestjs/terminus": "^11.1.1",
+    "@simket/shared": "workspace:*",
+    "@vendure/asset-server-plugin": "^3.6.2",
+    "@vendure/common": "^3.6.2",
+    "@vendure/core": "^3.6.2",
+    "@vendure/email-plugin": "^3.6.2",
+    "bullmq": "^5.74.1",
+    "cockatiel": "^3.2.1",
+    "ioredis": "^5.10.1",
+    "pg": "^8.20.0",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.2",
+    "typeorm": "^0.3.28"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "rimraf": "^6.0.0",
+    "typescript": "^5.7.0",
+    "vitest": "^2.1.0"
+  }
+}

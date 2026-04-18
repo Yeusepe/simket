@@ -39,14 +39,14 @@ Threat-model changes that affect:
 
 For every threat-modelled change, produce at minimum:
 
-| Question | Answer |
-| --- | --- |
-| What is changing? | (description) |
-| Where is the trust boundary? | (service, edge, storage) |
-| What are the assets? | (user data, payment info, secrets, products) |
-| What does the attacker control? | (inputs, timing, network) |
-| What are the threats? | (spoofing, tampering, repudiation, info disclosure, DoS, elevation) |
-| What are the mitigations? | (validation, auth, rate-limiting, audit, encryption) |
+| Question                        | Answer                                                              |
+| ------------------------------- | ------------------------------------------------------------------- |
+| What is changing?               | (description)                                                       |
+| Where is the trust boundary?    | (service, edge, storage)                                            |
+| What are the assets?            | (user data, payment info, secrets, products)                        |
+| What does the attacker control? | (inputs, timing, network)                                           |
+| What are the threats?           | (spoofing, tampering, repudiation, info disclosure, DoS, elevation) |
+| What are the mitigations?       | (validation, auth, rate-limiting, audit, encryption)                |
 
 ## 5. External assertion validation
 
@@ -66,14 +66,14 @@ For every threat-modelled change, produce at minimum:
 - Do not expose provider access tokens to the browser unless the contract requires it
 - Do not duplicate token storage without a declared source of truth
 
-| Token class | Owner | Storage | Rotation |
-| --- | --- | --- | --- |
-| User sessions | Better Auth | Better Auth DB | Sliding expiry |
-| Creator API keys | Better Auth | Better Auth DB | Manual revocation |
-| Stripe Connect tokens | Stripe | Stripe (not stored locally) | Stripe manages |
-| Licence keys | Keygen | Keygen | Per-product policy |
-| Cedar policy versions | Cedar service | Policy DB | Versioned deployment |
-| Svix signing keys | Svix | Svix | Svix rotation |
+| Token class           | Owner         | Storage                     | Rotation             |
+| --------------------- | ------------- | --------------------------- | -------------------- |
+| User sessions         | Better Auth   | Better Auth DB              | Sliding expiry       |
+| Creator API keys      | Better Auth   | Better Auth DB              | Manual revocation    |
+| Stripe Connect tokens | Stripe        | Stripe (not stored locally) | Stripe manages       |
+| Licence keys          | Keygen        | Keygen                      | Per-product policy   |
+| Cedar policy versions | Cedar service | Policy DB                   | Versioned deployment |
+| Svix signing keys     | Svix          | Svix                        | Svix rotation        |
 
 ## 7. Payment security (Stripe principles)
 

@@ -62,13 +62,13 @@ For every migration slice, answer:
 
 Choose based on risk:
 
-| Strategy | When to use |
-| --- | --- |
-| Direct replacement | Low-risk internal changes with strong test coverage |
-| Feature-flagged (OpenFeature) | User-visible changes needing gradual exposure |
-| Dark read | New path compared silently to old path |
-| Dual-run | High-risk payment or policy changes |
-| Staged rollout | Geographic or user-segment phased deployment |
+| Strategy                      | When to use                                         |
+| ----------------------------- | --------------------------------------------------- |
+| Direct replacement            | Low-risk internal changes with strong test coverage |
+| Feature-flagged (OpenFeature) | User-visible changes needing gradual exposure       |
+| Dark read                     | New path compared silently to old path              |
+| Dual-run                      | High-risk payment or policy changes                 |
+| Staged rollout                | Geographic or user-segment phased deployment        |
 
 ## 7. Compatibility path rules
 

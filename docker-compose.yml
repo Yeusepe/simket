@@ -1,0 +1,130 @@
+# Simket Local Development Stack
+# Usage: docker compose up -d
+
+services:
+  # ─── PostgreSQL (Vendure internal DB) ───
+  postgres:
+    image: postgres:16-alpine
+    container_name: simket-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: simket
+      POSTGRES_PASSWORD: simket_dev
+      POSTGRES_DB: simket
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U simket"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # ─── PgBouncer (connection pooling) ───
+  pgbouncer:
+    image: bitnami/pgbouncer:1
+    container_name: simket-pgbouncer
+    ports:
+      - "6432:6432"
+    environment:
+      PGBOUNCER_DATABASE: simket
+      POSTGRESQL_HOST: postgres
+      POSTGRESQL_PORT: 5432
+      POSTGRESQL_USERNAME: simket
+      POSTGRESQL_PASSWORD: simket_dev
+      PGBOUNCER_POOL_MODE: transaction
+      PGBOUNCER_MAX_CLIENT_CONN: 200
+      PGBOUNCER_DEFAULT_POOL_SIZE: 20
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # ─── Redis Cache (with eviction) ───
+  redis-cache:
+    image: redis:7-alpine
+    container_name: simket-redis-cache
+    ports:
+      - "6379:6379"
+    command: >
+      redis-server
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+      --appendonly no
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # ─── Redis Queue (with persistence) ───
+  redis-queue:
+    image: redis:7-alpine
+    container_name: simket-redis-queue
+    ports:
+      - "6380:6379"
+    command: >
+      redis-server
+      --maxmemory 256mb
+      --maxmemory-policy noeviction
+      --appendonly yes
+    volumes:
+      - redis_queue_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # ─── Typesense (search, 3-node HA in prod, single for local) ───
+  typesense:
+    image: typesense/typesense:27.1
+    container_name: simket-typesense
+    ports:
+      - "8108:8108"
+    environment:
+      TYPESENSE_API_KEY: simket_dev_key
+      TYPESENSE_DATA_DIR: /data
+    volumes:
+      - typesense_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8108/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # ─── Qdrant (vector search) ───
+  qdrant:
+    image: qdrant/qdrant:v1.12.5
+    container_name: simket-qdrant
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant_data:/qdrant/storage
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6333/healthz"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # ─── ClamAV (antivirus scanning) ───
+  clamav:
+    image: clamav/clamav:1.4
+    container_name: simket-clamav
+    ports:
+      - "3310:3310"
+    volumes:
+      - clamav_data:/var/lib/clamav
+    healthcheck:
+      test: ["CMD", "clamdcheck"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
+
+volumes:
+  postgres_data:
+  redis_queue_data:
+  typesense_data:
+  qdrant_data:
+  clamav_data:
