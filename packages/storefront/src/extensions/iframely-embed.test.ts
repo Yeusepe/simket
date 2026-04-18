@@ -13,6 +13,14 @@ import { describe, expect, it } from 'vitest';
 import { IframelyEmbed } from './iframely-embed';
 
 describe('IframelyEmbed', () => {
+  const extensionContext = {
+    name: 'iframelyEmbed',
+    options: {},
+    storage: {},
+    parent: undefined,
+    editor: undefined,
+  } as never;
+
   it('creates an extension with the expected name', () => {
     expect(IframelyEmbed.name).toBe('iframelyEmbed');
   });
@@ -23,7 +31,7 @@ describe('IframelyEmbed', () => {
   });
 
   it('stores url and html attributes', () => {
-    const attributes = IframelyEmbed.config.addAttributes?.();
+    const attributes = IframelyEmbed.config.addAttributes?.call(extensionContext);
 
     expect(attributes).toMatchObject({
       url: expect.objectContaining({ default: null }),
@@ -32,7 +40,7 @@ describe('IframelyEmbed', () => {
   });
 
   it('parses an iFramely div from HTML', () => {
-    const parseRules = IframelyEmbed.config.parseHTML?.() ?? [];
+    const parseRules = IframelyEmbed.config.parseHTML?.call(extensionContext) ?? [];
     const parseRule = parseRules[0];
     const element = document.createElement('div');
 
@@ -50,7 +58,7 @@ describe('IframelyEmbed', () => {
   });
 
   it('renders a div with iFramely attributes and HTML', () => {
-    const rendered = IframelyEmbed.config.renderHTML?.({
+    const rendered = IframelyEmbed.config.renderHTML?.call(extensionContext, {
       node: { attrs: {} } as never,
       HTMLAttributes: {
         url: 'https://example.com/embed',
