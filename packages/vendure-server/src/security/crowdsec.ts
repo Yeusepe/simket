@@ -1,10 +1,19 @@
 /**
- * CrowdSec bouncer — checks IPs against CrowdSec LAPI and provides
- * Express middleware for automated abuse defence.
+ * CrowdSec abuse defence — thin wrapper around @crowdsec/nodejs-bouncer SDK.
+ *
+ * The SDK handles: LAPI communication, decision caching, remediation mapping.
+ * This module provides: Express middleware, Simket-specific decision types,
+ * and a rate-limit fallback when the LAPI is unreachable.
+ *
+ * Governing docs:
+ *   - docs/architecture.md §9.5 (CrowdSec abuse defence)
+ * External references:
+ *   - https://docs.crowdsec.net/docs/bouncers/nodejs/
+ *   - https://www.npmjs.com/package/@crowdsec/nodejs-bouncer
+ * Tests:
+ *   - packages/vendure-server/src/security/crowdsec.test.ts
  */
-
-import { createResiliencePolicy } from '../resilience/resilience.js';
-import type { ResiliencePolicy } from '../resilience/resilience.js';
+import { CrowdSecBouncer as CrowdSecBouncerSDK } from '@crowdsec/nodejs-bouncer';
 import { RateLimiter } from './rate-limiter.js';
 
 export type CrowdSecDecision = 'allow' | 'deny' | 'captcha';
@@ -12,78 +21,44 @@ export type CrowdSecDecision = 'allow' | 'deny' | 'captcha';
 export interface CrowdSecBouncerOptions {
   lapiUrl: string;
   apiKey: string;
-  /** Behaviour when LAPI is unreachable and IP not in cache. Default: 'deny-all'. */
+  /** Behaviour when LAPI is unreachable and SDK throws. Default: 'deny-all'. */
   fallbackMode?: 'rate-limit' | 'deny-all';
 }
 
-interface CacheEntry {
-  decision: CrowdSecDecision;
-  expiry: number;
+/** Map SDK remediation strings to Simket decision types. */
+function mapRemediation(remediation: string): CrowdSecDecision {
+  switch (remediation) {
+    case 'ban':
+      return 'deny';
+    case 'captcha':
+      return 'captcha';
+    case 'bypass':
+      return 'allow';
+    default:
+      // Fail-closed: unknown remediation types are denied
+      return 'deny';
+  }
 }
-
-const CACHE_MAX = 1000;
-const CACHE_TTL_MS = 60_000;
 
 /**
- * Simple LRU cache using a Map (insertion-order iteration).
- * Evicts least-recently-used entries when the map exceeds `max`.
+ * Simket CrowdSec bouncer — delegates to @crowdsec/nodejs-bouncer SDK.
+ *
+ * The SDK provides built-in caching (`cleanIpCacheDuration`, `badIpCacheDuration`)
+ * and LAPI communication. This wrapper adds Express middleware integration
+ * and a configurable fallback strategy.
  */
-class LruCache {
-  private readonly map = new Map<string, CacheEntry>();
-  private readonly max: number;
-
-  constructor(max: number) {
-    this.max = max;
-  }
-
-  get(key: string): CacheEntry | undefined {
-    const entry = this.map.get(key);
-    if (!entry) return undefined;
-
-    if (Date.now() > entry.expiry) {
-      this.map.delete(key);
-      return undefined;
-    }
-
-    // Move to end (most-recently-used)
-    this.map.delete(key);
-    this.map.set(key, entry);
-    return entry;
-  }
-
-  set(key: string, decision: CrowdSecDecision): void {
-    // Delete first so re-insertion goes to end
-    this.map.delete(key);
-    if (this.map.size >= this.max) {
-      // Evict oldest (first key)
-      const oldest = this.map.keys().next().value;
-      if (oldest !== undefined) {
-        this.map.delete(oldest);
-      }
-    }
-    this.map.set(key, { decision, expiry: Date.now() + CACHE_TTL_MS });
-  }
-}
-
 export class CrowdSecBouncer {
-  private readonly lapiUrl: string;
-  private readonly apiKey: string;
+  private readonly client: CrowdSecBouncerSDK;
   private readonly fallbackMode: 'rate-limit' | 'deny-all';
-  private readonly cache = new LruCache(CACHE_MAX);
-  private readonly policy: ResiliencePolicy;
   private readonly rateLimiter: RateLimiter;
 
   constructor(opts: CrowdSecBouncerOptions) {
-    this.lapiUrl = opts.lapiUrl.replace(/\/+$/, '');
-    this.apiKey = opts.apiKey;
-    this.fallbackMode = opts.fallbackMode ?? 'deny-all';
-
-    this.policy = createResiliencePolicy('crowdsec-lapi', {
-      timeout: 2_000,
-      retry: { maxAttempts: 1, initialDelay: 100, maxDelay: 500 },
-      circuitBreaker: { threshold: 0.5, duration: 30_000, minimumRps: 0 },
+    this.client = new CrowdSecBouncerSDK({
+      url: opts.lapiUrl,
+      bouncerApiToken: opts.apiKey,
+      fallbackRemediation: 'ban',
     });
-
+    this.fallbackMode = opts.fallbackMode ?? 'deny-all';
     this.rateLimiter = new RateLimiter({
       maxTokens: 20,
       refillRate: 5,
@@ -91,64 +66,22 @@ export class CrowdSecBouncer {
     });
   }
 
+  /**
+   * Check an IP address against CrowdSec LAPI decisions.
+   *
+   * SDK handles caching internally — no manual LRU cache needed.
+   */
   async checkIp(ip: string): Promise<CrowdSecDecision> {
-    // Check cache first
-    const cached = this.cache.get(ip);
-    if (cached) return cached.decision;
-
     try {
-      const decision = await this.policy.execute(() => this.fetchDecision(ip));
-      this.cache.set(ip, decision);
-      return decision;
+      const result = await this.client.getIpRemediation(ip);
+      return mapRemediation(result.remediation);
     } catch {
       // LAPI unreachable — fail-closed
-      return this.handleFallback(ip);
-    }
-  }
-
-  private async fetchDecision(ip: string): Promise<CrowdSecDecision> {
-    const url = `${this.lapiUrl}/v1/decisions?ip=${encodeURIComponent(ip)}`;
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 2_000);
-    try {
-      const response = await fetch(url, {
-        headers: {
-          'X-Api-Key': this.apiKey,
-          Accept: 'application/json',
-        },
-        signal: controller.signal,
-      });
-
-      if (!response.ok) {
-        throw new Error(`CrowdSec LAPI error: ${response.status}`);
+      if (this.fallbackMode === 'rate-limit') {
+        return this.rateLimiter.tryConsume(ip) ? 'allow' : 'deny';
       }
-
-      const body: unknown = await response.json();
-
-      // CrowdSec returns null or empty array when no decision exists
-      if (body === null || (Array.isArray(body) && body.length === 0)) {
-        return 'allow';
-      }
-
-      if (Array.isArray(body) && body.length > 0) {
-        const first = body[0] as { type?: string };
-        if (first.type === 'ban') return 'deny';
-        if (first.type === 'captcha') return 'captcha';
-        // Unknown decision types are treated as deny (fail-closed)
-        return 'deny';
-      }
-
-      return 'allow';
-    } finally {
-      clearTimeout(timeoutId);
+      return 'deny';
     }
-  }
-
-  private handleFallback(ip: string): CrowdSecDecision {
-    if (this.fallbackMode === 'rate-limit') {
-      return this.rateLimiter.tryConsume(ip) ? 'allow' : 'deny';
-    }
-    return 'deny';
   }
 }
 

@@ -15,6 +15,7 @@ export {
   correlationMiddleware,
   createLogger,
   getCorrelationId,
+  getTraceId,
   CORRELATION_HEADER,
 } from './correlation.js';
 export type {

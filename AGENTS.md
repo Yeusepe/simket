@@ -131,6 +131,79 @@ A wrong endpoint path wastes significant time and produces bugs that are hard to
  */
 ```
 
+### 4.1 Library and SDK API verification rule
+
+**This rule applies to every npm package, SDK, and library — not just HTTP APIs.**
+
+Before writing ANY code that calls a library function, accesses a type, or uses a configuration object from an external package:
+
+1. **Read the installed package's type definitions first.** Run `cat node_modules/<package>/dist/*.d.ts | head -200` or inspect the specific `.d.ts` file for the function you intend to use.
+2. **Never assume method signatures, constructor arguments, type shapes, or configuration keys from memory.** Libraries change between major versions — what you remember may be wrong.
+3. **Verify discriminated unions.** If a return type is a union (e.g., `{ type: 'success' } | { type: 'failure'; errors: Error[] }`), narrow on the actual discriminant property — never assume `.success` or `.ok` exists.
+4. **Verify named vs default exports.** ESM interop is fragile. Check the actual export from the `.d.ts` — `import X from` vs `import { X } from` matters.
+5. **Verify config object shapes.** Don't assume a library config accepts `{ policyText }` when it actually wants `{ staticPolicies }`. Read the type.
+
+**Known examples of this rule being violated (do not repeat):**
+
+| Package | Wrong assumption | Actual API |
+|---------|-----------------|------------|
+| `@cedar-policy/cedar-wasm` | `PolicySet = { policyText: string }` | `PolicySet = { staticPolicies?: StaticPolicySet }` |
+| `@cedar-policy/cedar-wasm` | `CheckParseAnswer` has `.success` property | Discriminated union on `.type: 'success' \| 'failure'` |
+| `@cedar-policy/cedar-wasm` | `principal.id` accesses entity UID | Entity refs require `{ __entity: { type, id } }` |
+| `cockatiel` v3 | `new CircuitBreakerPolicy()` class constructors | Free functions: `circuitBreaker()`, `retry()`, `timeout()` |
+| `ioredis` | `import Redis from 'ioredis'` (default export) | `import { Redis } from 'ioredis'` (named export in ESM) |
+| `@opentelemetry/semantic-conventions` | `ATTR_DEPLOYMENT_ENVIRONMENT_NAME` | `SEMRESATTRS_DEPLOYMENT_ENVIRONMENT` (version-dependent) |
+| `@opentelemetry/api` | `span.attributes = {}` | `span.setAttributes({})` (method, not property) |
+
+**The 30-second rule:** Spending 30 seconds reading a `.d.ts` file saves 30 minutes debugging a wrong assumption. Always read first.
+
+### 4.2 Use what libraries provide — NEVER reinvent the wheel
+
+**Before writing ANY module that wraps, calls, or integrates an external library, search online and read the library's documentation to understand what it already provides.** If the library ships a solution for what you need, use it. Do not reimplement it.
+
+This is not optional. Reimplementing functionality that a library already provides is:
+
+- **A maintenance burden** — you now own code the library team maintains for free.
+- **A correctness risk** — the library handles edge cases you will miss.
+- **A security risk** — the library patches vulnerabilities you won't track.
+- **A waste of time** — you are writing and testing code that already exists.
+
+#### The rule
+
+1. **Search online first.** Before writing a new module, search: "does [library] provide [functionality]?" Check npm, GitHub, and official docs.
+2. **Check for official sub-packages.** Many libraries split functionality into companion packages (e.g., `@openfeature/in-memory-provider` alongside `@openfeature/server-sdk`). Search for these.
+3. **Check for built-in middleware/integration.** Many libraries ship framework integrations (e.g., `better-auth` ships `toNodeHandler()` for Express).
+4. **If the library provides 80%+ of what you need**, use the library and extend only the gap. Do not rewrite from scratch.
+5. **If you must wrap a library**, your wrapper should be a thin adapter — not a reimplementation of the library's internals.
+
+#### Signs you are reinventing the wheel
+
+- You are writing an HTTP client to call an API when an official SDK exists for that API.
+- You are writing a cache layer when the library has built-in caching.
+- You are writing a provider/adapter when an official one is published as a separate package.
+- You are writing authentication/token validation logic when the auth library provides `getSession()` or `verifyToken()`.
+- You are writing middleware when the library ships framework-specific middleware.
+- You are manually parsing responses when the SDK returns typed objects.
+
+#### Known violations (do not repeat)
+
+| What we wrote | What we should use instead |
+|---------------|--------------------------|
+| Hand-rolled `CrowdSecBouncer` class with custom LRU cache, HTTP client, response parsing | `@crowdsec/nodejs-bouncer` — official npm package that handles LAPI communication, caching, and decision checking |
+| Hand-rolled JWT validation with `node:crypto` (JWKS fetch, RSA verify, key cache) in `better-auth.ts` | `better-auth` SDK — provides `auth.api.getSession({ headers })` for server-side session validation and `toNodeHandler()` for Express |
+| Custom `InMemoryProvider` class implementing the OpenFeature `Provider` interface from scratch | `@openfeature/in-memory-provider` — official companion package with events, context support, and `putConfiguration()` |
+| Custom `x-correlation-id` middleware with `AsyncLocalStorage` | OpenTelemetry already propagates W3C Trace Context (trace ID) automatically — use trace ID as correlation ID, or if a custom header is needed, the middleware should be a thin 5-line wrapper, not a full module |
+
+#### Pre-implementation checklist
+
+Before writing any new integration module, answer these questions:
+
+1. Does the library/service have an official Node.js/TypeScript SDK? → **Search npm and GitHub.**
+2. Does the SDK have companion packages for common needs? → **Search `@scope/*` on npm.**
+3. Does the SDK provide framework middleware (Express, Fastify, etc.)? → **Check the SDK docs.**
+4. Does the SDK handle caching, retries, or error handling internally? → **Read the SDK source/docs before adding your own.**
+5. Can I achieve my goal with ≤ 20 lines of adapter code on top of the SDK? → **If yes, do that. If no, justify in a code comment why a larger wrapper is needed.**
+
 ---
 
 ## 5. Analytics-first implementation rule
@@ -333,6 +406,11 @@ Work is done when:
 
 Do NOT:
 
+- **Reinvent functionality that installed libraries already provide.** Search online and read library docs before writing any wrapper, client, cache, provider, or middleware. If an official SDK or companion package exists, use it.
+- **Code library calls from memory.** Always read the installed `.d.ts` types first. This is the #1 source of wasted time.
+- **Write HTTP clients for APIs that have official SDKs.** Use the SDK.
+- **Write custom providers/adapters when official ones exist as companion packages.** Search npm for `@scope/in-memory-provider`, `@scope/express-middleware`, etc.
+- **Write authentication/token logic when the auth library provides it.** Use `getSession()`, `verifyToken()`, or whatever the library exposes.
 - Code from memory when upstream docs matter.
 - Add a package without documenting why it is preferred over alternatives.
 - Add routes without updating API docs.
@@ -346,6 +424,7 @@ Do NOT:
 - Stub, mock, or fake any production dependency.
 - Implement workarounds instead of proper architectural solutions.
 - Assume external API endpoint paths without verifying them.
+- **Assume library method signatures, type shapes, or config objects without reading the `.d.ts`.**
 - Remove or bypass analytics coverage.
 - Commit developer-local paths, usernames, or machine-specific details.
 

@@ -28,8 +28,10 @@ export type {
 } from './auth/index.js';
 export {
   validateJwt,
+  validateJwtWithKey,
   issueServiceToken,
   resetPublicKeyCache,
+  setValidationOverride,
 } from './auth/index.js';
 export type { JwtValidationResult } from './auth/index.js';
 export {
@@ -40,8 +42,6 @@ export {
 } from './features/index.js';
 export type {
   FlagConfiguration,
-  FlagDefinition,
-  TargetingRule,
 } from './features/index.js';
 export { buildOpenApiSpec, mountApiDocs } from './docs/index.js';
 export type { OpenApiSpec } from './docs/index.js';
@@ -60,6 +60,7 @@ export {
   correlationMiddleware,
   createLogger,
   getCorrelationId,
+  getTraceId,
   CORRELATION_HEADER,
 } from './observability/index.js';
 export type {

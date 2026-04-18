@@ -18,12 +18,22 @@ import {
   InMemoryProvider,
   type Provider,
   type EvaluationContext,
-  type FlagConfiguration,
 } from '@openfeature/server-sdk';
 
-// Re-export the SDK's InMemoryProvider and FlagConfiguration for convenience
+// Re-export the SDK's InMemoryProvider for convenience
 export { InMemoryProvider };
-export type { FlagConfiguration };
+
+/**
+ * FlagConfiguration mirrors the SDK's internal type (not exported by the SDK).
+ * Derived from ConstructorParameters<typeof InMemoryProvider> for correctness.
+ *
+ * Each flag has:
+ *   - variants: Record<string, T> — the possible values keyed by variant name
+ *   - defaultVariant: string — which variant key to use by default
+ *   - disabled: boolean — whether the flag is disabled
+ *   - contextEvaluator?: (ctx) => string — optional function returning variant key for context
+ */
+export type FlagConfiguration = NonNullable<ConstructorParameters<typeof InMemoryProvider>[0]>;
 
 // ── Initialization ────────────────────────────────────────────────────────────
 

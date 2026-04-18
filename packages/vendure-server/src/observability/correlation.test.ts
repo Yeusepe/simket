@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { correlationMiddleware, createLogger, CORRELATION_HEADER } from './correlation.js';
+import { correlationMiddleware, createLogger, getTraceId, CORRELATION_HEADER } from './correlation.js';
 
 function createMockReq(headers: Record<string, string | undefined> = {}): {
   headers: Record<string, string | undefined>;
@@ -153,5 +153,24 @@ describe('Structured Logger', () => {
     const ts = new Date(parsed['timestamp'] as string);
 
     expect(ts.getTime()).not.toBeNaN();
+  });
+
+  it('should include traceId field in log entries (undefined when no span active)', () => {
+    const writeSpy = vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
+
+    const logger = createLogger('trace-test');
+    logger.info('with trace');
+
+    const output = writeSpy.mock.calls[0]![0] as string;
+    const parsed = JSON.parse(output) as Record<string, unknown>;
+
+    // traceId is undefined when no OTel span is active, JSON.stringify omits it
+    expect(parsed['traceId']).toBeUndefined();
+  });
+});
+
+describe('getTraceId', () => {
+  it('should return undefined when no OTel span is active', () => {
+    expect(getTraceId()).toBeUndefined();
   });
 });
