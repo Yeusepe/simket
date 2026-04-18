@@ -14,7 +14,12 @@
  *   - packages/vendure-server/src/plugins/ab-testing/ab-testing.service.test.ts
  */
 import { Injectable } from '@nestjs/common';
-import { OpenFeature, type EvaluationContext, InMemoryProvider } from '@openfeature/server-sdk';
+import {
+  OpenFeature,
+  type EvaluationContext,
+  InMemoryProvider,
+  type JsonValue,
+} from '@openfeature/server-sdk';
 import { SpanStatusCode, trace } from '@opentelemetry/api';
 import type { RequestContext, TransactionalConnection } from '@vendure/core';
 import { createHash } from 'node:crypto';
@@ -44,7 +49,8 @@ export interface ExperimentVariantAssignment {
   readonly experimentId: string;
   readonly productId: string | null;
   readonly variantName: string;
-  readonly config: Record<string, unknown>;
+  readonly config: Record<string, JsonValue>;
+  readonly [key: string]: JsonValue;
 }
 
 export interface ExperimentVariantMetrics {
@@ -98,6 +104,35 @@ function normalizeAudienceRules(
         : undefined,
     purchasedProductIds: normalizedProducts?.length ? normalizedProducts : undefined,
   };
+}
+
+function toJsonValue(value: unknown): JsonValue {
+  if (
+    value === null ||
+    typeof value === 'string' ||
+    typeof value === 'number' ||
+    typeof value === 'boolean'
+  ) {
+    return value;
+  }
+
+  if (Array.isArray(value)) {
+    return value.map((entry) => toJsonValue(entry));
+  }
+
+  if (typeof value === 'object' && value !== null) {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, entry]) => [key, toJsonValue(entry)]),
+    );
+  }
+
+  return String(value);
+}
+
+function toJsonRecord(value: Record<string, unknown>): Record<string, JsonValue> {
+  return Object.fromEntries(
+    Object.entries(value).map(([key, entry]) => [key, toJsonValue(entry)]),
+  );
 }
 
 export function normalizeVariants(
@@ -479,7 +514,7 @@ export class AbTestingService {
                   experimentId: experiment.id,
                   productId: experiment.productId,
                   variantName: variant.name,
-                  config: variant.config,
+                  config: toJsonRecord(variant.config),
                 } satisfies ExperimentVariantAssignment,
               ]),
             ),

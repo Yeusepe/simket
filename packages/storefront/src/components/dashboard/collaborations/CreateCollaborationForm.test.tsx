@@ -37,13 +37,12 @@ describe('CreateCollaborationForm', () => {
       <CreateCollaborationForm
         availableProducts={PRODUCTS}
         currentCreatorName="Alex Creator"
+        initialProductId="product-1"
         initialOwnerSplitPercent={60}
         onSubmit={onSubmit}
       />,
     );
 
-    await user.click(screen.getByLabelText('Product'));
-    await user.click((await screen.findAllByText('Nebula Materials Library')).at(-1)!);
     await user.type(screen.getByLabelText('Collaborator email or username'), 'maya@example.com');
     await user.clear(screen.getByLabelText('Split percentage'));
     await user.type(screen.getByLabelText('Split percentage'), '30');
@@ -63,13 +62,12 @@ describe('CreateCollaborationForm', () => {
       <CreateCollaborationForm
         availableProducts={PRODUCTS}
         currentCreatorName="Alex Creator"
+        initialProductId="product-1"
         initialOwnerSplitPercent={55}
         onSubmit={onSubmit}
       />,
     );
 
-    await user.click(screen.getByLabelText('Product'));
-    await user.click((await screen.findAllByText('Nebula Materials Library')).at(-1)!);
     await user.type(screen.getByLabelText('Collaborator email or username'), '  @maya-light  ');
     await user.clear(screen.getByLabelText('Split percentage'));
     await user.type(screen.getByLabelText('Split percentage'), '25');

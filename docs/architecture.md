@@ -183,6 +183,7 @@ its own runtime (noted below).
 | **Framely integration**  | Storefront team | Next.js app     | Custom creator stores, drag-and-drop page builder with HeroUI components, subdomain routing.                                               |
 | **Tagging plugin**       | Discovery team  | Vendure plugin  | Product tags, creator tags, tag suggestions, tag enforcement rules.                                                                        |
 | **Flow plugin**          | Commerce team   | Vendure plugin  | Checkout flow builder, upsell/cross-sell steps, flow templates.                                                                            |
+| **AB testing plugin**   | Storefront team | Vendure plugin  | Creator-owned experiments for product copy, pricing, CTA variations, audience targeting, and per-variant conversion tracking.              |
 | **Recommend service**    | Discovery team  | Encore service  | Pluggable recommendation pipeline (candidate sources → rankers → post-processors).                                                         |
 | **Editorial service**    | Content team    | PayloadCMS      | "Today" section, editorial articles, curated collections, article scheduling.                                                              |
 | **Asset pipeline**       | Platform team   | CDNgine         | Upload (via Uppy + @tus/server), ClamAV scan, ExifTool metadata strip, transform (→ webp, animated webp, streaming video), deliver, purge. |

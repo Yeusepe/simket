@@ -10,6 +10,7 @@ import { ReportingPlugin } from '../plugins/reporting/index.js';
 import { CheckoutPlugin } from '../plugins/checkout/index.js';
 import { PaymentWebhookPlugin } from '../plugins/payment-webhook/index.js';
 import { SettlementPlugin } from '../plugins/settlement/index.js';
+import { WishlistPlugin } from '../plugins/wishlist/index.js';
 
 /**
  * Core Vendure configuration.
@@ -61,5 +62,5 @@ export const config: VendureConfig = {
     paymentMethodHandlers: [],
   },
 
-  plugins: [NotificationPlugin, AbTestingPlugin, PlatformFeePlugin, PurchaseParityPlugin, ProductMetadataPlugin, GiftPlugin, ReportingPlugin, CheckoutPlugin, PaymentWebhookPlugin, SettlementPlugin],
+  plugins: [NotificationPlugin, WishlistPlugin, AbTestingPlugin, PlatformFeePlugin, PurchaseParityPlugin, ProductMetadataPlugin, GiftPlugin, ReportingPlugin, CheckoutPlugin, PaymentWebhookPlugin, SettlementPlugin],
 };

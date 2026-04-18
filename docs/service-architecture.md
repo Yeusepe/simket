@@ -27,6 +27,11 @@ resolvers, replacing the default GraphQL transport with compact binary messages.
 Both APIs are served from the same Vendure server process on different
 Bebop endpoints (`/shop-api`, `/admin-api`).
 
+AB testing extends these same surfaces:
+
+- **Admin API**: creators manage experiments via `createExperiment`, `startExperiment`, `stopExperiment`, `experiments`, and `experimentResults`.
+- **Shop API**: product pages resolve `activeExperimentVariant(productId)` and emit `trackEvent` mutations for `view`, `click`, and `purchase` outcomes.
+
 ### 1.2 Recommend service API (internal)
 
 Exposed as an Encore service. Not directly accessible by clients.

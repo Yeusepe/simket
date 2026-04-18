@@ -36,6 +36,7 @@ interface InviteeDraft {
 export interface CreateCollaborationFormProps {
   readonly availableProducts: readonly CollaborationProductOption[];
   readonly currentCreatorName: string;
+  readonly initialProductId?: string;
   readonly initialOwnerSplitPercent?: number;
   readonly isSubmitting?: boolean;
   readonly onCancel?: () => void;
@@ -66,12 +67,13 @@ function isValidCollaboratorIdentifier(value: string): boolean {
 export function CreateCollaborationForm({
   availableProducts,
   currentCreatorName,
+  initialProductId,
   initialOwnerSplitPercent = 60,
   isSubmitting = false,
   onCancel,
   onSubmit,
 }: CreateCollaborationFormProps) {
-  const [productId, setProductId] = useState<string | string[] | null>(null);
+  const [productId, setProductId] = useState<string | string[] | null>(initialProductId ?? null);
   const [ownerSplitPercent, setOwnerSplitPercent] = useState(String(initialOwnerSplitPercent));
   const [invitees, setInvitees] = useState<readonly InviteeDraft[]>([createInviteeDraft(1)]);
   const [errors, setErrors] = useState<ValidationErrors>({});
