@@ -15,6 +15,7 @@ import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
 import Image from '@tiptap/extension-image';
 import Placeholder from '@tiptap/extension-placeholder';
+import { IframelyEmbed } from '../extensions/iframely-embed';
 
 /**
  * TipTap JSON content structure.
@@ -75,6 +76,7 @@ export function TipTapEditor({
         HTMLAttributes: { rel: 'noopener noreferrer nofollow', target: '_blank' },
       }),
       Image,
+      IframelyEmbed,
       Placeholder.configure({
         placeholder: placeholder ?? 'Start writing…',
       }),
