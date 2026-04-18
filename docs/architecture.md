@@ -808,11 +808,11 @@ and delivery observability.
 
 ```mermaid
 graph TD
-    CDN["Cloudflare<br/>(CDN + Workers edge cache)"]
+    CF["Cloudflare<br/>(CDN + Workers edge cache)"]
     LB["Load Balancer<br/>(TLS termination)"]
     CS["CrowdSec<br/>(abuse defence)"]
-    CDN --> LB
-    LB --> CS --> VS1["Vendure Sever (N)"]
+    CF --> LB
+    LB --> CS --> VS1["Vendure Server (N)"]
     CS --> VS2["Vendure Server (N)"]
     CS --> VS3["Vendure Server (N)"]
 
@@ -825,20 +825,20 @@ graph TD
     BQ --> WK["Vendure Workers (M instances)"]
 
     subgraph Workers["Worker types"]
-        directin LR
+        direction LR
         SI["Search indexer"]
         EW["Email worker"]
-        AS["Asset syc"]
+        AS["Asset sync"]
         AV["ClamAV scanner"]
     end
     WK --- Workers
 
-    REC["Recommend<br/>(Encore"] --- CVX["Convex<br/>(database + workflows)"]
+    REC["Recommend<br/>(Encore)"] --- CVX["Convex<br/>(database + workflows)"]
     REC --- QDR["Qdrant<br/>(vector search)"]
     FR["Framely<br/>(Next.js)"]
     CMS["PayloadCMS<br/>(Node.js)"]
 
-    CDN["CDNgine<br/>(asset pipeline)"]
+    CDNG["CDNgine<br/>(asset pipeline)"]
     AUTH["Better Auth<br/>(identity + OAuth)"]
     SVIX["Svix<br/>(webhooks)"]
     KG["Keygen<br/>(licensing)"]

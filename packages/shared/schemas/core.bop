@@ -1,0 +1,217 @@
+// Simket core Bebop schema definitions
+// Compile with: bebopc --ts schemas/core.bop -o src/generated/core.ts
+// See: https://bebop.sh/guide/getting-started/
+
+enum ProductState {
+  Draft = 1;
+  Published = 2;
+  Unpublished = 3;
+  Suspended = 4;
+}
+
+enum OrderState {
+  Created = 1;
+  PaymentPending = 2;
+  PaymentAuthorized = 3;
+  Completed = 4;
+  Cancelled = 5;
+  Refunded = 6;
+}
+
+enum CollaborationState {
+  Pending = 1;
+  Invited = 2;
+  Active = 3;
+  Revoked = 4;
+}
+
+enum FeedbackAction {
+  Click = 1;
+  Purchase = 2;
+  Dismiss = 3;
+}
+
+struct Product {
+  1 -> string id;
+  2 -> string slug;
+  3 -> string name;
+  4 -> string description;
+  5 -> float64 price;
+  6 -> string currencyCode;
+  7 -> float64 platformTakeRate;
+  8 -> string termsOfService;
+  9 -> string heroAssetId;
+  10 -> string? heroTransparentAssetId;
+  11 -> string? heroBackgroundAssetId;
+  12 -> ProductState state;
+  13 -> string creatorId;
+  14 -> array[string] tags;
+  15 -> date createdAt;
+  16 -> date updatedAt;
+}
+
+struct ProductVariant {
+  1 -> string id;
+  2 -> string productId;
+  3 -> string name;
+  4 -> string sku;
+  5 -> float64 price;
+  6 -> string currencyCode;
+  7 -> int32 stockOnHand;
+  8 -> bool enabled;
+}
+
+struct CartItem {
+  1 -> string id;
+  2 -> string productId;
+  3 -> string variantId;
+  4 -> int32 quantity;
+  5 -> float64 unitPrice;
+  6 -> float64 lineTotal;
+}
+
+struct Cart {
+  1 -> string id;
+  2 -> string customerId;
+  3 -> array[CartItem] items;
+  4 -> float64 subTotal;
+  5 -> string currencyCode;
+  6 -> date createdAt;
+  7 -> date updatedAt;
+}
+
+struct OrderLine {
+  1 -> string id;
+  2 -> string productId;
+  3 -> string variantId;
+  4 -> int32 quantity;
+  5 -> float64 unitPrice;
+  6 -> float64 lineTotal;
+}
+
+struct Order {
+  1 -> string id;
+  2 -> string code;
+  3 -> string customerId;
+  4 -> OrderState state;
+  5 -> array[OrderLine] items;
+  6 -> float64 subTotal;
+  7 -> float64 total;
+  8 -> string currencyCode;
+  9 -> string? stripePaymentIntentId;
+  10 -> string idempotencyKey;
+  11 -> date createdAt;
+  12 -> date updatedAt;
+}
+
+struct Customer {
+  1 -> string id;
+  2 -> string authUserId;
+  3 -> string emailAddress;
+  4 -> string firstName;
+  5 -> string lastName;
+  6 -> bool isCreator;
+  7 -> string? stripeConnectedAccountId;
+  8 -> date createdAt;
+  9 -> date updatedAt;
+}
+
+struct SearchResult {
+  1 -> string id;
+  2 -> string productId;
+  3 -> string productName;
+  4 -> string slug;
+  5 -> string description;
+  6 -> float64 price;
+  7 -> string currencyCode;
+  8 -> string heroAssetId;
+  9 -> string? heroTransparentAssetId;
+  10 -> string creatorName;
+  11 -> array[string] tags;
+  12 -> float64 score;
+}
+
+struct FacetCount {
+  1 -> string value;
+  2 -> int32 count;
+}
+
+struct SearchFacets {
+  1 -> array[FacetCount] categories;
+  2 -> array[FacetCount] tags;
+  3 -> array[FacetCount] priceRanges;
+}
+
+struct SearchRequest {
+  1 -> string query;
+  2 -> array[string]? categories;
+  3 -> float64? priceMin;
+  4 -> float64? priceMax;
+  5 -> array[string]? tags;
+  6 -> string? creatorId;
+  7 -> string? sortField;
+  8 -> string? sortDirection;
+  9 -> int32 page;
+  10 -> int32 perPage;
+}
+
+struct SearchResponse {
+  1 -> array[SearchResult] results;
+  2 -> int32 totalCount;
+  3 -> SearchFacets facets;
+  4 -> int32 page;
+  5 -> int32 perPage;
+}
+
+struct Bundle {
+  1 -> string id;
+  2 -> string name;
+  3 -> string description;
+  4 -> array[string] productIds;
+  5 -> float64 discountPercent;
+  6 -> float64 price;
+  7 -> string creatorId;
+  8 -> date createdAt;
+  9 -> date updatedAt;
+}
+
+struct ProductDependency {
+  1 -> string id;
+  2 -> string productId;
+  3 -> string requiredProductId;
+  4 -> float64 discountPercent;
+}
+
+struct Collaboration {
+  1 -> string id;
+  2 -> string productId;
+  3 -> string collaboratorId;
+  4 -> float64 revenueSharePercent;
+  5 -> CollaborationState state;
+  6 -> date invitedAt;
+  7 -> date? respondedAt;
+}
+
+struct RecommendRequest {
+  1 -> string userId;
+  2 -> string? cursor;
+  3 -> int32 limit;
+}
+
+struct RecommendCandidate {
+  1 -> string productId;
+  2 -> float64 score;
+  3 -> string source;
+}
+
+struct RecommendResponse {
+  1 -> array[RecommendCandidate] candidates;
+  2 -> string? nextCursor;
+}
+
+struct RecommendFeedback {
+  1 -> string userId;
+  2 -> string productId;
+  3 -> FeedbackAction action;
+  4 -> date timestamp;
+}
