@@ -144,8 +144,6 @@ describe('AbTestingService', () => {
         regions: ['eu'],
         minPurchases: 1,
       },
-      startDate: new Date('2025-03-01T00:00:00.000Z'),
-      endDate: new Date('2025-03-31T00:00:00.000Z'),
     });
 
     expect(experiment.status).toBe('draft');
