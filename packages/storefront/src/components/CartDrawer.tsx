@@ -26,11 +26,15 @@ export interface CartDrawerProps {
 export function CartDrawer({
   items,
   onRemoveItem,
-  onUpdateQuantity,
+  onUpdateQuantity: _onUpdateQuantity,
   onCheckout,
 }: CartDrawerProps) {
+  // Reserved for future quantity stepper controls
+  void _onUpdateQuantity;
+
   const subtotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
-  const currencyCode = items.length > 0 ? items[0].currencyCode : 'USD';
+  const firstItem = items[0];
+  const currencyCode = firstItem ? firstItem.currencyCode : 'USD';
 
   if (items.length === 0) {
     return (

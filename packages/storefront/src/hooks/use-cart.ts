@@ -89,7 +89,8 @@ export function useCart(): UseCartReturn {
   const cart = useMemo<Cart>(() => {
     const totalItems = items.reduce((sum, i) => sum + i.quantity, 0);
     const subtotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
-    const currencyCode = items.length > 0 ? items[0].currencyCode : 'USD';
+    const firstItem = items[0];
+    const currencyCode = firstItem ? firstItem.currencyCode : 'USD';
     return { items, totalItems, subtotal, currencyCode };
   }, [items]);
 

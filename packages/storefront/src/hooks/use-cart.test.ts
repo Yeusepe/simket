@@ -34,9 +34,9 @@ describe('useCart', () => {
     });
 
     expect(result.current.cart.items).toHaveLength(1);
-    expect(result.current.cart.items[0].name).toBe('Digital Art Pack');
-    expect(result.current.cart.items[0].price).toBe(1999);
-    expect(result.current.cart.items[0].quantity).toBe(1);
+    expect(result.current.cart.items[0]!.name).toBe('Digital Art Pack');
+    expect(result.current.cart.items[0]!.price).toBe(1999);
+    expect(result.current.cart.items[0]!.quantity).toBe(1);
   });
 
   it('addItem increments quantity if item already exists (same variantId)', () => {
@@ -51,7 +51,7 @@ describe('useCart', () => {
     });
 
     expect(result.current.cart.items).toHaveLength(1);
-    expect(result.current.cart.items[0].quantity).toBe(2);
+    expect(result.current.cart.items[0]!.quantity).toBe(2);
   });
 
   it('addItem rejects when required product is not in cart', () => {
@@ -106,7 +106,7 @@ describe('useCart', () => {
       result.current.updateQuantity('v-qty', 5);
     });
 
-    expect(result.current.cart.items[0].quantity).toBe(5);
+    expect(result.current.cart.items[0]!.quantity).toBe(5);
   });
 
   it('updateQuantity removes item when quantity is set to 0', () => {
