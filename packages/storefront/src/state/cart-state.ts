@@ -25,6 +25,7 @@ interface CartStateActions {
   readonly addItem: (item: CartItem) => void;
   readonly removeItem: (variantId: string) => void;
   readonly updateQuantity: (variantId: string, quantity: number) => void;
+  readonly replaceItems: (items: readonly CartItem[]) => void;
   readonly clearCart: () => void;
 }
 
@@ -75,6 +76,9 @@ export const useCartState = create<CartState>((set) => ({
 
       return buildCartState(items);
     });
+  },
+  replaceItems: (items) => {
+    set(() => buildCartState(items));
   },
   clearCart: () => {
     set(INITIAL_CART_STATE);

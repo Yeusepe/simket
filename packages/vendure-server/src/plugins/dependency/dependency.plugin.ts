@@ -34,6 +34,31 @@ interface DependencyCheckResult {
   discount: number;
 }
 
+interface CheckoutDependencyLine {
+  productId: string;
+  productName: string;
+}
+
+interface CheckoutDependencyRequirement extends DependencyLike {
+  requiredProductName?: string | null;
+  requiredProductSlug?: string | null;
+  requiredVariantId?: string | null;
+  requiredProductPrice?: number | null;
+  currencyCode?: string | null;
+}
+
+interface CheckoutDependencyIssue {
+  productId: string;
+  productName: string;
+  missingRequirements: CheckoutDependencyRequirement[];
+  message: string;
+}
+
+interface CheckoutDependencyValidationResult {
+  canCheckout: boolean;
+  issues: CheckoutDependencyIssue[];
+}
+
 type DependencyGraph = Record<string, string[]>;
 
 function isPresentString(value: string | null | undefined): value is string {
@@ -129,6 +154,60 @@ function checkDependenciesMet(
  */
 function calculateDependencyDiscount(originalPrice: number, discountPercent: number): number {
   return Math.round(originalPrice * (1 - discountPercent / 100));
+}
+
+/**
+ * Validates whether all checkout lines have their prerequisite products either
+ * already owned or present in the in-flight order.
+ */
+function validateCheckoutDependencies(
+  lines: readonly CheckoutDependencyLine[],
+  dependencies: readonly CheckoutDependencyRequirement[],
+  ownedProductIds: readonly string[],
+): CheckoutDependencyValidationResult {
+  const availableProductIds = new Set([
+    ...ownedProductIds,
+    ...lines.map((line) => line.productId),
+  ]);
+  const dependencyGroups = dependencies.reduce<Record<string, CheckoutDependencyRequirement[]>>(
+    (groups, dependency) => {
+      if (!dependency.productId || dependency.enabled === false) {
+        return groups;
+      }
+
+      const group = groups[dependency.productId] ?? [];
+      group.push(dependency);
+      groups[dependency.productId] = group;
+      return groups;
+    },
+    {},
+  );
+
+  const issues = lines.flatMap((line) => {
+    const lineDependencies = dependencyGroups[line.productId] ?? [];
+    const missingRequirements = lineDependencies.filter((dependency) =>
+      dependency.requiredProductId
+      && !availableProductIds.has(dependency.requiredProductId),
+    );
+
+    if (missingRequirements.length === 0) {
+      return [];
+    }
+
+    return [{
+      productId: line.productId,
+      productName: line.productName,
+      missingRequirements,
+      message:
+        missingRequirements[0]?.message
+        ?? `${line.productName} requires a prerequisite purchase before checkout.`,
+    }];
+  });
+
+  return {
+    canCheckout: issues.length === 0,
+    issues,
+  };
 }
 
 /**
@@ -231,8 +310,17 @@ export {
   validateDependency,
   checkDependenciesMet,
   calculateDependencyDiscount,
+  validateCheckoutDependencies,
   buildDependencyGraph,
   detectCircularDependencies,
 };
 
-export type { DependencyLike, DependencyCheckResult, DependencyGraph };
+export type {
+  DependencyLike,
+  DependencyCheckResult,
+  DependencyGraph,
+  CheckoutDependencyLine,
+  CheckoutDependencyRequirement,
+  CheckoutDependencyIssue,
+  CheckoutDependencyValidationResult,
+};

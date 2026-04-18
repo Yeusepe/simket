@@ -10,5 +10,6 @@
  */
 
 export { PopularCandidateSource } from './popular-source.js';
+export { QdrantCandidateSource } from './qdrant-candidate-source.js';
 export { TakeRateBoostRanker } from './take-rate-ranker.js';
 export { DiversityPostProcessor } from './diversity-processor.js';

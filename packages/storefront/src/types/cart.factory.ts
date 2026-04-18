@@ -10,9 +10,11 @@ export function makeCartItem(
 ): CartItem {
   _counter++;
   return {
+    lineId: `line-${_counter}`,
     productId: `product-${_counter}`,
     variantId: `variant-${_counter}`,
     name: `Test Cart Item ${_counter}`,
+    basePrice: 999,
     price: 999,
     currencyCode: 'USD',
     quantity: 1,

@@ -17,6 +17,7 @@ import type {
   StripeConnectConfig,
   CreatePaymentIntentParams,
   CollaborationSplit,
+  CreateTransferParams,
 } from './stripe.types.js';
 import type Stripe from 'stripe';
 
@@ -30,6 +31,7 @@ function createMockStripe(overrides: {
   accountsCreate?: ReturnType<typeof vi.fn>;
   accountLinksCreate?: ReturnType<typeof vi.fn>;
   paymentIntentsCreate?: ReturnType<typeof vi.fn>;
+  transfersCreate?: ReturnType<typeof vi.fn>;
   webhooksConstructEvent?: ReturnType<typeof vi.fn>;
 } = {}) {
   return {
@@ -41,6 +43,9 @@ function createMockStripe(overrides: {
     },
     paymentIntents: {
       create: overrides.paymentIntentsCreate ?? vi.fn(),
+    },
+    transfers: {
+      create: overrides.transfersCreate ?? vi.fn(),
     },
     webhooks: {
       constructEvent: overrides.webhooksConstructEvent ?? vi.fn(),
@@ -173,6 +178,7 @@ describe('StripeService.createPaymentIntent', () => {
       connectedAccountId: 'acct_connected',
       applicationFeeAmount: 500,
       idempotencyKey: 'idem-key-1',
+      transferGroup: 'ORDER-1',
       metadata: { orderId: 'order-1' },
     });
 
@@ -187,6 +193,7 @@ describe('StripeService.createPaymentIntent', () => {
     expect(params.customer).toBe('cus_1');
     expect(params.application_fee_amount).toBe(500);
     expect(params.transfer_data).toEqual({ destination: 'acct_connected' });
+    expect(params.transfer_group).toBe('ORDER-1');
     expect(params.metadata).toEqual({ orderId: 'order-1' });
     expect(opts.idempotencyKey).toBe('idem-key-1');
   });
@@ -316,6 +323,66 @@ describe('StripeService.calculateCollaborationSplits', () => {
   });
 });
 
+// ---------- createTransfer ----------
+
+describe('StripeService.createTransfer', () => {
+  it('validates amount > 0', async () => {
+    const svc = createService(createMockStripe());
+    await expect(
+      svc.createTransfer({
+        amount: 0,
+        currencyCode: 'usd',
+        destinationAccountId: 'acct_1',
+        transferGroup: 'ORDER-1',
+        idempotencyKey: 'idem-1',
+      }),
+    ).rejects.toThrow(/amount/i);
+  });
+
+  it('creates a transfer with source_transaction and idempotency key', async () => {
+    const transfersCreate = vi.fn().mockResolvedValue({
+      id: 'tr_123',
+      amount: 1500,
+      currency: 'usd',
+      destination: 'acct_1',
+      transfer_group: 'ORDER-1',
+      source_transaction: 'ch_123',
+    });
+    const svc = createService(createMockStripe({ transfersCreate }));
+
+    const result = await svc.createTransfer({
+      amount: 1500,
+      currencyCode: 'usd',
+      destinationAccountId: 'acct_1',
+      transferGroup: 'ORDER-1',
+      sourceTransactionId: 'ch_123',
+      idempotencyKey: 'idem-1',
+      metadata: { settlementId: 'set_1' },
+    });
+
+    expect(result).toEqual({
+      transferId: 'tr_123',
+      destinationAccountId: 'acct_1',
+      amount: 1500,
+      currencyCode: 'usd',
+      transferGroup: 'ORDER-1',
+      sourceTransactionId: 'ch_123',
+    });
+
+    expect(transfersCreate).toHaveBeenCalledWith(
+      {
+        amount: 1500,
+        currency: 'usd',
+        destination: 'acct_1',
+        transfer_group: 'ORDER-1',
+        source_transaction: 'ch_123',
+        metadata: { settlementId: 'set_1' },
+      },
+      { idempotencyKey: 'idem-1' },
+    );
+  });
+});
+
 // ---------- verifyWebhookSignature ----------
 
 describe('StripeService.verifyWebhookSignature', () => {
@@ -411,5 +478,13 @@ describe('StripeService.generateIdempotencyKey', () => {
   it('includes orderId in key for traceability', () => {
     const key = StripeService.generateIdempotencyKey('order-123', 1);
     expect(key).toContain('order-123');
+  });
+});
+
+describe('StripeService.generateTransferIdempotencyKey', () => {
+  it('produces deterministic key from settlementId + attempt', () => {
+    expect(StripeService.generateTransferIdempotencyKey('settlement-1', 1)).toBe(
+      'simket_tr_settlement-1_1',
+    );
   });
 });

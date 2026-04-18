@@ -25,10 +25,12 @@ import { SERVICE_POLICIES } from '../../resilience/resilience.js';
 import type {
   StripeConnectConfig,
   CreatePaymentIntentParams,
+  CreateTransferParams,
   CollaborationSplit,
   SplitResult,
   PaymentResult,
   AccountLinkResult,
+  TransferResult,
 } from './stripe.types.js';
 
 const tracer = trace.getTracer('simket-stripe');
@@ -141,6 +143,7 @@ export class StripeService {
             transfer_data: { destination: params.connectedAccountId },
             application_fee_amount: params.applicationFeeAmount,
           }),
+          ...(params.transferGroup && { transfer_group: params.transferGroup }),
           ...(params.metadata && { metadata: params.metadata }),
         };
 
@@ -238,6 +241,81 @@ export class StripeService {
   // ---------- verifyWebhookSignature ----------
 
   /**
+   * Creates a Stripe Connect transfer from the platform balance to a connected account.
+   *
+   * Docs: https://stripe.com/docs/connect/separate-charges-and-transfers
+   *       https://docs.stripe.com/api/transfers/create
+   * Endpoint: POST /v1/transfers
+   * Verified: response includes { id, amount, currency, destination, transfer_group, source_transaction }
+   */
+  async createTransfer(params: CreateTransferParams): Promise<TransferResult> {
+    if (!Number.isInteger(params.amount) || params.amount <= 0) {
+      throw new Error('createTransfer: amount must be a positive integer (smallest currency unit)');
+    }
+    if (!params.currencyCode || params.currencyCode.trim().length === 0) {
+      throw new Error('createTransfer: currencyCode must not be empty');
+    }
+    if (!params.destinationAccountId || params.destinationAccountId.trim().length === 0) {
+      throw new Error('createTransfer: destinationAccountId must not be empty');
+    }
+    if (!params.transferGroup || params.transferGroup.trim().length === 0) {
+      throw new Error('createTransfer: transferGroup must not be empty');
+    }
+    if (!params.idempotencyKey || params.idempotencyKey.trim().length === 0) {
+      throw new Error('createTransfer: idempotencyKey must not be empty');
+    }
+
+    return tracer.startActiveSpan('stripe.createTransfer', async (span) => {
+      try {
+        span.setAttribute('stripe.amount', params.amount);
+        span.setAttribute('stripe.currency', params.currencyCode);
+        span.setAttribute('stripe.connected_account', params.destinationAccountId);
+        span.setAttribute('stripe.transfer_group', params.transferGroup);
+
+        const transfer = await SERVICE_POLICIES.stripe.execute(() =>
+          this.stripe.transfers.create(
+            {
+              amount: params.amount,
+              currency: params.currencyCode,
+              destination: params.destinationAccountId,
+              transfer_group: params.transferGroup,
+              ...(params.sourceTransactionId && {
+                source_transaction: params.sourceTransactionId,
+              }),
+              ...(params.metadata && { metadata: params.metadata }),
+            },
+            {
+              idempotencyKey: params.idempotencyKey,
+            },
+          ),
+        );
+
+        span.setAttribute('stripe.transfer_id', transfer.id);
+
+        return {
+          transferId: transfer.id,
+          destinationAccountId:
+            typeof transfer.destination === 'string'
+              ? transfer.destination
+              : transfer.destination?.id ?? params.destinationAccountId,
+          amount: transfer.amount,
+          currencyCode: transfer.currency,
+          transferGroup: transfer.transfer_group ?? params.transferGroup,
+          sourceTransactionId:
+            typeof transfer.source_transaction === 'string'
+              ? transfer.source_transaction
+              : transfer.source_transaction?.id ?? null,
+        };
+      } catch (err) {
+        span.setStatus({ code: SpanStatusCode.ERROR, message: String(err) });
+        throw err;
+      } finally {
+        span.end();
+      }
+    });
+  }
+
+  /**
    * Verifies the Stripe webhook signature. Returns the parsed Event on success,
    * or null if signature verification fails.
    *
@@ -283,5 +361,14 @@ export class StripeService {
    */
   static generateIdempotencyKey(orderId: string, attempt: number): string {
     return `simket_pi_${orderId}_${attempt}`;
+  }
+
+  /**
+   * Produces a deterministic idempotency key for transfer creation.
+   *
+   * Docs: https://stripe.com/docs/api/idempotent_requests
+   */
+  static generateTransferIdempotencyKey(settlementId: string, attempt: number): string {
+    return `simket_tr_${settlementId}_${attempt}`;
   }
 }

@@ -104,6 +104,15 @@ export interface ProductVariant {
 /** Hero media type — determined by CDNgine transformation. */
 export type HeroMediaType = 'image' | 'animated' | 'video';
 
+export interface ProductBundleOffer {
+  readonly bundleId: string;
+  readonly name: string;
+  readonly description?: string;
+  readonly discountPercent: number;
+  readonly callout: string;
+  readonly products: readonly CartBundleInputProduct[];
+}
+
 /** Full product detail — matches Vendure Product + custom fields. */
 export interface ProductDetail {
   readonly id: string;
@@ -134,6 +143,12 @@ export interface ProductDetail {
   };
   /** Product IDs required before purchase (dependency check). */
   readonly requiredProductIds: readonly string[];
+  readonly dependencyRequirements: readonly CartDependencyRequirement[];
+  readonly availableBundles: readonly ProductBundleOffer[];
   readonly createdAt: string;
   readonly updatedAt: string;
 }
+import type {
+  CartBundleInputProduct,
+  CartDependencyRequirement,
+} from './cart';

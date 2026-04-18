@@ -11,7 +11,7 @@
  * Tests:
  *   - packages/storefront/src/components/dashboard/products/ProductForm.test.tsx
  */
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { ProductForm } from './ProductForm';
@@ -89,7 +89,6 @@ describe('ProductForm', () => {
   });
 
   it('submits a valid product payload', async () => {
-    const user = userEvent.setup();
     const onSave = vi.fn();
 
     render(
@@ -106,13 +105,22 @@ describe('ProductForm', () => {
       />,
     );
 
-    await user.type(screen.getByLabelText('Product name'), 'Creator Bundle');
-    await user.type(screen.getByLabelText('Short description'), 'A premium creator bundle.');
-    await user.clear(screen.getByLabelText('Price'));
-    await user.type(screen.getByLabelText('Price'), '49.00');
-    await user.type(screen.getByLabelText('Product description'), 'Full product description');
-    await user.type(screen.getByLabelText('Terms of service'), 'Terms apply');
-    await user.click(screen.getByRole('button', { name: 'Publish' }));
+    fireEvent.change(screen.getByLabelText('Product name'), {
+      target: { value: 'Creator Bundle' },
+    });
+    fireEvent.change(screen.getByLabelText('Short description'), {
+      target: { value: 'A premium creator bundle.' },
+    });
+    fireEvent.change(screen.getByLabelText('Price'), {
+      target: { value: '49.00' },
+    });
+    fireEvent.change(screen.getByLabelText('Product description'), {
+      target: { value: 'Full product description' },
+    });
+    fireEvent.change(screen.getByLabelText('Terms of service'), {
+      target: { value: 'Terms apply' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Publish' }));
 
     await waitFor(() => {
       expect(onSave).toHaveBeenCalledWith(

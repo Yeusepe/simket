@@ -14,6 +14,7 @@ import type { RuntimeVendureConfig } from '@vendure/core';
 import {
   CollaborationEntity,
   CollaborationStatus,
+  SettlementEntity,
   collaborationConfiguration,
   validateRevenueShare,
   validateCollaborationShares,
@@ -69,6 +70,13 @@ describe('CollaborationPlugin', () => {
       const baseConfig = {} as RuntimeVendureConfig;
       const result = collaborationConfiguration(baseConfig);
       expect(result).toBe(baseConfig);
+    });
+
+    it('adds a Customer stripeConnectedAccountId custom field', () => {
+      const baseConfig = { customFields: {} } as RuntimeVendureConfig;
+      const result = collaborationConfiguration(baseConfig);
+      const customerFields = (result.customFields?.Customer ?? []) as Array<{ name: string }>;
+      expect(customerFields.some((field) => field.name === 'stripeConnectedAccountId')).toBe(true);
     });
   });
 
@@ -305,6 +313,26 @@ describe('CollaborationPlugin', () => {
         { creatorId: 'b', amount: 2700 },
         { creatorId: 'c', amount: 1800 },
       ]);
+    });
+  });
+
+  describe('SettlementEntity', () => {
+    it('can be instantiated with settlement fields', () => {
+      const entity = new SettlementEntity({
+        orderId: 'order-1',
+        orderLineId: 'line-1',
+        productId: 'product-1',
+        creatorId: 'creator-1',
+        ownerCreatorId: 'creator-1',
+        stripeAccountId: 'acct_123',
+        currencyCode: 'usd',
+        amount: 2500,
+        sharePercent: 75,
+      });
+
+      expect(entity.orderId).toBe('order-1');
+      expect(entity.amount).toBe(2500);
+      expect(entity.sharePercent).toBe(75);
     });
   });
 });

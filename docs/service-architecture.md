@@ -90,7 +90,7 @@ Key operations consumed:
 
 | Function                           | Trigger                                         | Steps                                                                                                                                                                                                                      |
 | ---------------------------------- | ----------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `collaborationSettlement` (action) | `OrderPlacedEvent` (for collaborative products) | 1. Calculate revenue split per collaborator %. 2. Initiate Stripe Connect destination payouts. 3. Record settlement. 4. Dispatch Svix webhook.                                                                             |
+| `collaborationSettlement` (action) | `OrderPlacedEvent` (for collaborative products) | 1. Calculate per-line creator settlements in cents. 2. Create pending settlement records. 3. Initiate Stripe Connect separate transfers with idempotency keys. 4. Record completed/failed outcomes for creator reporting. |
 | `collaborationInvite` (action)     | Creator adds collaborator to product            | 1. Send invite. 2. Wait for accept/reject (polled via mutation). 3. Update collaboration record. 4. Timeout after N days (scheduled function).                                                                             |
 | `scheduledReindex` (scheduled)     | Cron (daily)                                    | 1. Trigger recommend model retrain. 2. Rebuild Typesense index. 3. Refresh editorial cache. 4. Refresh Qdrant embeddings.                                                                                                  |
 | `gdprDelete` (action)              | Admin action                                    | 1. Delete from Better Auth. 2. Anonymise Vendure Customer. 3. Remove from recommend service + Qdrant. 4. Purge CDNgine assets. 5. Revoke Keygen licenses.                                                                  |
@@ -236,6 +236,15 @@ export const config: VendureConfig = {
   ],
 };
 ```
+
+### 2.4 Collaboration settlement admin queries
+
+The Collaboration plugin extends the Admin API with creator-facing settlement queries:
+
+- `settlementHistory(creatorId, status?, orderId?, skip?, take?)`
+- `settlementEarnings(creatorId)`
+
+These queries read persisted settlement rows rather than recalculating payouts on demand so creators see auditable pending, completed, and failed earnings states.
 
 ### 2.3 Inter-plugin communication
 

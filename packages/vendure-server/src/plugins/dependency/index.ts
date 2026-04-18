@@ -13,6 +13,7 @@ export {
   validateDependency,
   checkDependenciesMet,
   calculateDependencyDiscount,
+  validateCheckoutDependencies,
   buildDependencyGraph,
   detectCircularDependencies,
 } from './dependency.plugin.js';
@@ -21,4 +22,8 @@ export type {
   DependencyLike,
   DependencyCheckResult,
   DependencyGraph,
+  CheckoutDependencyLine,
+  CheckoutDependencyRequirement,
+  CheckoutDependencyIssue,
+  CheckoutDependencyValidationResult,
 } from './dependency.plugin.js';

@@ -42,6 +42,19 @@ export type {
   DiscoveryRequest,
   DiscoveryResponse,
 } from './discovery/index.js';
+export type {
+  FilterCondition,
+  ProductVector,
+  QdrantConfig,
+  QdrantFilter,
+  SearchOptions,
+  SimilarityResult,
+} from './qdrant/index.js';
+export type {
+  QdrantClientLike,
+  QdrantServiceOptions,
+  ResiliencePolicy,
+} from './qdrant/index.js';
 
 // Pure logic
 export {
@@ -59,8 +72,19 @@ export { RecommenderRegistry } from './registry.js';
 export {
   DiversityPostProcessor,
   PopularCandidateSource,
+  QdrantCandidateSource,
   TakeRateBoostRanker,
 } from './implementations/index.js';
+export {
+  buildQdrantFilter,
+  cosineSimilarity,
+  createDefaultSearchOptions,
+  normalizeVector,
+  QdrantService,
+  validateProductVector,
+  validateQdrantConfig,
+  validateSearchOptions,
+} from './qdrant/index.js';
 
 // API handlers
 export {

@@ -22,6 +22,7 @@ import {
   checkDependenciesMet,
   dependencyConfiguration,
   detectCircularDependencies,
+  validateCheckoutDependencies,
   validateDependency,
 } from './dependency.plugin.js';
 import { DependencyEntity } from './dependency.entity.js';
@@ -240,6 +241,48 @@ describe('DependencyPlugin', () => {
 
     it('returns zero at 100% discount', () => {
       expect(calculateDependencyDiscount(2599, 100)).toBe(0);
+    });
+  });
+
+  describe('validateCheckoutDependencies', () => {
+    it('blocks checkout when prerequisites are missing from owned products and cart lines', () => {
+      const result = validateCheckoutDependencies(
+        [{ productId: 'product-addon', productName: 'Pro Add-on' }],
+        [{
+          productId: 'product-addon',
+          requiredProductId: 'product-base',
+          requiredProductName: 'Base Package',
+          requiredProductSlug: 'base-package',
+          requiredVariantId: 'variant-base',
+          requiredProductPrice: 1500,
+          currencyCode: 'USD',
+          message: 'Requires Base Package first.',
+        }],
+        [],
+      );
+
+      expect(result.canCheckout).toBe(false);
+      expect(result.issues[0]!.productName).toBe('Pro Add-on');
+      expect(result.issues[0]!.missingRequirements[0]!.requiredProductName).toBe('Base Package');
+    });
+
+    it('allows checkout when the prerequisite is already present in the same order', () => {
+      const result = validateCheckoutDependencies(
+        [
+          { productId: 'product-addon', productName: 'Pro Add-on' },
+          { productId: 'product-base', productName: 'Base Package' },
+        ],
+        [{
+          productId: 'product-addon',
+          requiredProductId: 'product-base',
+        }],
+        [],
+      );
+
+      expect(result).toEqual({
+        canCheckout: true,
+        issues: [],
+      });
     });
   });
 

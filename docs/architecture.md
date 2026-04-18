@@ -239,9 +239,9 @@ sequenceDiagram
     participant CVX as Convex
     participant PAY as Payment
 
-    B->>V: addToCart(product)
-    V->>V: check dependencies (does buyer own prereqs?)
-    V->>V: check bundles (auto-add bundle items?)
+    B->>V: addToCart(product or bundle)
+    V->>V: check dependencies (owned or in-cart prereqs, optional discount)
+    V->>V: resolve bundles (expand to grouped order lines with discount allocation)
     V-->>B: cart state
 
     B->>V: checkout

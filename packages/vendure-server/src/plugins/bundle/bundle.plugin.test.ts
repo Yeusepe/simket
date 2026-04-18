@@ -15,6 +15,7 @@ import {
   bundleConfiguration,
   validateDiscountPercent,
   calculateBundlePrice,
+  allocateBundleLinePricing,
 } from './bundle.plugin.js';
 import { BundleEntity } from './bundle.entity.js';
 
@@ -153,6 +154,30 @@ describe('BundlePlugin', () => {
     it('handles single product with 50% discount', () => {
       const result = calculateBundlePrice([5000], 50);
       expect(result).toBe(2500);
+    });
+  });
+
+  describe('allocateBundleLinePricing', () => {
+    it('allocates discounted prices per line and preserves the total', () => {
+      const result = allocateBundleLinePricing([
+        { productId: 'product-a', variantId: 'variant-a', price: 2000 },
+        { productId: 'product-b', variantId: 'variant-b', price: 3000 },
+      ], 20);
+
+      expect(result.originalSubtotal).toBe(5000);
+      expect(result.discountedSubtotal).toBe(4000);
+      expect(result.discountTotal).toBe(1000);
+      expect(result.lines.map((line) => line.discountedPrice)).toEqual([1600, 2400]);
+    });
+
+    it('uses the final line to absorb rounding differences', () => {
+      const result = allocateBundleLinePricing([
+        { productId: 'product-a', variantId: 'variant-a', price: 999 },
+        { productId: 'product-b', variantId: 'variant-b', price: 999 },
+      ], 15);
+
+      expect(result.discountedSubtotal).toBe(calculateBundlePrice([999, 999], 15));
+      expect(result.lines.reduce((sum, line) => sum + line.discountedPrice, 0)).toBe(result.discountedSubtotal);
     });
   });
 });

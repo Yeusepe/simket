@@ -82,6 +82,16 @@ describe('block registry', () => {
     expect(blockTypes).toEqual(
       expect.arrayContaining([
         heroBlockDefinition.type,
+        'tabs',
+        'table',
+        'modal',
+        'badge',
+        'avatar',
+        'progress',
+        'tooltip',
+        'alert',
+        'breadcrumb',
+        'skeleton',
         buttonBlockDefinition.type,
         cardGridBlockDefinition.type,
         spacerBlockDefinition.type,

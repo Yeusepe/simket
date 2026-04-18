@@ -39,6 +39,8 @@ export interface CreatePaymentIntentParams {
   applicationFeeAmount?: number;
   /** Idempotency key to prevent duplicate charges. Use generateIdempotencyKey(). */
   idempotencyKey: string;
+  /** Optional transfer group for later separate transfers tied to the payment. */
+  transferGroup?: string;
   /** Arbitrary key-value metadata attached to the PaymentIntent. */
   metadata?: Record<string, string>;
 }
@@ -83,4 +85,40 @@ export interface AccountLinkResult {
   accountId: string;
   /** Stripe-hosted onboarding URL for the creator. */
   url: string;
+}
+
+// ---------- Transfer creation ----------
+
+/** Parameters for creating a Stripe Connect transfer from the platform balance. */
+export interface CreateTransferParams {
+  /** Amount in smallest currency unit (e.g. cents). */
+  amount: number;
+  /** ISO 4217 currency code in lowercase. */
+  currencyCode: string;
+  /** Connected account destination (acct_…). */
+  destinationAccountId: string;
+  /** Transfer group tying this transfer to the originating charge/order. */
+  transferGroup: string;
+  /** Optional source charge reference so Stripe waits until funds are available. */
+  sourceTransactionId?: string;
+  /** Stripe idempotency key for safe retries. */
+  idempotencyKey: string;
+  /** Optional transfer metadata. */
+  metadata?: Record<string, string>;
+}
+
+/** Normalized transfer response. */
+export interface TransferResult {
+  /** The Stripe transfer ID (tr_…). */
+  transferId: string;
+  /** Destination connected account ID. */
+  destinationAccountId: string;
+  /** Amount transferred in smallest currency unit. */
+  amount: number;
+  /** Currency used for the transfer. */
+  currencyCode: string;
+  /** Transfer group used when creating the transfer. */
+  transferGroup: string;
+  /** Charge used as source_transaction if provided. */
+  sourceTransactionId: string | null;
 }

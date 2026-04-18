@@ -66,9 +66,11 @@ describe('CheckoutPage', () => {
     const user = userEvent.setup();
 
     useCartState.getState().addItem({
+      lineId: 'line-1',
       productId: 'product-1',
       variantId: 'variant-1',
       name: 'Creator Toolkit',
+      basePrice: 2500,
       price: 2500,
       quantity: 1,
       heroImageUrl: 'https://cdn.example.com/toolkit.webp',
@@ -105,9 +107,11 @@ describe('CheckoutPage', () => {
     });
 
     useCartState.getState().addItem({
+      lineId: 'line-1',
       productId: 'product-1',
       variantId: 'variant-1',
       name: 'Creator Toolkit',
+      basePrice: 2500,
       price: 2500,
       quantity: 1,
       heroImageUrl: 'https://cdn.example.com/toolkit.webp',
@@ -130,9 +134,11 @@ describe('CheckoutPage', () => {
     const createOrderSummary = vi.fn().mockRejectedValue(new Error('Unable to finalize order.'));
 
     useCartState.getState().addItem({
+      lineId: 'line-1',
       productId: 'product-1',
       variantId: 'variant-1',
       name: 'Creator Toolkit',
+      basePrice: 2500,
       price: 2500,
       quantity: 1,
       heroImageUrl: 'https://cdn.example.com/toolkit.webp',
@@ -146,5 +152,40 @@ describe('CheckoutPage', () => {
     await user.click(screen.getByRole('button', { name: /complete payment/i }));
 
     expect(await screen.findByRole('alert')).toHaveTextContent(/unable to finalize order/i);
+  });
+
+  it('does not allow moving to payment while prerequisites are missing', async () => {
+    const user = userEvent.setup();
+
+    useCartState.getState().addItem({
+      lineId: 'line-addon',
+      productId: 'product-addon',
+      variantId: 'variant-addon',
+      name: 'Pro Add-on',
+      basePrice: 3000,
+      price: 3000,
+      quantity: 1,
+      heroImageUrl: null,
+      currencyCode: 'USD',
+      slug: 'pro-addon',
+      dependencyRequirements: [
+        {
+          requiredProductId: 'product-base',
+          requiredVariantId: 'variant-base',
+          requiredProductName: 'Base Package',
+          requiredProductSlug: 'base-package',
+          requiredProductPrice: 1500,
+          currencyCode: 'USD',
+          requiredProductHeroImageUrl: null,
+        },
+      ],
+    });
+
+    renderCheckoutPage();
+
+    await user.click(screen.getByRole('button', { name: /proceed to payment/i }));
+
+    expect(screen.queryByTestId('mock-payment-form')).not.toBeInTheDocument();
+    expect(screen.getByText(/checkout is blocked/i)).toBeInTheDocument();
   });
 });

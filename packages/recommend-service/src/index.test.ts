@@ -8,6 +8,8 @@ describe('@simket/recommend-service', () => {
     expect(mod.PipelineExecutor).toBeDefined();
     expect(mod.DiscoveryService).toBeDefined();
     expect(mod.PopularCandidateSource).toBeDefined();
+    expect(mod.QdrantCandidateSource).toBeDefined();
+    expect(mod.QdrantService).toBeDefined();
     expect(mod.TakeRateBoostRanker).toBeDefined();
     expect(mod.DiversityPostProcessor).toBeDefined();
   });

@@ -11,13 +11,23 @@
  */
 import type { ComponentType, ReactNode } from 'react';
 import type { BlockDefinition } from './types';
+import { AlertBlock, alertBlockDefinition } from './blocks/AlertBlock';
+import { AvatarBlock, avatarBlockDefinition } from './blocks/AvatarBlock';
+import { BadgeBlock, badgeBlockDefinition } from './blocks/BadgeBlock';
+import { BreadcrumbBlock, breadcrumbBlockDefinition } from './blocks/BreadcrumbBlock';
 import { ButtonBlock, buttonBlockDefinition } from './blocks/button-block';
 import { CardGridBlock, cardGridBlockDefinition } from './blocks/card-grid-block';
 import { GalleryBlock, galleryBlockDefinition } from './blocks/gallery-block';
 import { HeroBlock, heroBlockDefinition } from './blocks/hero-block';
+import { ModalBlock, modalBlockDefinition } from './blocks/ModalBlock';
+import { ProgressBlock, progressBlockDefinition } from './blocks/ProgressBlock';
+import { SkeletonBlock, skeletonBlockDefinition } from './blocks/SkeletonBlock';
 import { SpacerBlock, spacerBlockDefinition } from './blocks/spacer-block';
+import { TableBlock, tableBlockDefinition } from './blocks/TableBlock';
 import { TestimonialBlock, testimonialBlockDefinition } from './blocks/testimonial-block';
 import { TextBlock, textBlockDefinition } from './blocks/text-block';
+import { TooltipBlock, tooltipBlockDefinition } from './blocks/TooltipBlock';
+import { TabsBlock, tabsBlockDefinition } from './blocks/TabsBlock';
 
 export type BlockComponent = ComponentType<Record<string, unknown> & { children?: ReactNode }>;
 
@@ -49,6 +59,16 @@ function ensureDefaultBlocksRegistered(): void {
   }
 
   registerBlock(heroBlockDefinition, HeroBlock as BlockComponent);
+  registerBlock(tabsBlockDefinition, TabsBlock as BlockComponent);
+  registerBlock(tableBlockDefinition, TableBlock as BlockComponent);
+  registerBlock(modalBlockDefinition, ModalBlock as BlockComponent);
+  registerBlock(badgeBlockDefinition, BadgeBlock as BlockComponent);
+  registerBlock(avatarBlockDefinition, AvatarBlock as BlockComponent);
+  registerBlock(progressBlockDefinition, ProgressBlock as BlockComponent);
+  registerBlock(tooltipBlockDefinition, TooltipBlock as BlockComponent);
+  registerBlock(alertBlockDefinition, AlertBlock as BlockComponent);
+  registerBlock(breadcrumbBlockDefinition, BreadcrumbBlock as BlockComponent);
+  registerBlock(skeletonBlockDefinition, SkeletonBlock as BlockComponent);
   registerBlock(cardGridBlockDefinition, CardGridBlock as BlockComponent);
   registerBlock(textBlockDefinition, TextBlock as BlockComponent);
   registerBlock(buttonBlockDefinition, ButtonBlock as BlockComponent);

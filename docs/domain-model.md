@@ -19,6 +19,7 @@ identity model, and ownership rules.
 | `ProductDependency`     | Dependency             | Vendure DB                    | Vendure auto-increment ID                        | A prerequisite relationship: "product X requires ownership of product Y".                                |
 | `Collaboration`         | Collaboration          | Vendure DB                    | Vendure auto-increment ID                        | A revenue-sharing agreement between a product owner and collaborators.                                   |
 | `CollaborationInvitation` | Collaboration        | Vendure DB                    | UUID                                             | A time-bounded invitation token that proposes a collaborator email, split percentage, and lifecycle state before acceptance creates a Collaboration. |
+| `Settlement`            | Collaboration          | Vendure DB                    | UUID                                             | A per-order-line creator earning record tracking pending, processing, completed, or failed Stripe settlement. |
 | `Customer`              | Vendure core           | Vendure DB                    | Vendure auto-increment ID + `Better Auth userId` | A marketplace user. Cached profile from Better Auth.                                                     |
 | `Order`                 | Vendure core           | Vendure DB                    | Vendure auto-increment ID + order code           | A completed or in-progress purchase.                                                                     |
 | `OrderLine`             | Vendure core           | Vendure DB                    | Vendure auto-increment ID                        | A single item in an order.                                                                               |
@@ -217,8 +218,8 @@ Groups multiple products into a single purchasable unit.
 | --------------- | ---------------------------------------------------------------------- |
 | **Composition** | Many-to-many with `Product`. A product can appear in multiple bundles. |
 | **Pricing**     | `discountPercent` applied to the sum of individual product prices.     |
-| **Purchase**    | Buying a bundle grants access to all contained products.               |
-| **Display**     | Rendered as a special product card on the storefront.                  |
+| **Purchase**    | Buying a bundle adds every contained product to the order with integer minor-unit discount allocation per line. |
+| **Display**     | Rendered on product pages and in cart review with explicit bundle grouping and savings breakdown. |
 
 ### 4.3 ProductDependency
 
@@ -227,8 +228,8 @@ Defines prerequisite relationships between products.
 | Responsibility         | Details                                                                                                     |
 | ---------------------- | ----------------------------------------------------------------------------------------------------------- |
 | **Prerequisite check** | At add-to-cart time, the Dependency plugin verifies the buyer owns the required product.                    |
-| **Discount**           | Optional `discountPercent` if the buyer has the prerequisite, they get a discount on the dependent product. |
-| **UI hint**            | Storefront shows "Requires: [Product X]" with a link.                                                       |
+| **Discount**           | Optional `discountPercent` if the buyer has the prerequisite in their library or current checkout, they get a discount on the dependent product. |
+| **UI hint**            | Storefront shows "Requires: [Product X]" with a link and blocks checkout until missing prerequisites are added. |
 
 ### 4.4 Collaboration
 
@@ -238,6 +239,19 @@ Revenue-sharing agreement between product creators.
 | ----------------- | ---------------------------------------------------------------------------------------------- |
 | **Revenue split** | `revenueSharePercent` per collaborator. Owner's share = 100% minus sum of collaborator shares. |
 | **Lifecycle**     | Pending → Invited → Active → Revoked.                                                          |
+
+### 4.4.1 Settlement
+
+Tracks what each creator is owed after a paid collaborative order.
+
+| Responsibility        | Details                                                                                                       |
+| --------------------- | ------------------------------------------------------------------------------------------------------------- |
+| **Granularity**       | One record per order line per creator owed revenue.                                                           |
+| **Amounts**           | Stored in smallest currency unit (integer cents).                                                             |
+| **Rounding**          | Collaborator shares round down per line; the product owner receives the remainder so the line total is exact. |
+| **Stripe linkage**    | Stores connected account ID, transfer group, source transaction, and transfer reference for reconciliation.   |
+| **Lifecycle**         | Pending → Processing → Completed / Failed.                                                                    |
+| **Creator reporting** | Powers creator earnings and settlement history queries in the admin API.                                      |
 | **Settlement**    | Convex action processes payouts on each order.                                                 |
 | **Invitation**    | Convex action with scheduled timeout.                                                          |
 

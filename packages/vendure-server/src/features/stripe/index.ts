@@ -15,4 +15,6 @@ export type {
   SplitResult,
   PaymentResult,
   AccountLinkResult,
+  CreateTransferParams,
+  TransferResult,
 } from './stripe.types.js';

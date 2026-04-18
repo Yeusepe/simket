@@ -5,5 +5,17 @@
  * Tests:
  *   - packages/vendure-server/src/plugins/bundle/bundle.plugin.test.ts
  */
-export { BundlePlugin, bundleConfiguration, validateDiscountPercent, calculateBundlePrice } from './bundle.plugin.js';
+export {
+  BundlePlugin,
+  bundleConfiguration,
+  validateDiscountPercent,
+  calculateBundlePrice,
+  allocateBundleLinePricing,
+} from './bundle.plugin.js';
 export { BundleEntity } from './bundle.entity.js';
+
+export type {
+  BundleLinePricingInput,
+  BundleLinePricing,
+  BundleCartPricing,
+} from './bundle.plugin.js';

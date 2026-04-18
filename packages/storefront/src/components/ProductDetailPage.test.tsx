@@ -10,6 +10,7 @@
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { ProductDetailPage } from './ProductDetailPage';
 import {
@@ -18,6 +19,7 @@ import {
 } from '../types/product.factory';
 import type { ProductDetail } from '../types/product';
 import { formatPrice } from './ProductCard';
+import { resetCartState, useCartState } from '../state/cart-state';
 
 export type ProductDetailFetcher = (slug: string) => Promise<ProductDetail>;
 
@@ -34,6 +36,7 @@ describe('ProductDetailPage', () => {
 
   beforeEach(() => {
     resetProductCounter();
+    resetCartState();
     mockFetcher = vi.fn();
   });
 
@@ -140,16 +143,72 @@ describe('ProductDetailPage', () => {
     });
   });
 
-  it('shows dependency warning when product has required products', async () => {
+  it('shows dependency requirements with links when product has prerequisites', async () => {
     const product = makeProductDetail({
-      requiredProductIds: ['product-99', 'product-100'],
+      requiredProductIds: ['product-99'],
+      dependencyRequirements: [
+        {
+          requiredProductId: 'product-99',
+          requiredVariantId: 'variant-99',
+          requiredProductName: 'Base Package',
+          requiredProductSlug: 'base-package',
+          requiredProductPrice: 1500,
+          currencyCode: 'USD',
+          requiredProductHeroImageUrl: null,
+          message: 'Requires Base Package first.',
+        },
+      ],
     });
     mockFetcher.mockResolvedValue(product);
     renderPage(mockFetcher);
 
     await waitFor(() => {
-      expect(screen.getByText(/requires other products/i)).toBeInTheDocument();
+      expect(screen.getByRole('link', { name: 'Base Package' })).toHaveAttribute('href', '/product/base-package');
     });
+  });
+
+  it('renders bundle offers and adds the selected bundle to cart', async () => {
+    const user = userEvent.setup();
+    const product = makeProductDetail({
+      availableBundles: [
+        {
+          bundleId: 'complete-pack',
+          name: 'Complete Pack',
+          discountPercent: 20,
+          callout: 'Save 20% with the Complete Pack',
+          products: [
+            {
+              productId: 'product-1',
+              variantId: 'variant-1',
+              name: 'Test Product 1',
+              price: 2000,
+              currencyCode: 'USD',
+              heroImageUrl: null,
+              slug: 'test-product-1',
+            },
+            {
+              productId: 'product-2',
+              variantId: 'variant-2',
+              name: 'Bonus Pack',
+              price: 3000,
+              currencyCode: 'USD',
+              heroImageUrl: null,
+              slug: 'bonus-pack',
+            },
+          ],
+        },
+      ],
+    });
+    mockFetcher.mockResolvedValue(product);
+    renderPage(mockFetcher);
+
+    await waitFor(() => {
+      expect(screen.getByText(/save 20% with the complete pack/i)).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByRole('button', { name: /add bundle to cart/i }));
+
+    expect(useCartState.getState().items).toHaveLength(2);
   });
 
   it('shows error on fetch failure', async () => {

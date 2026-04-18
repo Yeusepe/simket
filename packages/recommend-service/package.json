@@ -15,7 +15,8 @@
   "dependencies": {
     "@opentelemetry/api": "^1.9.1",
     "@qdrant/js-client-rest": "^1.17.0",
-    "@simket/shared": "workspace:*"
+    "@simket/shared": "workspace:*",
+    "cockatiel": "^3.2.1"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",

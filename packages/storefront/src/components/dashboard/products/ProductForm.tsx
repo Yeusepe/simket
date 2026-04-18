@@ -75,14 +75,23 @@ export function ProductForm({
   AssetUploaderComponent,
   RichTextEditorComponent = TipTapEditor,
 }: ProductFormProps) {
-  const [formData, setFormData] = useState<ProductFormData>(() => buildInitialData(initialData));
+  const resolvedInitialData = useMemo(() => buildInitialData(initialData), [initialData]);
+  const [formData, setFormData] = useState<ProductFormData>(resolvedInitialData);
+  const [savedSnapshot, setSavedSnapshot] = useState(() => JSON.stringify(resolvedInitialData));
   const [errors, setErrors] = useState<ProductFormErrors>({});
   const [isPersisting, setIsPersisting] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [hasManualSlug, setHasManualSlug] = useState(Boolean(initialData?.slug));
 
-  const initialSnapshot = useMemo(() => JSON.stringify(buildInitialData(initialData)), [initialData]);
-  const isDirty = JSON.stringify(formData) !== initialSnapshot;
+  const isDirty = JSON.stringify(formData) !== savedSnapshot;
+
+  useEffect(() => {
+    setFormData(resolvedInitialData);
+    setSavedSnapshot(JSON.stringify(resolvedInitialData));
+    setErrors({});
+    setSaveError(null);
+    setHasManualSlug(Boolean(initialData?.slug));
+  }, [initialData, resolvedInitialData]);
 
   useEffect(() => {
     if (!isDirty) {
@@ -133,6 +142,7 @@ export function ProductForm({
     try {
       await onSave(payload);
       setFormData(payload);
+      setSavedSnapshot(JSON.stringify(payload));
     } catch (error) {
       setSaveError(error instanceof Error ? error.message : String(error));
     } finally {

@@ -12,7 +12,7 @@
  *   - packages/storefront/src/components/dashboard/products/ProductList.test.tsx
  */
 import { useMemo, useState } from 'react';
-import { Button, Card, Chip, Input, Table } from '@heroui/react';
+import { Button, Card, Chip, Input } from '@heroui/react';
 import type { ProductFormData, ProductSummary } from './product-types';
 import { formatPrice } from './use-products';
 
@@ -160,68 +160,70 @@ export function ProductList({
         ) : null}
 
         {!isLoading && filteredProducts.length > 0 ? (
-          <Table>
-            <Table.ScrollContainer>
-              <Table.Content aria-label="Creator products">
-                <Table.Header>
-                  <Table.Column>Image</Table.Column>
-                  <Table.Column>Name</Table.Column>
-                  <Table.Column>Price</Table.Column>
-                  <Table.Column>Status</Table.Column>
-                  <Table.Column>Sales</Table.Column>
-                  <Table.Column>Revenue</Table.Column>
-                  <Table.Column>Actions</Table.Column>
-                </Table.Header>
-                <Table.Body>
-                  {filteredProducts.map((product) => (
-                    <Table.Row key={product.id}>
-                      <Table.Cell>
-                        {product.heroImageUrl ? (
-                          <img
-                            src={product.heroImageUrl}
-                            alt=""
-                            className="h-12 w-20 rounded-xl object-cover"
-                          />
-                        ) : (
-                          <div className="h-12 w-20 rounded-xl bg-default-100" />
-                        )}
-                      </Table.Cell>
-                      <Table.Cell>
-                        <div className="space-y-1">
-                          <p className="font-medium">{product.name}</p>
-                          <p className="text-xs text-muted-foreground">/{product.slug}</p>
-                        </div>
-                      </Table.Cell>
-                      <Table.Cell>{formatPrice(product.price, product.currency)}</Table.Cell>
-                      <Table.Cell>
-                        <Chip color={getVisibilityColor(product.visibility)} variant="soft">
-                          <Chip.Label className="capitalize">{product.visibility}</Chip.Label>
-                        </Chip>
-                      </Table.Cell>
-                      <Table.Cell>{product.salesCount}</Table.Cell>
-                      <Table.Cell>{formatPrice(product.revenue, product.currency)}</Table.Cell>
-                      <Table.Cell>
-                        <div className="flex flex-wrap gap-2">
-                          <Button size="sm" variant="ghost" aria-label={`Edit ${product.name}`} onPress={() => onEditProduct?.(product.id)}>
-                            Edit
-                          </Button>
-                          <Button size="sm" variant="ghost" aria-label={`Duplicate ${product.name}`} onPress={() => onDuplicateProduct?.(product.id)}>
-                            Duplicate
-                          </Button>
-                          <Button size="sm" variant="ghost" aria-label={`Archive ${product.name}`} onPress={() => onArchiveProduct?.(product.id)}>
-                            Archive
-                          </Button>
-                          <Button size="sm" variant="ghost" aria-label={`Delete ${product.name}`} onPress={() => onDeleteProduct?.(product.id)}>
-                            Delete
-                          </Button>
-                        </div>
-                      </Table.Cell>
-                    </Table.Row>
-                  ))}
-                </Table.Body>
-              </Table.Content>
-            </Table.ScrollContainer>
-          </Table>
+          <div role="table" aria-label="Creator products" className="space-y-2">
+            <div
+              role="row"
+              className="hidden grid-cols-[6rem_minmax(0,1.6fr)_0.9fr_0.9fr_0.7fr_0.9fr_1.3fr] gap-3 rounded-2xl bg-default-50 px-4 py-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground lg:grid"
+            >
+              <div role="columnheader">Image</div>
+              <div role="columnheader">Name</div>
+              <div role="columnheader">Price</div>
+              <div role="columnheader">Status</div>
+              <div role="columnheader">Sales</div>
+              <div role="columnheader">Revenue</div>
+              <div role="columnheader">Actions</div>
+            </div>
+
+            {filteredProducts.map((product) => (
+              <div
+                key={product.id}
+                role="row"
+                className="grid gap-4 rounded-2xl border border-default-200 px-4 py-4 lg:grid-cols-[6rem_minmax(0,1.6fr)_0.9fr_0.9fr_0.7fr_0.9fr_1.3fr]"
+              >
+                <div role="cell">
+                  {product.heroImageUrl ? (
+                    <img
+                      src={product.heroImageUrl}
+                      alt=""
+                      className="h-12 w-20 rounded-xl object-cover"
+                    />
+                  ) : (
+                    <div className="h-12 w-20 rounded-xl bg-default-100" />
+                  )}
+                </div>
+                <div role="cell">
+                  <div className="space-y-1">
+                    <p className="font-medium">{product.name}</p>
+                    <p className="text-xs text-muted-foreground">/{product.slug}</p>
+                  </div>
+                </div>
+                <div role="cell">{formatPrice(product.price, product.currency)}</div>
+                <div role="cell">
+                  <Chip color={getVisibilityColor(product.visibility)} variant="soft">
+                    <Chip.Label className="capitalize">{product.visibility}</Chip.Label>
+                  </Chip>
+                </div>
+                <div role="cell">{product.salesCount}</div>
+                <div role="cell">{formatPrice(product.revenue, product.currency)}</div>
+                <div role="cell">
+                  <div className="flex flex-wrap gap-2">
+                    <Button size="sm" variant="ghost" aria-label={`Edit ${product.name}`} onPress={() => onEditProduct?.(product.id)}>
+                      Edit
+                    </Button>
+                    <Button size="sm" variant="ghost" aria-label={`Duplicate ${product.name}`} onPress={() => onDuplicateProduct?.(product.id)}>
+                      Duplicate
+                    </Button>
+                    <Button size="sm" variant="ghost" aria-label={`Archive ${product.name}`} onPress={() => onArchiveProduct?.(product.id)}>
+                      Archive
+                    </Button>
+                    <Button size="sm" variant="ghost" aria-label={`Delete ${product.name}`} onPress={() => onDeleteProduct?.(product.id)}>
+                      Delete
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         ) : null}
       </Card.Content>
     </Card>

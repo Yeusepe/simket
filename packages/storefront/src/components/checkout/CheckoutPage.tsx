@@ -10,12 +10,12 @@
  */
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useCartState } from '../../state/cart-state';
 import type { OrderSummary } from './checkout-types';
 import { CartReview } from './CartReview';
 import { OrderConfirmation } from './OrderConfirmation';
 import { PaymentForm } from './PaymentForm';
 import { useCheckout } from './use-checkout';
+import { useCart } from '../../hooks/use-cart';
 
 export interface CheckoutPageProps {
   readonly platformFeeRate?: number;
@@ -25,6 +25,7 @@ export interface CheckoutPageProps {
   readonly createOrderSummary: (paymentIntentId: string) => Promise<OrderSummary>;
   readonly onContinueShopping?: () => void;
   readonly onGoToLibrary?: () => void;
+  readonly ownedProductIds?: readonly string[];
 }
 
 export function CheckoutPage({
@@ -35,17 +36,16 @@ export function CheckoutPage({
   createOrderSummary,
   onContinueShopping,
   onGoToLibrary,
+  ownedProductIds = [],
 }: CheckoutPageProps) {
   const navigate = useNavigate();
   const checkout = useCheckout();
-  const subtotal = useCartState((state) => state.subtotal);
-  const currencyCode = useCartState((state) => state.currencyCode);
-  const clearCart = useCartState((state) => state.clearCart);
+  const { cart, clearCart } = useCart({ ownedProductIds });
   const [orderSummary, setOrderSummary] = useState<OrderSummary | null>(null);
 
   const amount = useMemo(
-    () => subtotal + Math.round(subtotal * platformFeeRate),
-    [platformFeeRate, subtotal],
+    () => cart.subtotal + Math.round(cart.subtotal * platformFeeRate),
+    [cart.subtotal, platformFeeRate],
   );
 
   async function handlePaymentSuccess(paymentIntentId: string) {
@@ -65,9 +65,9 @@ export function CheckoutPage({
 
   if (checkout.state.step === 'payment') {
     return (
-      <PaymentForm
-        amount={amount}
-        currency={currencyCode}
+        <PaymentForm
+          amount={amount}
+          currency={cart.currencyCode}
         publishableKey={stripePublishableKey}
         clientSecret={clientSecret}
         returnUrl={returnUrl}
@@ -96,6 +96,7 @@ export function CheckoutPage({
     <CartReview
       onProceed={checkout.goToPayment}
       platformFeeRate={platformFeeRate}
+      ownedProductIds={ownedProductIds}
     />
   );
 }

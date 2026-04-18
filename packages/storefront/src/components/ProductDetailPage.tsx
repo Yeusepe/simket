@@ -20,7 +20,9 @@
  *   - packages/storefront/src/components/ProductDetailPage.test.tsx
  */
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import {
+  Card,
   Button,
   Chip,
   Separator,
@@ -29,7 +31,7 @@ import {
 } from '@heroui/react';
 import type { ProductDetail } from '../types/product';
 import { formatPrice } from './ProductCard';
-import { useCartState } from '../state/cart-state';
+import { useCart } from '../hooks/use-cart';
 
 export type ProductDetailFetcher = (slug: string) => Promise<ProductDetail>;
 
@@ -42,7 +44,7 @@ export function ProductDetailPage({ fetcher, slug }: ProductDetailPageProps) {
   const [product, setProduct] = useState<ProductDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
-  const addItem = useCartState((state) => state.addItem);
+  const { addBundle, addItem } = useCart();
 
   useEffect(() => {
     let cancelled = false;
@@ -124,11 +126,23 @@ export function ProductDetailPage({ fetcher, slug }: ProductDetailPageProps) {
           </div>
 
           {/* Dependencies warning */}
-          {product.requiredProductIds.length > 0 && (
+          {product.dependencyRequirements.length > 0 && (
             <div
               className="rounded-lg border border-warning bg-warning/10 p-3 text-sm text-warning"
             >
-              This product requires other products to be purchased first.
+              Requires:
+              {' '}
+              {product.dependencyRequirements.map((requirement, index) => (
+                <span key={requirement.requiredProductId}>
+                  {index > 0 ? ', ' : ''}
+                  <Link
+                    to={`/product/${requirement.requiredProductSlug}`}
+                    className="font-semibold underline underline-offset-2"
+                  >
+                    {requirement.requiredProductName}
+                  </Link>
+                </span>
+              ))}
             </div>
           )}
 
@@ -147,16 +161,95 @@ export function ProductDetailPage({ fetcher, slug }: ProductDetailPageProps) {
                 productId: product.id,
                 variantId: primaryVariant.id,
                 name: product.name,
+                basePrice: primaryVariant.price,
                 price: primaryVariant.price,
                 currencyCode: primaryVariant.currencyCode,
                 quantity: 1,
                 heroImageUrl: product.heroMediaType === 'image' ? product.heroMediaUrl : null,
                 slug: product.slug,
+                dependencyRequirements: product.dependencyRequirements,
               });
             }}
           >
             Add to cart
           </Button>
+
+          {product.availableBundles.length > 0 && (
+            <>
+              <Separator />
+              <div className="space-y-3">
+                <div>
+                  <h2 className="text-lg font-semibold">Available bundles</h2>
+                  <p className="text-sm text-muted-foreground">
+                    Save more when you grab the full pack.
+                  </p>
+                </div>
+                {product.availableBundles.map((bundle) => {
+                  const originalSubtotal = bundle.products.reduce((sum, item) => sum + item.price, 0);
+                  const discountedSubtotal = Math.round(
+                    originalSubtotal * (1 - bundle.discountPercent / 100),
+                  );
+
+                  return (
+                    <Card key={bundle.bundleId} variant="secondary">
+                      <Card.Header>
+                        <div className="flex flex-1 items-start justify-between gap-3">
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2">
+                              <Chip variant="soft" size="sm">
+                                <Chip.Label>Bundle</Chip.Label>
+                              </Chip>
+                              <Card.Title>{bundle.name}</Card.Title>
+                            </div>
+                            <Card.Description>{bundle.callout}</Card.Description>
+                          </div>
+                          <span className="text-sm font-semibold text-success">
+                            Save {bundle.discountPercent}%
+                          </span>
+                        </div>
+                      </Card.Header>
+                      <Card.Content className="space-y-3">
+                        <p className="text-sm text-muted-foreground">
+                          {bundle.description ?? 'Includes every prerequisite and related add-on in one discounted checkout.'}
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          {bundle.products.map((item) => (
+                            <Chip key={item.variantId} variant="soft" size="sm">
+                              <Chip.Label>{item.name}</Chip.Label>
+                            </Chip>
+                          ))}
+                        </div>
+                        <div className="flex items-baseline gap-2">
+                          <span className="text-lg font-semibold">
+                            {formatPrice(discountedSubtotal, primaryVariant?.currencyCode ?? product.currencyCode)}
+                          </span>
+                          <span className="text-sm text-muted-foreground line-through">
+                            {formatPrice(originalSubtotal, primaryVariant?.currencyCode ?? product.currencyCode)}
+                          </span>
+                        </div>
+                      </Card.Content>
+                      <Card.Footer>
+                        <Button
+                          variant="primary"
+                          className="w-full"
+                          onPress={() => {
+                            addBundle({
+                              bundleId: bundle.bundleId,
+                              name: bundle.name,
+                              discountPercent: bundle.discountPercent,
+                              products: bundle.products,
+                            });
+                          }}
+                        >
+                          Add bundle to cart
+                        </Button>
+                      </Card.Footer>
+                    </Card>
+                  );
+                })}
+              </div>
+            </>
+          )}
 
           <Separator />
 

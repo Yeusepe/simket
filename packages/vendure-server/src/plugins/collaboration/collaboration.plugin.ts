@@ -10,10 +10,15 @@
  * Tests:
  *   - packages/vendure-server/src/plugins/collaboration/collaboration.plugin.test.ts
  */
-import { PluginCommonModule, VendurePlugin } from '@vendure/core';
+import { LanguageCode, PluginCommonModule, VendurePlugin } from '@vendure/core';
 import type { RuntimeVendureConfig } from '@vendure/core';
 import { CollaborationEntity, CollaborationStatus } from './collaboration.entity.js';
 import { InvitationEntity } from './invitation.entity.js';
+import { RevenueSplitService } from './revenue-split.service.js';
+import { settlementAdminApiExtensions } from './settlement.api.js';
+import { SettlementEntity, SettlementStatus } from './settlement.entity.js';
+import { SettlementResolver } from './settlement.resolver.js';
+import { SettlementService } from './settlement.service.js';
 
 // ─── Validation ───────────────────────────────────────────────────────
 
@@ -107,8 +112,26 @@ function splitRevenue(totalAmount: number, shares: RevenueSplit[]): RevenueResul
  * Exported separately for unit-testability without bootstrapping Vendure.
  */
 function collaborationConfiguration(config: RuntimeVendureConfig): RuntimeVendureConfig {
-  // Entity registration is handled by the @VendurePlugin entities array.
-  // This configuration function is available for future custom field additions.
+  config.customFields = {
+    ...config.customFields,
+    Customer: [
+      ...(config.customFields?.Customer ?? []),
+      {
+        name: 'stripeConnectedAccountId',
+        type: 'string',
+        label: [{ languageCode: LanguageCode.en, value: 'Stripe Connected Account ID' }],
+        description: [
+          {
+            languageCode: LanguageCode.en,
+            value: 'Creator Stripe Connect account ID used for collaboration settlements',
+          },
+        ],
+        nullable: true,
+        public: false,
+        readonly: false,
+      },
+    ],
+  };
   return config;
 }
 
@@ -124,8 +147,13 @@ function collaborationConfiguration(config: RuntimeVendureConfig): RuntimeVendur
  */
 @VendurePlugin({
   imports: [PluginCommonModule],
-  entities: [CollaborationEntity, InvitationEntity],
+  entities: [CollaborationEntity, InvitationEntity, SettlementEntity],
   configuration: collaborationConfiguration,
+  providers: [RevenueSplitService, SettlementService],
+  adminApiExtensions: {
+    schema: settlementAdminApiExtensions,
+    resolvers: [SettlementResolver],
+  },
   compatibility: '^3.0.0',
 })
 export class CollaborationPlugin {}
@@ -136,6 +164,8 @@ export {
   CollaborationEntity,
   CollaborationStatus,
   InvitationEntity,
+  SettlementEntity,
+  SettlementStatus,
   collaborationConfiguration,
   validateRevenueShare,
   validateCollaborationShares,
