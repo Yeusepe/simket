@@ -470,7 +470,29 @@ Do NOT:
 
 ---
 
-## 13. Working principle
+## 13. Fleet and sub-agent configuration
+
+When dispatching fleet agents (parallel sub-agents for coding tasks), always use:
+
+- **Model: `gpt-5.4`** for all coding/implementation agents (`general-purpose`, `task` agent types).
+- **Model: `claude-haiku-4.5`** is acceptable only for `explore` agents (read-only research/audit).
+
+Every sub-agent prompt **MUST** include:
+
+1. A reminder to **search online** before writing any library integration code.
+2. A reminder to **read `.d.ts` types** before calling any library function.
+3. A reminder to **never reinvent the wheel** — use official SDKs, companion packages, and built-in library features.
+4. A reminder to **fetch `https://heroui.com/react/llms.txt`** before writing any HeroUI component code.
+5. A reminder to **wrap all outbound service calls** in the appropriate `SERVICE_POLICIES.xxx.execute()` from `src/resilience/resilience.ts`.
+6. A reminder to **add OpenTelemetry spans** for all outbound service calls.
+7. A reminder to **write tests first** (TDD), then implement.
+8. A reminder to **add proper doc headers** per §9 of this document.
+
+Sub-agents that do not follow these rules produce code that fails audit and must be rewritten. Front-load the rules to avoid rework.
+
+---
+
+## 14. Working principle
 
 **In Simket, code is never "just code."**
 
