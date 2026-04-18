@@ -314,6 +314,43 @@ sequenceDiagram
 > for query performance this cache is refreshed on login and via a scheduled
 > sync worker.
 
+### 7.2 Payment orchestration via Hyperswitch
+
+Simket uses [Hyperswitch](https://github.com/juspay/hyperswitch) (open-source,
+Apache 2.0, Rust) as its payment orchestration layer instead of integrating
+directly with individual processors. Hyperswitch sits between Vendure and one
+or more payment connectors (Stripe, Adyen, Xendit, etc.), providing:
+
+- **Unified payment API** — single `POST /payments` regardless of processor
+- **Smart routing** — volume-based, rule-based, or priority-ordered failover
+- **PCI-compliant vault** — processor-independent tokenization
+- **Split payments** — native collaboration revenue distribution at charge time
+- **Payouts** — creator disbursements via bank, card, or wallet
+- **Refunds** — with split refund support for collaborative products
+
+```mermaid
+graph LR
+    SIM["Simket (Vendure)"] -->|Hyperswitch SDK| HS["Hyperswitch<br/>(orchestration)"]
+    HS -->|Smart routing| S["Stripe"]
+    HS -->|Smart routing| A["Adyen"]
+    HS -->|Smart routing| X["Xendit"]
+    HS -->|Vault| V["PCI Vault"]
+    HS -->|Payouts| P["Payout connectors<br/>(Stripe, Wise, PayPal)"]
+```
+
+#### Platform fee model
+
+| Rule                        | Detail                                                       |
+| --------------------------- | ------------------------------------------------------------ |
+| Default platform fee        | 5% of transaction amount (covers all processor fees including per-txn costs like 30¢) |
+| Minimum price               | Configurable global minimum. Products are either **free** or **above minimum** — no in-between |
+| Fee direction               | Configurable **upward** per product per creator. Never below 5% |
+| Boost mechanism             | Higher fee % → higher weight in `TakeRateBoostPostProcessor` (recommendation pipeline) and search ranking |
+| Transparency                | Fee % visible to creators on product settings. Boost mechanism is not exposed to buyers |
+| Storage                     | `platformTakeRate` custom field on Product entity (decimal, min 0.05) |
+
+See `docs/service-architecture.md` §1.13 for full API contract details.
+
 ---
 
 ## 8 Request-path vs worker posture
@@ -376,11 +413,12 @@ graph LR
 | **Timeout**         | 2s for seach/vector queries, 5s for payment calls, 10s for asset uploads                             | All outbound HTTPS/gRPC                                   |
 | **Retry**           | 3 attempts, xponential backoff (200ms base), jitter ±50ms. Only idempotent operations.               | Typesense, Qdrant, CDNgine, Keygen, Cedar, Convex reads   |
 | **Circuit breaker** | Open after 5 consecutive failures. Half-open after 10s. Reset on 2 successes.                        | All peer services (per-service granularity, never global) |
-| **Bulkhead**        | 10 concurrent + 20 queued per service. Prevents one slow dependency from exhausting all connections. | Typesense, Qdrant, Recommend, CDNgine                     |
+| **Bulkhead**        | 10 concurrent + 20 queued per service. Prevents one slow dependency from exhausting all connections. | Typesense, Qdrant, Recommend, CDNgine, Hyperswitch       |
 
 **Non-retryable operations** (mutations with side effects):
 
-- Stripe payment captures idempotency key handles duplicates at Stripe's end.
+- Hyperswitch payment captures — idempotency key (via `payment_id`) handles duplicates at Hyperswitch's end.
+  Hyperswitch auto-retries through the next eligible processor on failure (smart routing).
 - Order state transitions Vendure's state machine prevents invalid replays.
 - Webhook deliveries Svix owns retry logic; Vendure fires once.
 
@@ -396,7 +434,7 @@ graph LR
 | **Recommend service down** | Discovery feed degrades                                        | Fallback to "popular" / "recent" (no ML). Circuit breaker in Vendure plugin. Cached recommendations served stale.                                     |
 | **PayloadCMS down**        | "Today" section stale                                          | Cache editorial content in Redis (L2) and edge (L1). TTL-based refresh. Stale content always served.                                                  |
 | **Convex unavailable**     | Settlement and workflows stall                                 | Convex has built-in replication and automatic failover. Vendure core continues against its own SQL DB. Convex actions are durable resume on recovery. |
-| **Stripe down**            | Purchases fail                                                 | Show user-friendly error. Idempotency keys prevent double charges on retry. Webhook reconciliation on recovery.                                       |
+| **Hyperswitch down**       | Purchases fail                                                 | Show user-friendly error. Hyperswitch payment_id prevents double charges on retry. Smart routing auto-retries through fallback processor. Webhook reconciliation on recovery. |
 | **Vendure SQL DB down**    | Full outage for Vendure data                                   | Primary + 2 read replicas, PgBouncer, automated failover, point-in-time backups. Read traffic auto-routes to replica.                                 |
 | **Redis down**             | Cache miss spike, job queue stall                              | Cluster mode with automatic failover. App degrades gracefully (bypasses cache, hits origin). BullMQ jobs survive Redis restart (AOF persistence).     |
 | **Typesense down**         | Search degrades                                                | Raft cluster auto-fails over to healthy nodes. If full cluster loss: circuit breaker opens, fallback to Vendure SQL LIKE (degraded).                  |
@@ -457,7 +495,7 @@ Readiness check includes BullMQ connection state.
 
 | Operation                    | Idempotency mechanism                                                                                                   |
 | ---------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| **Stripe payments**          | Stripe idempotency key (UUID generated at checkout start, stored in order metadata). Same key = same charge.            |
+| **Hyperswitch payments**   | Hyperswitch `payment_id` (30-char, auto-generated or merchant-provided at checkout start, stored in order metadata). Same payment_id = same charge. Smart routing auto-retries to fallback processor on failure. |
 | **Webhook processing**       | `event.id` stored in Redis with 7-day TTL. Duplicate events are acknowledged but not reprocessed.                       |
 | **Order state transitions**  | Vendure state machine: transition only succeeds if current state matches expected. Concurrent transitions are rejected. |
 | **Search indexing**          | Typesense `upsert` is naturally idempotent. Same document ID overwrites.                                                |
@@ -772,8 +810,10 @@ Fine-grained authorization uses **Cedar** policies evaluated at the edge:
 
 ### 10.3 Data protection
 
-- **Payments**: Simket never stores raw card data. Stripe Connect handles PCI
-  compliance. Vendure stores only Stripe customer/payment-method IDs.
+- **Payments**: Simket never stores raw card data. Hyperswitch provides
+  PCI-compliant vaulting (self-hosted, Juspay-hosted, or third-party via VGS/TokenEx).
+  Vendure stores only Hyperswitch `payment_id` and `customer_id` references.
+  Processor tokens are processor-independent, preventing vendor lock-in.
 - **Uploads**: Pre-signed URLs for direct-to-CDNgine uploads via **Uppy** +
   **@tus/server** (resumable). Files never transit through the Vendure server.
   All uploads are scanned by **ClamAV** before publishing.
@@ -797,7 +837,7 @@ and delivery observability.
 
 ### 10.4 Secrets management
 
-- All secrets (Stripe keys, CDNgine API keys, Better Auth signing keys, DB
+- All secrets (Hyperswitch API keys, CDNgine API keys, Better Auth signing keys, DB
   credentials) stored in environment variables, never in source code.
 - Production secrets managed via a secrets manager (e.g., AWS Secrets
   Manager, Vault).
@@ -990,7 +1030,7 @@ This boundary prevents Convex bandwidth costs from scaling with catalog size.
 | Product search       | < 50ms               | Typesense in-memory, edge-cached for repeat queries               |
 | Product page load    | < 200ms (TTFB)       | Edge cache (SWR), Bebop binary payloads (~4.5× smaller than JSON) |
 | Cart operations      | < 100ms              | Redis-cached cart, Vendure mutation                               |
-| Checkout flow        | < 500ms              | Stripe client-side, server confirms async                         |
+| Checkout flow        | < 500ms              | Hyperswitch client-side Unified Checkout, server confirms async       |
 | Recommendation feed  | < 300ms              | Qdrant ANN + post-processing, cached 5 min per user segment       |
 | Image/asset delivery | < 50ms               | CDNgine edge PoPs, WebP/AVIF auto-format                          |
 | Creator dashboard    | < 400ms              | Convex reactive queries, no full page reload                      |
@@ -1030,12 +1070,12 @@ graph TD
 | **Convex**                        |                      | $25-500 (Pro/Business)     | Usage-based: function calls + bandwidth |
 | **CDNgine**                       | (separate budget)    |                            | See CDNgine docs                        |
 | **Cloudflare** (CDN + Workers)    |                      | $0-20 (Workers Paid)       | 10M requests/mo included                |
-| **Stripe fees**                   |                      | 2.9% + $0.30/txn           | Volume discounts available              |
+| **Hyperswitch**                   | $0 (self-hosted)     | Sandbox free, prod varies  | Open-source (Apache 2.0). Processor fees separate. |
 | **Svix** (webhooks)               | $0 (self-hosted)     | $50-300                    | Based on message volume                 |
 | **CrowdSec**                      | $0 (OSS)             |                            | Community blocklists free               |
 | **Keygen**                        | $0 (self-hosted)     | $49-299                    | Based on license volume                 |
-| **Total (self-hosted heavy)**     | **~$550-1,100/mo**   |                            | Excludes Stripe txn fees                |
-| **Total (managed heavy)**         |                      | **~$1,000-3,000/mo**       | Excludes Stripe txn fees                |
+| **Total (self-hosted heavy)**     | **~$550-1,100/mo**   |                            | Excludes processor txn fees             |
+| **Total (managed heavy)**         |                      | **~$1,000-3,000/mo**       | Excludes processor txn fees             |
 
 **Cost guardrails:**
 
@@ -1211,7 +1251,9 @@ by implementing a `FlowStep` interface and rgistering a renderer.
 - [Convex production limits](https://docs.convex.dev/production/limits)
 - [Bebop schema language](https://bebop.sh/)
 - [Cedar policy language](https://www.cedarpolicy.com)
-- [Stripe Connect](https://docs.stripe.com/connect)
+- [Hyperswitch documentation](https://docs.hyperswitch.io/)
+- [Hyperswitch API reference](https://api-reference.hyperswitch.io/)
+- [Hyperswitch GitHub](https://github.com/juspay/hyperswitch)
 - [Svix webhooks](https://docs.svix.com)
 - [CrowdSec](https://docs.crowdsec.net/)
 - [Keygen licensing](https://keygen.sh/docs/)
@@ -1220,7 +1262,7 @@ by implementing a `FlowStep` interface and rgistering a renderer.
 - [Circuit breaker pattern (Martin Fowler)](https://martinfowler.com/bliki/CircuitBreaker.html)
 - [Kubernetes pod disruption budgets](https://kubernetes.io/docs/tasks/run-application/configure-pdb/)
 - [NestJS shutdown hooks](https://docs.nestjs.com/fundamentals/lifecycle-events)
-- [Stripe idempotency keys](https://docs.stripe.com/api/idempotent_requests)
+- [Hyperswitch idempotency (payment_id)](https://api-reference.hyperswitch.io/v1/payments/payments--create.md)
 - [Convex reactive queries](https://docs.convex.dev/using/reactive-queries)
 - [Convex optimistic updates](https://docs.convex.dev/client/react/optimistic-updates)
 - [Cloudflare cache purge API](https://developers.cloudflare.com/api/operations/zone-purge)

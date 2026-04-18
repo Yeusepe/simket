@@ -29,7 +29,7 @@ An agent working in Simket must not write code as if it were a blank project. Ev
 - If a component needs a dependency, wire the real dependency.
 - If the real dependency cannot be wired, fail with an explicit error. Do not fake it.
 - The ONLY place mocks are tolerated is in unit test suites for pure logic functions, and even there, prefer running the real thing.
-- Integration tests MUST use real services: TestContainers for PostgreSQL/Redis, Convex dev instance, Stripe test keys, real Typesense, real Qdrant.
+- Integration tests MUST use real services: TestContainers for PostgreSQL/Redis, Convex dev instance, Hyperswitch sandbox, real Typesense, real Qdrant.
 - A stub in production code is a bug. Treat it as one.
 
 **I would rather the system ERROR than have a stub.**
@@ -80,7 +80,7 @@ Before writing ANY code that integrates with, wraps, or calls an external librar
 3. **Do not rely on memory, training data, or cached knowledge of APIs.** Libraries change between versions. What you "know" may be wrong. The online docs are the source of truth.
 4. **Do not guess component APIs, prop names, compound patterns, or configuration shapes.** Look them up online first, then verify against the installed `.d.ts` types.
 
-**This applies to every library in the stack** — HeroUI, Vendure, Better Auth, Stripe, Typesense, Convex, Cedar, Cockatiel, OpenTelemetry, PayloadCMS, TipTap, and any other.
+**This applies to every library in the stack** — HeroUI, Vendure, Better Auth, Hyperswitch, Typesense, Convex, Cedar, Cockatiel, OpenTelemetry, PayloadCMS, TipTap, and any other.
 
 The time spent searching online is always less than the time spent debugging wrong assumptions.
 
@@ -109,7 +109,7 @@ Then read domain-specific docs for the change area.
 | Vendure plugins, product CRUD, orders                | `docs/architecture.md`, `docs/domain-model.md`, [Vendure docs](https://docs.vendure.io/)                                                                                 |
 | Convex functions, creator dashboard, real-time state | `docs/architecture.md`, `docs/service-architecture.md`, [Convex docs](https://docs.convex.dev/)                                                                          |
 | HeroUI components, storefront UI, page builder       | `docs/architecture.md`, [HeroUI React llms.txt](https://heroui.com/react/llms.txt) **(MUST fetch before any HeroUI work)**, [HeroUI component docs](https://heroui.com/docs/react/components), [Framely docs](https://github.com/belastrittmatter/Framely) |
-| Payment, checkout, Stripe integration                | `docs/service-architecture.md`, `docs/regular-programming-practices/security-and-threat-modeling.md`, [Stripe API docs](https://stripe.com/docs/api)                     |
+| Payment, checkout, Hyperswitch integration           | `docs/service-architecture.md` §1.13, `docs/regular-programming-practices/security-and-threat-modeling.md`, [Hyperswitch API docs](https://api-reference.hyperswitch.io/), [Hyperswitch docs](https://docs.hyperswitch.io/) |
 | Search, Typesense indexing                           | `docs/architecture.md`, [Typesense docs](https://typesense.org/docs/)                                                                                                    |
 | Recommendations, embeddings, Qdrant                  | `docs/architecture.md`, [Qdrant docs](https://qdrant.tech/documentation/), [Voyager docs](https://github.com/spotify/voyager)                                            |
 | Asset upload, CDNgine integration                    | `docs/architecture.md`, CDNgine repo docs                                                                                                                                |
@@ -127,7 +127,7 @@ Then read domain-specific docs for the change area.
 
 ## 4. External API reference rule
 
-For ANY external API call (Stripe, Vendure, Convex, Typesense, Qdrant, Keygen, Svix, CDNgine, PayloadCMS, Better Auth, Cedar, CrowdSec, or any other), the agent MUST:
+For ANY external API call (Hyperswitch, Vendure, Convex, Typesense, Qdrant, Keygen, Svix, CDNgine, PayloadCMS, Better Auth, Cedar, CrowdSec, or any other), the agent MUST:
 
 1. **Cite the documentation URL** in a code comment or in the plan before writing any code.
 2. **Verify the endpoint is correct BEFORE implementing** — check the official docs or community spec.
@@ -138,11 +138,11 @@ A wrong endpoint path wastes significant time and produces bugs that are hard to
 
 ```typescript
 /**
- * Creates a Stripe Connect destination charge for collaboration splits.
+ * Creates a Hyperswitch payment with split payments for collaboration revenue splits.
  *
- * Docs: https://stripe.com/docs/connect/destination-charges
- * Endpoint: POST /v1/payment_intents
- * Verified: response includes { id, status, transfer_data }
+ * Docs: https://docs.hyperswitch.io/explore/merchant-controls/integration-guide/connectors/available-connectors/stripe#2-setup-a-payment
+ * Endpoint: POST /payments
+ * Verified: response includes { payment_id, client_secret, status, split_payments }
  */
 ```
 
@@ -277,9 +277,9 @@ try {
 
 ## 6. Security rules
 
-### 6.1 Stripe security principles
+### 6.1 Security engineering principles
 
-Follow Stripe's security engineering model:
+Follow industry-standard security engineering practices (inspired by Stripe's model):
 
 - **Defence in depth**: multiple layers of security controls
 - **Secure by default**: new code must be secure without additional configuration

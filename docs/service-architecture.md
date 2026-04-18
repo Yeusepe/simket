@@ -93,11 +93,11 @@ Key operations consumed:
 
 | Function                           | Trigger                                         | Steps                                                                                                                                                                                                                      |
 | ---------------------------------- | ----------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `collaborationSettlement` (action) | `OrderPlacedEvent` (for collaborative products) | 1. Calculate per-line creator settlements in cents. 2. Create pending settlement records. 3. Initiate Stripe Connect separate transfers with idempotency keys. 4. Record completed/failed outcomes for creator reporting. |
+| `collaborationSettlement` (action) | `OrderPlacedEvent` (for collaborative products) | 1. Calculate per-line creator settlements in cents. 2. Create pending settlement records. 3. Initiate Hyperswitch split payments with idempotency keys. 4. Record completed/failed outcomes for creator reporting. |
 | `collaborationInvite` (action)     | Creator adds collaborator to product            | 1. Send invite. 2. Wait for accept/reject (polled via mutation). 3. Update collaboration record. 4. Timeout after N days (scheduled function).                                                                             |
 | `scheduledReindex` (scheduled)     | Cron (daily)                                    | 1. Trigger recommend model retrain. 2. Rebuild Typesense index. 3. Refresh editorial cache. 4. Refresh Qdrant embeddings.                                                                                                  |
 | `gdprDelete` (action)              | Admin action                                    | 1. Delete from Better Auth. 2. Anonymise Vendure Customer. 3. Remove from recommend service + Qdrant. 4. Purge CDNgine assets. 5. Revoke Keygen licenses.                                                                  |
-| `complexCheckout` (action)         | Checkout with custom flow                       | 1. Evaluate Cedar entitlement policies. 2. Execute flow steps in sequence. 3. Handle upsell acceptance/rejection. 4. Finalise payment via Stripe Connect. 5. Grant access. 6. Create Keygen license (if software product). |
+| `complexCheckout` (action)         | Checkout with custom flow                       | 1. Evaluate Cedar entitlement policies. 2. Execute flow steps in sequence. 3. Handle upsell acceptance/rejection. 4. Finalise payment via Hyperswitch. 5. Grant access. 6. Create Keygen license (if software product). |
 
 ### 1.7 Svix (webhook delivery)
 
@@ -167,6 +167,11 @@ Policies are version-controlled and deployed alongside the service code.
 | List entitlements | Creator dashboard → view active licenses per product |
 | Revoke license    | Refund or GDPR flows                                 |
 
+Creator dashboard expectations:
+
+- Creators manage reusable policy presets (scheme, machine limits, use limits, and expiry duration) from the storefront dashboard before attaching them to products.
+- Issued-license views expose customer, product, policy, machine activation, and validation-history details so creators can suspend, reinstate, revoke, or extend licenses without leaving the dashboard.
+
 Implementation notes:
 
 - Simket issues `perpetual`, `subscription`, and `trial` licenses through Keygen policies. Policy duration and policy constraints (machine limits, expiry, offline-capable schemes) remain the source of truth.
@@ -178,6 +183,133 @@ Implementation notes:
 Scalar renders interactive API documentation from Bebop schema definitions
 and REST endpoint specs. Deployed at `/docs` on the public API gateway.
 Complementary to the Backstage developer portal for internal service docs.
+
+### 1.13 Hyperswitch (payment orchestration)
+
+[Hyperswitch](https://github.com/juspay/hyperswitch) is an open-source payment
+orchestration layer (Rust, Apache 2.0) that replaces direct Stripe integration.
+It sits between Simket and one or more payment processors (Stripe, Adyen, etc.),
+providing unified APIs for payments, refunds, payouts, split payments, and
+PCI-compliant vaulting.
+
+**API reference**: https://api-reference.hyperswitch.io/
+
+#### Auth model
+
+| Credential       | Scope        | Format          | Usage                              |
+| ---------------- | ------------ | --------------- | ---------------------------------- |
+| API key (secret) | Server-side  | `snd_***`       | `Authorization` header on all server calls |
+| Publishable key  | Client-side  | `pk_snd_***`    | Initialise client SDK / Unified Checkout   |
+
+Environments: sandbox (`https://sandbox.hyperswitch.io`), production (`https://api.hyperswitch.io`), or self-hosted.
+
+#### Payment lifecycle
+
+```mermaid
+sequenceDiagram
+    participant V as Vendure
+    participant HS as Hyperswitch
+    participant P as Processor (Stripe, Adyen, …)
+
+    V->>HS: POST /payments (amount, currency, split_payments)
+    HS-->>V: { payment_id, client_secret, status: requires_payment_method }
+    Note over V: Return client_secret to frontend
+
+    V->>HS: POST /payments/{id}/confirm (payment_method_data)
+    HS->>P: Smart-routed to best eligible processor
+    P-->>HS: authorized / captured
+    HS-->>V: { status: succeeded | requires_capture }
+
+    opt Manual capture
+        V->>HS: POST /payments/{id}/capture
+        HS->>P: Capture
+        P-->>HS: captured
+        HS-->>V: { status: succeeded }
+    end
+```
+
+Amounts always in lowest denomination (cents for USD). `payment_id` is 30 chars,
+auto-generated or merchant-provided (serves as idempotency key).
+
+#### Key operations consumed by Simket
+
+| Operation                          | Endpoint                          | Simket usage                                                                    |
+| ---------------------------------- | --------------------------------- | ------------------------------------------------------------------------------- |
+| Create payment                     | `POST /payments`                  | Checkout: create payment intent with amount, currency, and platform fee metadata |
+| Confirm payment                    | `POST /payments/{id}/confirm`     | Authorize with payment method data from Unified Checkout                        |
+| Capture payment                    | `POST /payments/{id}/capture`     | Manual capture for high-value orders (optional)                                 |
+| Create refund                      | `POST /refunds`                   | Full or partial refund; supports `split_refunds` for collaboration products     |
+| Create payout                      | `POST /payouts/create`            | Creator disbursement (bank account, PayPal, card)                               |
+| Confirm payout                     | `POST /payouts/{id}/confirm`      | Confirm payout with client_secret                                               |
+| Split payments                     | `split_payments` field on payment | Collaboration revenue splits (Stripe: `application_fees` + `transfer_account_id`) |
+| Configure routing                  | `POST /routing`                   | Volume-based, rule-based, or priority-ordered smart routing                     |
+| Webhook events                     | `POST /webhooks/hyperswitch`      | `payment_intent.succeeded`, `refund.succeeded`, `payout.completed`, etc.        |
+
+#### Split payments (collaborations)
+
+For collaborative products, Hyperswitch split payments distribute revenue at
+charge time. Supported connectors: Stripe, Adyen, Xendit.
+
+```typescript
+// Example: Stripe split payment via Hyperswitch
+{
+  split_payments: {
+    stripe_split_payment: {
+      charge_type: "direct",
+      application_fees: platformFeeCents, // 5%+ platform fee
+      transfer_account_id: "acct_collaborator123"
+    }
+  }
+}
+```
+
+Split refunds are also supported via the `split_refunds` field in refund requests.
+
+#### Payouts (creator disbursements)
+
+| Connector | Coverage              | Methods                    |
+| --------- | --------------------- | -------------------------- |
+| Stripe    | Global                | Bank, card                 |
+| Adyen     | Global                | Bank, card, wallet         |
+| Wise      | Global                | Bank (low-cost FX)         |
+| PayPal    | Global                | Wallet                     |
+| Ebanx     | LATAM                 | Bank, PIX                  |
+
+Key fields: `payout_type`, `payout_method_data`, `auto_fulfill: true` (skip review),
+`merchant_order_reference_id` (for reconciliation).
+
+#### Smart routing
+
+- **Volume-based**: distribute % across processors (e.g., 70% Stripe, 30% Adyen)
+- **Rule-based**: route on payment method, country, currency, amount
+- **Priority fallback**: ordered list; auto-retry through next eligible processor on failure
+- **Eligibility analysis**: ensures payment method compatibility before routing
+
+#### Vault & tokenization
+
+Hyperswitch provides modular vaulting (self-hosted, Juspay-hosted, or third-party
+via VGS/TokenEx). Tokens are processor-independent, preventing vendor lock-in.
+
+#### Client SDK integration
+
+| SDK                              | Usage                                |
+| -------------------------------- | ------------------------------------ |
+| `@juspay-tech/hyperswitch-node`  | Server-side: create payments, manage customers, configure routing |
+| `@juspay-tech/hyper-js`          | Client-side: initialise Hyperswitch loader                       |
+| `@juspay-tech/react-hyper-js`    | React: Unified Checkout component (`<UnifiedCheckout />`)        |
+
+The Unified Checkout renders all payment methods enabled across configured
+connectors. 40+ styling APIs for brand customization.
+
+#### Platform fee model
+
+| Parameter                | Value                                                    |
+| ------------------------ | -------------------------------------------------------- |
+| Default platform fee     | 5% of transaction amount                                 |
+| Minimum price            | Configurable (products are FREE or above minimum — no in-between) |
+| Fee direction            | Configurable upward per product per creator (never below 5%) |
+| Boost mechanism          | Higher fee % → boost in recommendation pipeline + search ranking |
+| Implementation           | `platformTakeRate` field on Product entity; `TakeRateBoostPostProcessor` in recommend pipeline |
 
 ---
 
@@ -341,7 +473,7 @@ The following are eventually consistent:
 
 All mutations that trigger side effects must be idempotent:
 
-- Payment charges use Stripe idempotency keys.
+- Payment charges use Hyperswitch payment_id for idempotency.
 - Job queue jobs are deduplicated by job ID (entity ID + event type).
 - Convex functions use deterministic IDs derived from the
   triggering event (e.g., `settlement-order-{orderId}`).
@@ -587,9 +719,10 @@ invitation time and acceptance time.
 
 **Settlement**: On order placement, the Collaboration plugin emits a
 `CollaborationSettlementEvent`. A Convex action picks this up and
-processes payouts to each collaborator's **Stripe Connect** connected
-account via destination charges. Each collaborator must have a verified
-Stripe Connect account linked through the creator dashboard.
+processes payouts to each collaborator via **Hyperswitch split payments**.
+Each collaborator must have a verified payout account (bank, card, or wallet)
+linked through the creator dashboard. Hyperswitch routes splits through
+the configured processor (Stripe, Adyen, etc.).
 
 ### 7.5 Tagging plugin
 
@@ -915,7 +1048,7 @@ Each Vendure plugin injects the policy for its dependency:
 | Qdrant     | 2s      | 2       | 10 / 20  | Vector queries are read-only            |
 | CDNgine    | 10s     | 3       | 5 / 10   | Large uploads need longer timeout       |
 | ClamAV     | 10s     | 2       | 10 / 50  | Fail-closed; quarantine on scan error   |
-| Stripe     | 5s      | 0       | 5 / 10   | No retry idempotency key handles        |
+| Hyperswitch| 5s      | 0       | 5 / 10   | No retry — payment_id handles idempotency. Smart routing auto-retries to fallback processor. |
 | Keygen     | 2s      | 3       | 5 / 10   | License checks are idempotent           |
 | Cedar      | 1s      | 2       | 15 / 30  | Authz on every request, must be fast    |
 | CrowdSec   | 1s      | 1       | 5 / 10   | Fail-open: fallback to basic rate limit |
@@ -1008,7 +1141,8 @@ DLQ dashboard shows all dead-lettered jobs with:
 - [Uppy documentation](https://uppy.io/docs/)
 - [tus protocol](https://tus.io/protocols/resumable-upload)
 - [Scalar API reference](https://scalar.com/docs)
-- [Stripe Connect documentation](https://docs.stripe.com/connect)
+- [Hyperswitch documentation](https://docs.hyperswitch.io/)
+- [Hyperswitch API reference](https://api-reference.hyperswitch.io/)
 - [Hocuspocus (collaborative editing)](https://tiptap.dev/hocuspocus/introduction)
 - [PgBouncer](https://www.pgbouncer.org)
 - [Cloudflare Workers](https://developers.cloudflare.com/workers/)
