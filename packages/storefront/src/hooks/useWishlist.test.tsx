@@ -7,7 +7,7 @@
  *   - https://tanstack.com/query/latest/docs/framework/react/overview
  *   - https://testing-library.com/docs/react-testing-library/api/#renderhook
  * Tests:
- *   - packages/storefront/src/hooks/useWishlist.test.ts
+ *   - packages/storefront/src/hooks/useWishlist.test.tsx
  */
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { act, renderHook, waitFor } from '@testing-library/react';

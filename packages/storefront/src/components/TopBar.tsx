@@ -7,7 +7,9 @@ import {
   Avatar,
 } from '@heroui/react';
 import { useTheme } from '../hooks/use-theme';
+import { useWishlist } from '../hooks/useWishlist';
 import { useCartState } from '../state/cart-state';
+import type { WishlistApi } from '../types/wishlist';
 import { NotificationBell } from './notifications';
 
 /**
@@ -16,10 +18,15 @@ import { NotificationBell } from './notifications';
  * - Home, dark/light toggle, cart, notifications, library, profile
  * - Profile dropdown: inventory, account settings, creator dashboard
  */
-export function TopBar() {
+interface TopBarProps {
+  readonly wishlistApi?: WishlistApi;
+}
+
+export function TopBar({ wishlistApi }: TopBarProps) {
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const totalItems = useCartState((state) => state.totalItems);
+  const { wishlistCount } = useWishlist({ api: wishlistApi });
 
   return (
     <header className="sticky top-0 z-50 border-b border-divider bg-background/80 backdrop-blur-lg">
@@ -73,6 +80,19 @@ export function TopBar() {
               Cart
             </Button>
             <Badge color="danger" size="sm">{totalItems}</Badge>
+          </Badge.Anchor>
+
+          {/* Wishlist */}
+          <Badge.Anchor>
+            <Button
+              variant="ghost"
+              size="sm"
+              aria-label="Wishlist"
+              onPress={() => navigate('/wishlist')}
+            >
+              Wishlist
+            </Button>
+            <Badge color="accent" size="sm">{wishlistCount}</Badge>
           </Badge.Anchor>
 
           {/* Notifications */}

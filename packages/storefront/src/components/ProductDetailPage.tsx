@@ -30,12 +30,14 @@ import {
   Avatar,
 } from '@heroui/react';
 import type { ProductDetail } from '../types/product';
+import type { WishlistApi } from '../types/wishlist';
 import { formatPrice } from './ProductCard';
 import { useCart } from '../hooks/use-cart';
 import {
   useExperimentVariant,
   type UseExperimentVariantOptions,
 } from '../hooks/useExperimentVariant';
+import { WishlistButton } from './wishlist';
 
 export type ProductDetailFetcher = (slug: string) => Promise<ProductDetail>;
 
@@ -44,6 +46,7 @@ interface ProductDetailPageProps {
   readonly slug: string;
   readonly buildProductHref?: (productSlug: string) => string;
   readonly experimentOptions?: UseExperimentVariantOptions;
+  readonly wishlistApi?: WishlistApi;
 }
 
 export function ProductDetailPage({
@@ -51,6 +54,7 @@ export function ProductDetailPage({
   slug,
   buildProductHref = (productSlug) => `/product/${productSlug}`,
   experimentOptions,
+  wishlistApi,
 }: ProductDetailPageProps) {
   const [product, setProduct] = useState<ProductDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -171,34 +175,37 @@ export function ProductDetailPage({
           )}
 
           {/* Add to cart */}
-          <Button
-            variant="primary"
-            size="lg"
-            className="w-full"
-            isDisabled={primaryVariant?.stockLevel === 'OUT_OF_STOCK'}
-            onPress={() => {
-              if (!primaryVariant) {
-                return;
-              }
+          <div className="flex gap-3">
+            <Button
+              variant="primary"
+              size="lg"
+              className="w-full"
+              isDisabled={primaryVariant?.stockLevel === 'OUT_OF_STOCK'}
+              onPress={() => {
+                if (!primaryVariant) {
+                  return;
+                }
 
-              void experimentVariant.trackEvent('click');
+                void experimentVariant.trackEvent('click');
 
-              addItem({
-                productId: product.id,
-                variantId: primaryVariant.id,
-                name: product.name,
-                basePrice: primaryVariant.price,
-                price: primaryVariant.price,
-                currencyCode: primaryVariant.currencyCode,
-                quantity: 1,
-                heroImageUrl: product.heroMediaType === 'image' ? product.heroMediaUrl : null,
-                slug: product.slug,
-                dependencyRequirements: product.dependencyRequirements,
-              });
-            }}
-          >
-            {ctaText}
-          </Button>
+                addItem({
+                  productId: product.id,
+                  variantId: primaryVariant.id,
+                  name: product.name,
+                  basePrice: primaryVariant.price,
+                  price: primaryVariant.price,
+                  currencyCode: primaryVariant.currencyCode,
+                  quantity: 1,
+                  heroImageUrl: product.heroMediaType === 'image' ? product.heroMediaUrl : null,
+                  slug: product.slug,
+                  dependencyRequirements: product.dependencyRequirements,
+                });
+              }}
+            >
+              {ctaText}
+            </Button>
+            <WishlistButton api={wishlistApi} productId={product.id} />
+          </div>
 
           {product.availableBundles.length > 0 && (
             <>

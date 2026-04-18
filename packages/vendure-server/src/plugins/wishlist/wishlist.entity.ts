@@ -11,7 +11,7 @@
  *   - packages/vendure-server/src/plugins/wishlist/wishlist.service.test.ts
  */
 import { DeepPartial } from '@vendure/common/lib/shared-types';
-import { Customer, EntityId, Product, VendureEntity } from '@vendure/core';
+import { Customer, Product, VendureEntity } from '@vendure/core';
 import { Column, Entity, Index, JoinColumn, ManyToOne, Unique } from 'typeorm';
 
 @Entity('wishlist_item')
@@ -22,17 +22,15 @@ export class WishlistItem extends VendureEntity {
     super(input);
   }
 
-  @EntityId()
-  @Column()
-  customerId!: string | number;
+  @Column({ type: 'varchar' })
+  customerId!: string;
 
   @ManyToOne(() => Customer, { nullable: false, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'customerId' })
   customer!: Customer;
 
-  @EntityId()
-  @Column()
-  productId!: string | number;
+  @Column({ type: 'varchar' })
+  productId!: string;
 
   @ManyToOne(() => Product, { nullable: false, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'productId' })
@@ -42,5 +40,5 @@ export class WishlistItem extends VendureEntity {
   addedAt!: Date;
 
   @Column({ type: 'boolean', default: false })
-  notifyOnPriceDrop = false;
+  notifyOnPriceDrop!: boolean;
 }

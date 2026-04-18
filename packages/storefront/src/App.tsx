@@ -8,6 +8,7 @@ import { NotificationsPage } from './pages/NotificationsPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { CreatorDashboardPage } from './pages/CreatorDashboardPage';
 import { NotFoundPage } from './pages/NotFoundPage';
+import { WishlistPage } from './pages/WishlistPage';
 import { StoreLayout, StorePageRoute, StoreProductRoute, StoreNotFoundPage, resolveStoreRoute } from './store';
 
 export function App() {
@@ -55,6 +56,7 @@ export function AppRoutes({ hostname }: AppRoutesProps) {
         <Route index element={<HomePage />} />
         <Route path="product/:slug" element={<ProductDetailPage />} />
         <Route path="cart" element={<CartPage />} />
+        <Route path="wishlist" element={<WishlistPage />} />
         <Route path="library" element={<LibraryPage />} />
         <Route path="notifications" element={<NotificationsPage />} />
         <Route path="profile" element={<ProfilePage />} />

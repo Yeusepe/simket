@@ -13,6 +13,8 @@
 import { Link } from 'react-router-dom';
 import { Card, Chip, Skeleton } from '@heroui/react';
 import type { ProductListItem } from '../types/product';
+import type { WishlistApi } from '../types/wishlist';
+import { WishlistButton } from './wishlist';
 
 /** Format price from minor units (cents) to a display string. */
 export function formatPrice(minorUnits: number, currencyCode: string): string {
@@ -27,60 +29,76 @@ export function formatPrice(minorUnits: number, currencyCode: string): string {
 interface ProductCardProps {
   readonly product: ProductListItem;
   readonly href?: string;
+  readonly wishlistApi?: WishlistApi;
+  readonly showWishlistButton?: boolean;
 }
 
-export function ProductCard({ product, href }: ProductCardProps) {
+export function ProductCard({
+  product,
+  href,
+  wishlistApi,
+  showWishlistButton = true,
+}: ProductCardProps) {
   const hasPriceRange = product.priceMin !== product.priceMax;
   const priceDisplay = hasPriceRange
     ? `${formatPrice(product.priceMin, product.currencyCode)} – ${formatPrice(product.priceMax, product.currencyCode)}`
     : formatPrice(product.priceMin, product.currencyCode);
 
   return (
-    <Link to={href ?? `/product/${product.slug}`} className="block focus-visible:outline-none">
-      <Card className="h-full transition-shadow hover:shadow-lg focus-visible:ring-2 focus-visible:ring-primary">
-        {/* Hero image */}
-        <div className="aspect-video overflow-hidden">
-          {product.heroImageUrl ? (
-            <img
-              src={product.heroImageUrl}
-              alt={product.name}
-              className="h-full w-full object-cover"
-              loading="lazy"
-            />
-          ) : (
-            <div
-              data-testid="product-card-placeholder"
-              className="flex h-full w-full items-center justify-center bg-muted"
-            >
-              <span className="text-muted-foreground">No image</span>
-            </div>
-          )}
-        </div>
+    <div className="relative">
+      {showWishlistButton ? (
+        <WishlistButton
+          api={wishlistApi}
+          className="absolute right-3 top-3 z-10"
+          productId={product.id}
+        />
+      ) : null}
+      <Link to={href ?? `/product/${product.slug}`} className="block focus-visible:outline-none">
+        <Card className="h-full transition-shadow hover:shadow-lg focus-visible:ring-2 focus-visible:ring-primary">
+          {/* Hero image */}
+          <div className="aspect-video overflow-hidden">
+            {product.heroImageUrl ? (
+              <img
+                src={product.heroImageUrl}
+                alt={product.name}
+                className="h-full w-full object-cover"
+                loading="lazy"
+              />
+            ) : (
+              <div
+                data-testid="product-card-placeholder"
+                className="flex h-full w-full items-center justify-center bg-muted"
+              >
+                <span className="text-muted-foreground">No image</span>
+              </div>
+            )}
+          </div>
 
-        <Card.Header className="pb-1">
-          <Card.Title className="line-clamp-1 text-base">{product.name}</Card.Title>
-          <Card.Description className="text-sm text-muted-foreground">
-            {product.creatorName}
-          </Card.Description>
-        </Card.Header>
+          <Card.Header className="pb-1">
+            <Card.Title className="line-clamp-1 text-base">{product.name}</Card.Title>
+            <Card.Description className="text-sm text-muted-foreground">
+              {product.creatorName}
+            </Card.Description>
+          </Card.Header>
 
-        <Card.Content className="pb-2 pt-0">
-          {product.tags.length > 0 && (
-            <div className="flex flex-wrap gap-1">
-              {product.tags.map((tag) => (
-                <Chip key={tag} size="sm" variant="soft">
-                  <Chip.Label>{tag}</Chip.Label>
-                </Chip>
-              ))}
-            </div>
-          )}
-        </Card.Content>
+          <Card.Content className="pb-2 pt-0">
+            {product.tags.length > 0 && (
+              <div className="flex flex-wrap gap-1">
+                {product.tags.map((tag) => (
+                  <Chip key={tag} size="sm" variant="soft">
+                    <Chip.Label>{tag}</Chip.Label>
+                  </Chip>
+                ))}
+              </div>
+            )}
+          </Card.Content>
 
-        <Card.Footer className="pt-0">
-          <span className="font-semibold">{priceDisplay}</span>
-        </Card.Footer>
-      </Card>
-    </Link>
+          <Card.Footer className="pt-0">
+            <span className="font-semibold">{priceDisplay}</span>
+          </Card.Footer>
+        </Card>
+      </Link>
+    </div>
   );
 }
 
