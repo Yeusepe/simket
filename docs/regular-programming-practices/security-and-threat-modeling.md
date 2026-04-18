@@ -4,6 +4,7 @@
 
 - Fail closed on authorisation-sensitive paths (Cedar policies, CrowdSec, ClamAV)
 - Validate signatures, MIME, and declared content
+- Sanitize all user-provided TipTap HTML on write and again on render; only allowlisted embed hosts and custom elements may survive
 - Keep secrets server-side
 - Keep operator actions auditable
 - Follow Stripe's security principles: defence in depth, secure by default, least privilege

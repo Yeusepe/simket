@@ -51,7 +51,7 @@ const DOM_PURIFY_CONFIG = {
     allowCustomizedBuiltInElements: false,
   },
   RETURN_DOM_FRAGMENT: true,
-} as const;
+};
 
 interface MutableElement {
   readonly localName?: string;

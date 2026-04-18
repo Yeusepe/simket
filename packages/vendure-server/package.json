@@ -18,6 +18,7 @@
   "dependencies": {
     "@cedar-policy/cedar-wasm": "^4.9.1",
     "@crowdsec/nodejs-bouncer": "^0.2.0",
+    "@juspay-tech/hyperswitch-node": "^2.0.0",
     "@nestjs/common": "^11.1.19",
     "@nestjs/core": "^11.1.19",
     "@nestjs/graphql": "~13.1.0",

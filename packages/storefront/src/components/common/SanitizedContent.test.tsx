@@ -79,7 +79,9 @@ describe('SanitizedContent', () => {
     expect(container.querySelector('h2')).toHaveTextContent('Heading');
     expect(container.querySelector('strong')).toHaveTextContent('Bold');
     expect(container.querySelector('em')).toHaveTextContent('Italic');
-    expect(container.querySelector('a')).toHaveAttribute('href', 'https://example.com');
+    expect(container.querySelector('a')?.getAttribute('href')).toBe(
+      'https://example.com/',
+    );
     expect(container.querySelector('img')).toHaveAttribute(
       'src',
       'https://cdn.example.com/image.png',

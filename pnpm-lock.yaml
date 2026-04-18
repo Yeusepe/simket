@@ -257,6 +257,9 @@ importers:
       '@crowdsec/nodejs-bouncer':
         specifier: ^0.2.0
         version: 0.2.0
+      '@juspay-tech/hyperswitch-node':
+        specifier: ^2.0.0
+        version: 2.0.0
       '@nestjs/common':
         specifier: ^11.1.19
         version: 11.1.19(reflect-metadata@0.2.2)(rxjs@7.8.2)
@@ -1928,6 +1931,10 @@ packages:
 
   '@jsdevtools/ono@7.1.3':
     resolution: {integrity: sha512-4JQNk+3mVzK3xh2rqd6RB4J46qUR19azEHBneZyTZM+c456qOrbbM/5xcR8huNCCcbVt7+UmizG6GuUvPvKUYg==}
+
+  '@juspay-tech/hyperswitch-node@2.0.0':
+    resolution: {integrity: sha512-bd0xqUNLr+WtC2vpZuK6JaPlyrgKviILw/1k6G6rDXmvzrVf39TwmtvseRUD87kyemip1MKt1kKlDodyHE8B9Q==}
+    engines: {node: ^8.1 || >=10.*}
 
   '@keyv/serialize@1.1.1':
     resolution: {integrity: sha512-dXn3FZhPv0US+7dtJsIi2R+c7qWYiReoEh5zUntWCf4oSpMNib8FDhSoed6m3QyZdx5hK7iLFkYk3rNxwt8vTA==}
@@ -8577,6 +8584,11 @@ snapshots:
   '@js-sdsl/ordered-map@4.4.2': {}
 
   '@jsdevtools/ono@7.1.3': {}
+
+  '@juspay-tech/hyperswitch-node@2.0.0':
+    dependencies:
+      '@types/node': 22.19.17
+      qs: 6.15.1
 
   '@keyv/serialize@1.1.1': {}
 
