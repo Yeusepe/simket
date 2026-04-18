@@ -16,6 +16,7 @@ export { DashboardStats } from './DashboardStats';
 export { QuickActions } from './QuickActions';
 export { RecentActivity } from './RecentActivity';
 export * from './analytics';
+export * from './licenses';
 export * from './products';
 export * from './templates';
 export type {

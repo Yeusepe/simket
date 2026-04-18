@@ -13,6 +13,7 @@
 export type DashboardSection =
   | 'home'
   | 'products'
+  | 'licenses'
   | 'templates'
   | 'collaborations'
   | 'flows'

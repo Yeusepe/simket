@@ -38,9 +38,9 @@ export function DashboardLayout({
   return (
     <div className="mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-7xl gap-6 px-4 py-6">
       <Card className="sticky top-20 hidden h-fit w-72 shrink-0 lg:block">
-        <Card.Header className="space-y-1">
+          <Card.Header className="space-y-1">
           <Card.Title>Creator Dashboard</Card.Title>
-          <Card.Description>Manage products, collaborations, flows, and creator settings.</Card.Description>
+          <Card.Description>Manage products, licenses, collaborations, flows, and creator settings.</Card.Description>
         </Card.Header>
         <Card.Content>
           <DashboardNav currentSection={currentSection} onNavigate={handleNavigate} />

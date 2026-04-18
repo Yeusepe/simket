@@ -26,6 +26,7 @@ interface DashboardNavItem {
 const DASHBOARD_NAV_ITEMS: readonly DashboardNavItem[] = [
   { section: 'home', label: 'Home', icon: '⌂' },
   { section: 'products', label: 'Products', icon: '□' },
+  { section: 'licenses', label: 'Licenses', icon: '⌘' },
   { section: 'templates', label: 'Templates', icon: '▤' },
   { section: 'collaborations', label: 'Collaborations', icon: '◌' },
   { section: 'flows', label: 'Flows', icon: '⇄' },

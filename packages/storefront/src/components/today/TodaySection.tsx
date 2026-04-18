@@ -105,7 +105,7 @@ export function TodaySection() {
       {hasFreshContent && (
         <div className="flex items-center justify-between gap-4 rounded-2xl border border-primary/20 bg-primary-50 px-4 py-3 text-primary-700">
           <p className="text-sm font-medium">New content available.</p>
-          <Button size="sm" variant="flat" onPress={dismissFreshContent}>
+          <Button size="sm" variant="secondary" onPress={dismissFreshContent}>
             Dismiss
           </Button>
         </div>

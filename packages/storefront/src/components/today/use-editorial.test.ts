@@ -180,17 +180,17 @@ describe('useEditorial', () => {
 
     const { result, unmount } = renderHook(() => useEditorial({ pollIntervalMs: 1_000 }));
 
-    await waitFor(() => {
-      expect(result.current.isLoading).toBe(false);
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
     });
+    expect(result.current.isLoading).toBe(false);
 
     await act(async () => {
       await vi.advanceTimersByTimeAsync(1_100);
     });
 
-    await waitFor(() => {
-      expect(result.current.sections[0]?.items[0]?.title).toBe('Fresh Story');
-    });
+    expect(result.current.sections[0]?.items[0]?.title).toBe('Fresh Story');
 
     expect(result.current.version).toBe(2);
     expect(result.current.hasFreshContent).toBe(true);

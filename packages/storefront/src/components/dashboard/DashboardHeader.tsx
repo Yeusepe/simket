@@ -25,6 +25,10 @@ const SECTION_COPY: Record<DashboardSection, { readonly label: string; readonly 
     label: 'Products',
     description: 'Create, review, and maintain your product catalog.',
   },
+  licenses: {
+    label: 'Licenses',
+    description: 'Manage Keygen-backed policies, issued keys, activations, and customer license lifecycle actions.',
+  },
   templates: {
     label: 'Templates',
     description: 'Save reusable page layouts, browse system starters, and duplicate successful page structures.',

@@ -22,6 +22,7 @@ describe('DashboardNav', () => {
 
     expect(screen.getByRole('button', { name: 'Home' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Products' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Licenses' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Templates' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Collaborations' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Flows' })).toBeInTheDocument();
@@ -30,10 +31,10 @@ describe('DashboardNav', () => {
 
   it('marks the active section', () => {
     render(
-      <DashboardNav currentSection="products" onNavigate={vi.fn()} />,
+      <DashboardNav currentSection="licenses" onNavigate={vi.fn()} />,
     );
 
-    expect(screen.getByRole('button', { name: 'Products' })).toHaveAttribute('aria-current', 'page');
+    expect(screen.getByRole('button', { name: 'Licenses' })).toHaveAttribute('aria-current', 'page');
     expect(screen.getByRole('button', { name: 'Home' })).not.toHaveAttribute('aria-current', 'page');
   });
 
@@ -45,8 +46,8 @@ describe('DashboardNav', () => {
       <DashboardNav currentSection="home" onNavigate={onNavigate} />,
     );
 
-    await user.click(screen.getByRole('button', { name: 'Settings' }));
+    await user.click(screen.getByRole('button', { name: 'Licenses' }));
 
-    expect(onNavigate).toHaveBeenCalledWith('settings');
+    expect(onNavigate).toHaveBeenCalledWith('licenses');
   });
 });

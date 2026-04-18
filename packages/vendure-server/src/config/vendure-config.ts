@@ -1,5 +1,6 @@
 import { VendureConfig } from '@vendure/core';
 import path from 'node:path';
+import { NotificationPlugin } from '../plugins/notification/index.js';
 
 /**
  * Core Vendure configuration.
@@ -51,5 +52,5 @@ export const config: VendureConfig = {
     paymentMethodHandlers: [],
   },
 
-  plugins: [],
+  plugins: [NotificationPlugin],
 };

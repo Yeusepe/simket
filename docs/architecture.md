@@ -52,7 +52,7 @@ The system must:
    pages, editorial articles) uses TipTap with iFramely embeds and Cavalry
    web-player support.
 9. **Every outbound call through Cockatiel** All calls to peer services
-   (Typesense, Qdrant, CDNgine, Stripe, Keygen, Cedar, CrowdSec, Convex,
+   (Typesense, Qdrant, CDNgine, Hyperswitch, Keygen, Cedar, CrowdSec, Convex,
    PayloadCMS) go through a Cockatiel resilience policy (circuit breaker +
    timeout + retry where safe). No raw `fetch` / `axios` calls to
    external services.
@@ -126,7 +126,7 @@ graph TD
 ```mermaid
 graph LR
     CF["Cloudflare<br/>(edge CDN + Workers)"] -->|"SWR cache"| SIM
-    PG["Stripe Connect<br/>(payments)"] <-->|Stripe SDK| SIM
+    PG["Hyperswitch<br/>(payment orchestration)"] <-->|Hyperswitch SDK| SIM
     BA["Better Auth<br/>(identity + OAuth)"] <-->|JWT verify| SIM
     CDN["CDNgine<br/>(artefact storage)"] <-->|Asset refs| SIM
     CMS["PayloadCMS<br/>(editorial)"] <-->|REST| SIM
@@ -153,8 +153,8 @@ graph LR
 | **In**    | Browser               | Bebop over HTTPS             | Queries, mutations, subscriptions                                               |
 | **In**    | Creator uploads       | Bebop mutation → CDNgine SDK | Binary artefacts (images, packages, video)                                      |
 | **In**    | CMS authors           | PayloadCMS Admin UI          | Editorial articles, curated collections                                         |
-| **In**    | Webhooks              | HTTPS POST                   | Payment confirmations, CDNgine transform-complete events, Keygen license events |
-| **Out**   | Stripe Connect        | HTTPS (Stripe SDK)           | Connected-account charges, refunds, destination payouts, collaboration splits   |
+| **In**    | Webhooks              | HTTPS POST                   | Payment confirmations (Hyperswitch), CDNgine transform-complete events, Keygen license events, Payload editorial publish/update/delete events |
+| **Out**   | Hyperswitch           | HTTPS (Hyperswitch SDK)      | Payment creation, confirmation, capture, refunds, split payments, payouts, smart routing                                                     |
 | **Out**   | CDNgine               | HTTPS (CDNgine API)          | Upload pre-signed URLs, transform requests, asset metadata                      |
 | **Out**   | Better Auth           | HTTPS (token verify)         | JWT validation, user profile fetch, OAuth flows                                 |
 | **Out**   | PayloadCMS            | REST                         | Article content, editorial collections                                          |
@@ -178,7 +178,7 @@ its own runtime (noted below).
 | **Catalog plugin**       | Commerce team   | Vendure plugin  | Product CRUD, variants, pricing, custom fields (hero images, transparent overlays, TipTap descriptions).                                   |
 | **Bundle plugin**        | Commerce team   | Vendure plugin  | Bundle definition, bundle pricing, bundle-to-product associations.                                                                         |
 | **Dependency plugin**    | Commerce team   | Vendure plugin  | Purchase prerequisites ("buy X before Y"), optional dependency discounts.                                                                  |
-| **Collaboration plugin** | Commerce team   | Vendure plugin  | Multi-creator revenue splits (% based), invitation flow, settlement via Convex action.                                                     |
+| **Collaboration plugin** | Commerce team   | Vendure plugin  | Multi-creator revenue splits (% based), invitation flow, settlement via Convex action + Hyperswitch split payments.             |
 | **Storefront plugin**    | Storefront team | Vendure plugin  | Generic product template, post-sale pages, universal vs product-scoped page config, saved page templates, system template gallery, and template duplication. |
 | **Framely integration**  | Storefront team | Next.js app     | Custom creator stores, drag-and-drop page builder with HeroUI components, subdomain routing.                                               |
 | **Tagging plugin**       | Discovery team  | Vendure plugin  | Product tags, creator tags, tag suggestions, tag enforcement rules.                                                                        |
@@ -193,6 +193,7 @@ its own runtime (noted below).
 | **Webhooks**             | Platform team   | Svix            | Outbound event signing, delivery, retry, and operational observability.                                                                    |
 | **Authorization**        | Platform team   | Cedar           | Fine-grained policy evaluation for entitlements, collaborator perms, moderation.                                                           |
 | **Licensing**            | Commerce team   | Keygen          | License key generation, validation, entitlements, and device activation for software products.                                             |
+| **Payment orchestration** | Commerce team  | Hyperswitch     | Payment creation, capture, refunds, split payments (collaboration splits), payouts (creator disbursements), smart routing across processors, PCI-compliant vault. |
 | **Abuse defence**        | Platform team   | CrowdSec        | Bot detection, IP reputation, community-fed threat intelligence.                                                                           |
 | **API docs**             | Platform team   | Scalar          | Interactive API reference for all public Bebop/REST endpoints.                                                                             |
 | **Feature flags**        | Platform team   | OpenFeature SDK | Progressive rollout, A/B tests, kill switches.                                                                                             |
@@ -287,7 +288,7 @@ sequenceDiagram
 | **Bundle**                                  | Vendure DB (Bundle plugin)        | Checkout, Storefront                                     |
 | **Dependency**                              | Vendure DB (Dependency plugin)    | Checkout (prereq check)                                  |
 | **Collaboration**                           | Vendure DB (Collaboration plugin) | Convex (settlement), Creator Dashboard                   |
-| **Order / Payment**                         | endure DB                         | Convex (settlement), Email, Analytics                    |
+| **Order / Payment**                         | Vendure DB (order) + Hyperswitch (payment state) | Convex (settlement), Email, Analytics                    |
 | **User identity**                           | Better Auth                       | Vendure (via JWT), all services                          |
 | **User profile** (display name, avatar)     | Better Auth                       | Vendure Customer entity (cached)                         |
 | **Binary artefact** (image, video, package) | CDNgine                           | Vendure (asset ID reference), Storefront (delivery URLs) |
@@ -325,7 +326,7 @@ the HTTP timeout) or **worker** (can be deferred).
 | Product CRUD                 | Request-path             | Vendure resolver → DB                                                |
 | Product search               | Request-path             | Typesense (pre-indexed, in-memory, typo-tolerant, faceted, sub-50ms) |
 | Add to cart / checkout       | Request-path             | Vendure resolver → DB                                                |
-| Payment charge               | Request-path             | Vendure → Stripe SDK (synchronous)                                   |
+| Payment charge               | Request-path             | Vendure → Hyperswitch SDK (synchronous, smart-routed)                    |
 | Search index rebuild         | Worker                   | Vendure job queue                                                    |
 | Media transformation         | Worker                   | CDNgine (async, webhook on complete)                                 |
 | Recommendation scoring       | Request-path (cached)    | Recommend service (pre-computed, refreshed by worker)                |

@@ -12,16 +12,35 @@
  *   - packages/storefront/src/components/dashboard/collaborations/use-collaborations.test.ts
  */
 export { CollaborationList } from './CollaborationList';
+export { ActiveCollaborationCard } from './ActiveCollaborationCard';
+export { CollaborationDetailModal } from './CollaborationDetailModal';
+export { CollaborationEarnings } from './CollaborationEarnings';
+export { CollaborationsPage } from './CollaborationsPage';
+export { CreateCollaborationForm } from './CreateCollaborationForm';
 export { InviteCollaborator } from './InviteCollaborator';
 export { InvitationResponse } from './InvitationResponse';
+export { PendingInvitationCard } from './PendingInvitationCard';
 export { useCollaborations } from './use-collaborations';
 export type {
+  CollaborationEarningsPoint,
   CollaborationOverview,
+  CollaborationParticipant,
+  CollaborationProductOption,
   CollaborationSummary,
+  CollaborationSettlementEvent,
+  CollaborationSettlementSummary,
+  CollaborationRole,
   CollaborationsApi,
   CreateInvitationInput,
+  CreateCollaborationInput,
+  CreateCollaborationInviteeInput,
+  DashboardCollaboration,
+  DashboardCollaborationStatus,
+  DashboardInvitation,
+  DashboardInvitationDirection,
   InvitationDetail,
   InvitationSummary,
+  SettlementViewStatus,
   UseCollaborationsHook,
   UseCollaborationsOptions,
   UseCollaborationsResult,

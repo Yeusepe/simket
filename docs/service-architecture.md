@@ -79,12 +79,15 @@ Key operations consumed:
 
 ### 1.5 PayloadCMS API
 
-| Operation                                                       | Simket usage                                      |
-| --------------------------------------------------------------- | ------------------------------------------------- |
-| `GET /api/articles?status=published&sort=-publishDate&limit=10` | Fetch "Today" section content                     |
-| `GET /api/articles/:id`                                         | Fetch individual article with full TipTap content |
-| `GET /api/curated-collections`                                  | Fetch editorial collections for homepage          |
-| Webhook: `article.published`                                    | Trigger cache invalidation in Vendure             |
+| Operation                                      | Simket usage                                                      |
+| ---------------------------------------------- | ----------------------------------------------------------------- |
+| `GET /api/articles?status=published&sort=-publishDate&limit=10` | Fetch "Today" section content from PayloadCMS                     |
+| `GET /api/articles/:id`                        | Fetch individual article with full TipTap content                 |
+| `GET /api/curated-collections`                 | Fetch editorial collections for homepage                          |
+| `POST /webhooks/payloadcms/editorial`          | Validate editorial webhook signatures and invalidate Vendure cache |
+| `GET /editorial/collections`                   | Serve cache-backed curated collections to the storefront          |
+| `GET /editorial/updates`                       | Poll editorial update versions for real-time refresh              |
+| `GET /editorial/updates/stream`                | Stream editorial updates over SSE                                 |
 
 ### 1.6 Convex functions (database + workflows)
 

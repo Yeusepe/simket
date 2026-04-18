@@ -113,7 +113,9 @@ function isUpdatesResponse(value: unknown): value is RawUpdatesResponse {
 }
 
 function getEditorialBaseUrl(): string {
-  const envBaseUrl = import.meta.env.VITE_EDITORIAL_API_URL;
+  const envBaseUrl = (import.meta as ImportMeta & {
+    readonly env?: Record<string, string | undefined>;
+  }).env?.VITE_EDITORIAL_API_URL;
   return typeof envBaseUrl === 'string' && envBaseUrl.length > 0
     ? envBaseUrl
     : window.location.origin;

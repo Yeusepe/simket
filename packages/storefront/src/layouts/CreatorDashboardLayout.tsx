@@ -39,6 +39,10 @@ function getDashboardSection(pathname: string): DashboardSection {
     return 'products';
   }
 
+  if (pathname.startsWith('/dashboard/licenses')) {
+    return 'licenses';
+  }
+
   if (pathname.startsWith('/dashboard/templates')) {
     return 'templates';
   }
@@ -64,6 +68,8 @@ function getDashboardPath(section: DashboardSection): string {
       return '/dashboard';
     case 'products':
       return '/dashboard/products';
+    case 'licenses':
+      return '/dashboard/licenses';
     case 'templates':
       return '/dashboard/templates';
     case 'collaborations':
