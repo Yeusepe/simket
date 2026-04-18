@@ -72,11 +72,11 @@ describe('CollaborationPlugin', () => {
       expect(result).toBe(baseConfig);
     });
 
-    it('adds a Customer stripeConnectedAccountId custom field', () => {
+    it('adds a Customer payoutAccountId custom field', () => {
       const baseConfig = { customFields: {} } as RuntimeVendureConfig;
       const result = collaborationConfiguration(baseConfig);
       const customerFields = (result.customFields?.Customer ?? []) as Array<{ name: string }>;
-      expect(customerFields.some((field) => field.name === 'stripeConnectedAccountId')).toBe(true);
+      expect(customerFields.some((field) => field.name === 'payoutAccountId')).toBe(true);
     });
   });
 

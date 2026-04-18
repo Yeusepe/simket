@@ -117,13 +117,13 @@ function collaborationConfiguration(config: RuntimeVendureConfig): RuntimeVendur
     Customer: [
       ...(config.customFields?.Customer ?? []),
       {
-        name: 'stripeConnectedAccountId',
+        name: 'payoutAccountId',
         type: 'string',
-        label: [{ languageCode: LanguageCode.en, value: 'Stripe Connected Account ID' }],
+        label: [{ languageCode: LanguageCode.en, value: 'Payout Account ID' }],
         description: [
           {
             languageCode: LanguageCode.en,
-            value: 'Creator Stripe Connect account ID used for collaboration settlements',
+            value: 'Creator payout account identifier used for collaboration settlements',
           },
         ],
         nullable: true,

@@ -133,10 +133,11 @@ export const SERVICE_POLICIES = {
     retry: { maxAttempts: 2, initialDelay: 200, maxDelay: 2_000 },
     circuitBreaker: { threshold: 0.25, duration: 30_000, minimumRps: 1 },
   }),
-  stripe: createResiliencePolicy('stripe', {
-    timeout: 15_000,
-    retry: { maxAttempts: 2, initialDelay: 1_000, maxDelay: 5_000 },
+  hyperswitch: createResiliencePolicy('hyperswitch', {
+    timeout: 5_000,
+    retry: { maxAttempts: 0, initialDelay: 200, maxDelay: 5_000 },
     circuitBreaker: { threshold: 0.3, duration: 60_000, minimumRps: 2 },
+    bulkhead: { maxConcurrent: 5, maxQueue: 10 },
   }),
   betterAuth: createResiliencePolicy('better-auth', {
     timeout: 3_000,

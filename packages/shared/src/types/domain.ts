@@ -87,7 +87,7 @@ export interface Order {
   subTotal: number;
   total: number;
   currencyCode: string;
-  stripePaymentIntentId?: string;
+  hyperswitchPaymentId?: string;
   idempotencyKey: string;
   createdAt: Date;
   updatedAt: Date;
@@ -117,7 +117,7 @@ export interface Customer {
   firstName: string;
   lastName: string;
   isCreator: boolean;
-  stripeConnectedAccountId?: string;
+  payoutAccountId?: string;
   createdAt: Date;
   updatedAt: Date;
 }

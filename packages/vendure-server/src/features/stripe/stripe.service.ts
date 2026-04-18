@@ -74,7 +74,7 @@ export class StripeService {
       try {
         span.setAttribute('stripe.creator_id', creatorId);
 
-        const account = await SERVICE_POLICIES.stripe.execute(() =>
+        const account = await SERVICE_POLICIES.hyperswitch.execute(() =>
           this.stripe.accounts.create({
             type: 'express',
             metadata: { creatorId },
@@ -83,7 +83,7 @@ export class StripeService {
 
         span.setAttribute('stripe.account_id', account.id);
 
-        const accountLink = await SERVICE_POLICIES.stripe.execute(() =>
+        const accountLink = await SERVICE_POLICIES.hyperswitch.execute(() =>
           this.stripe.accountLinks.create({
             account: account.id,
             type: 'account_onboarding',
@@ -147,7 +147,7 @@ export class StripeService {
           ...(params.metadata && { metadata: params.metadata }),
         };
 
-        const pi = await SERVICE_POLICIES.stripe.execute(() =>
+        const pi = await SERVICE_POLICIES.hyperswitch.execute(() =>
           this.stripe.paymentIntents.create(createParams, {
             idempotencyKey: params.idempotencyKey,
           }),
@@ -272,7 +272,7 @@ export class StripeService {
         span.setAttribute('stripe.connected_account', params.destinationAccountId);
         span.setAttribute('stripe.transfer_group', params.transferGroup);
 
-        const transfer = await SERVICE_POLICIES.stripe.execute(() =>
+        const transfer = await SERVICE_POLICIES.hyperswitch.execute(() =>
           this.stripe.transfers.create(
             {
               amount: params.amount,
