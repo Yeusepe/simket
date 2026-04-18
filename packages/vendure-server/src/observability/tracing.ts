@@ -4,38 +4,49 @@ import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http';
 import { HttpInstrumentation } from '@opentelemetry/instrumentation-http';
 import { ExpressInstrumentation } from '@opentelemetry/instrumentation-express';
 import { PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics';
-import { Resource } from '@opentelemetry/resources';
+import type { SpanExporter } from '@opentelemetry/sdk-trace-node';
+import type { PushMetricExporter } from '@opentelemetry/sdk-metrics';
+import { resourceFromAttributes } from '@opentelemetry/resources';
 import {
   ATTR_SERVICE_NAME,
   ATTR_SERVICE_VERSION,
-  ATTR_DEPLOYMENT_ENVIRONMENT_NAME,
 } from '@opentelemetry/semantic-conventions';
-import { trace, metrics, type Tracer, type Meter } from '@opentelemetry/api';
+import {
+  trace,
+  metrics,
+  type Tracer,
+  type Meter,
+} from '@opentelemetry/api';
 
 export interface TracingOptions {
   otlpEndpoint?: string;
+  /** Override the trace exporter (useful for testing). */
+  traceExporter?: SpanExporter;
+  /** Override the metric exporter (useful for testing). */
+  metricExporter?: PushMetricExporter;
 }
 
 const DEFAULT_OTLP_ENDPOINT = 'http://localhost:4318';
 
 let sdk: NodeSDK | undefined;
 
-export function initTracing(serviceName: string, opts?: TracingOptions): NodeSDK {
+export function initTracing(
+  serviceName: string,
+  opts?: TracingOptions,
+): NodeSDK {
   const endpoint = opts?.otlpEndpoint ?? DEFAULT_OTLP_ENDPOINT;
 
-  const resource = new Resource({
+  const resource = resourceFromAttributes({
     [ATTR_SERVICE_NAME]: serviceName,
     [ATTR_SERVICE_VERSION]: process.env['npm_package_version'] ?? '0.0.0',
-    [ATTR_DEPLOYMENT_ENVIRONMENT_NAME]: process.env['NODE_ENV'] ?? 'development',
+    'deployment.environment': process.env['NODE_ENV'] ?? 'development',
   });
 
-  const traceExporter = new OTLPTraceExporter({
-    url: `${endpoint}/v1/traces`,
-  });
+  const traceExporter: SpanExporter = opts?.traceExporter ??
+    new OTLPTraceExporter({ url: `${endpoint}/v1/traces` });
 
-  const metricExporter = new OTLPMetricExporter({
-    url: `${endpoint}/v1/metrics`,
-  });
+  const metricExporter: PushMetricExporter = opts?.metricExporter ??
+    new OTLPMetricExporter({ url: `${endpoint}/v1/metrics` });
 
   const metricReader = new PeriodicExportingMetricReader({
     exporter: metricExporter,
@@ -46,7 +57,10 @@ export function initTracing(serviceName: string, opts?: TracingOptions): NodeSDK
     resource,
     traceExporter,
     metricReader,
-    instrumentations: [new HttpInstrumentation(), new ExpressInstrumentation()],
+    instrumentations: [
+      new HttpInstrumentation(),
+      new ExpressInstrumentation(),
+    ],
   });
 
   sdk.start();

@@ -1,7 +1,15 @@
 import { trace, context } from '@opentelemetry/api';
 import { randomUUID } from 'node:crypto';
+import { AsyncLocalStorage } from 'node:async_hooks';
 
 export const CORRELATION_HEADER = 'x-correlation-id';
+
+const correlationStore = new AsyncLocalStorage<string>();
+
+/** Returns the current correlation ID from async context, if any. */
+export function getCorrelationId(): string | undefined {
+  return correlationStore.getStore();
+}
 
 export interface CorrelationRequest {
   headers: Record<string, string | string[] | undefined>;
@@ -34,9 +42,9 @@ export function correlationMiddleware(
   }
 
   // Attach correlationId to request for downstream access
-  (req as Record<string, unknown>)['correlationId'] = correlationId;
+  (req as unknown as Record<string, unknown>)['correlationId'] = correlationId;
 
-  next();
+  correlationStore.run(correlationId, next);
 }
 
 export interface Logger {
@@ -60,10 +68,7 @@ export interface LogEntry {
  */
 export function createLogger(name: string): Logger {
   function buildEntry(level: string, message: string, data?: Record<string, unknown>): LogEntry {
-    const span = trace.getSpan(context.active());
-    const correlationId = span
-      ? (span.attributes?.['correlation.id'] as string | undefined)
-      : undefined;
+    const correlationId = getCorrelationId();
 
     return {
       level,

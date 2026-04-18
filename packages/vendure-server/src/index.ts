@@ -27,6 +27,12 @@ export type {
   EntityData,
 } from './auth/index.js';
 export {
+  validateJwt,
+  issueServiceToken,
+  resetPublicKeyCache,
+} from './auth/index.js';
+export type { JwtValidationResult } from './auth/index.js';
+export {
   initFeatureFlags,
   getFlag,
   isEnabled,
@@ -53,6 +59,7 @@ export {
   resetMetrics,
   correlationMiddleware,
   createLogger,
+  getCorrelationId,
   CORRELATION_HEADER,
 } from './observability/index.js';
 export type {

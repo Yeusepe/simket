@@ -11,7 +11,12 @@ export {
   resetMetrics,
 } from './metrics.js';
 
-export { correlationMiddleware, createLogger, CORRELATION_HEADER } from './correlation.js';
+export {
+  correlationMiddleware,
+  createLogger,
+  getCorrelationId,
+  CORRELATION_HEADER,
+} from './correlation.js';
 export type {
   Logger,
   LogEntry,
