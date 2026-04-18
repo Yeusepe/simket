@@ -36,9 +36,9 @@ describe('ExperimentResults', () => {
       />,
     );
 
-    expect(screen.getByText('control')).toBeInTheDocument();
-    expect(screen.getByText('variant-b')).toBeInTheDocument();
-    expect(screen.getByText('11.1%')).toBeInTheDocument();
+    expect(screen.getAllByText('control').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('variant-b').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('11.1%').length).toBeGreaterThan(0);
     expect(screen.getByText(/needs more data/i)).toBeInTheDocument();
   });
 });

@@ -45,6 +45,7 @@ export type ExperimentEventTracker = (
 ) => Promise<void>;
 
 export interface UseExperimentVariantOptions {
+  readonly enabled?: boolean;
   readonly userId?: string;
   readonly fetchVariant?: ExperimentVariantFetcher;
   readonly trackEvent?: ExperimentEventTracker;
@@ -170,16 +171,17 @@ export function useExperimentVariant(
   productId: string | null,
   options: UseExperimentVariantOptions = {},
 ): UseExperimentVariantResult {
+  const enabled = options.enabled ?? true;
   const fetchVariant = options.fetchVariant ?? fetchActiveExperimentVariant;
   const tracker = options.trackEvent ?? postExperimentEvent;
   const autoTrackView = options.autoTrackView ?? true;
   const [variant, setVariant] = useState<ExperimentVariantAssignment | null>(null);
-  const [isLoading, setIsLoading] = useState(Boolean(productId));
+  const [isLoading, setIsLoading] = useState(Boolean(productId) && enabled);
   const [error, setError] = useState<Error | null>(null);
   const trackedViewKey = useRef<string | null>(null);
 
   useEffect(() => {
-    if (!productId) {
+    if (!productId || !enabled) {
       setVariant(null);
       setIsLoading(false);
       setError(null);
@@ -219,7 +221,7 @@ export function useExperimentVariant(
       });
 
     return () => abortController.abort();
-  }, [fetchVariant, options.userId, productId]);
+  }, [enabled, fetchVariant, options.userId, productId]);
 
   const trackEvent = useCallback(
     async (

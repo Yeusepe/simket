@@ -56,7 +56,10 @@ export function ProductDetailPage({
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const { addBundle, addItem } = useCart();
-  const experimentVariant = useExperimentVariant(product?.id ?? null, experimentOptions);
+  const experimentVariant = useExperimentVariant(product?.id ?? null, {
+    enabled: Boolean(experimentOptions),
+    ...experimentOptions,
+  });
 
   useEffect(() => {
     let cancelled = false;

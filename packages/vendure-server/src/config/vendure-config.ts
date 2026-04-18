@@ -7,6 +7,9 @@ import { PurchaseParityPlugin } from '../plugins/purchase-parity/index.js';
 import { ProductMetadataPlugin } from '../plugins/product-metadata/index.js';
 import { GiftPlugin } from '../plugins/gifts/index.js';
 import { ReportingPlugin } from '../plugins/reporting/index.js';
+import { CheckoutPlugin } from '../plugins/checkout/index.js';
+import { PaymentWebhookPlugin } from '../plugins/payment-webhook/index.js';
+import { SettlementPlugin } from '../plugins/settlement/index.js';
 
 /**
  * Core Vendure configuration.
@@ -58,5 +61,5 @@ export const config: VendureConfig = {
     paymentMethodHandlers: [],
   },
 
-  plugins: [NotificationPlugin, AbTestingPlugin, PlatformFeePlugin, PurchaseParityPlugin, ProductMetadataPlugin, GiftPlugin, ReportingPlugin],
+  plugins: [NotificationPlugin, AbTestingPlugin, PlatformFeePlugin, PurchaseParityPlugin, ProductMetadataPlugin, GiftPlugin, ReportingPlugin, CheckoutPlugin, PaymentWebhookPlugin, SettlementPlugin],
 };
