@@ -36,6 +36,7 @@
     "@opentelemetry/sdk-trace-node": "^2.7.0",
     "@opentelemetry/semantic-conventions": "^1.40.0",
     "@scalar/express-api-reference": "^0.9.8",
+    "@simket/editorial": "workspace:*",
     "@simket/shared": "workspace:*",
     "@vendure/asset-server-plugin": "^3.6.2",
     "@vendure/common": "^3.6.2",

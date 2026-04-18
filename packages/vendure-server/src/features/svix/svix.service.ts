@@ -39,6 +39,7 @@ const SIMKET_EVENT_TYPES = new Set<SimketEventType>([
   'product.deleted',
   'order.completed',
   'order.refunded',
+  'editorial.content.updated',
   'collaboration.invited',
   'collaboration.accepted',
   'collaboration.revoked',

@@ -22,6 +22,7 @@ describe('DashboardNav', () => {
 
     expect(screen.getByRole('button', { name: 'Home' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Products' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Templates' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Collaborations' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Flows' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Settings' })).toBeInTheDocument();

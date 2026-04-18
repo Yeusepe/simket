@@ -9,3 +9,4 @@ export * from './builder';
 export * from './components/discovery';
 export * from './components/settings';
 export * from './components/today';
+export * from './store';

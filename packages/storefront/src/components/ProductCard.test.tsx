@@ -64,6 +64,18 @@ describe('ProductCard', () => {
     expect(link).toHaveAttribute('href', '/product/my-cool-product');
   });
 
+  it('supports a store-scoped href override', () => {
+    const product = makeProductListItem({ slug: 'my-cool-product' });
+    renderWithRouter(
+      <ProductCard product={product} href="/store/alex-artist/product/my-cool-product" />,
+    );
+
+    expect(screen.getByRole('link')).toHaveAttribute(
+      'href',
+      '/store/alex-artist/product/my-cool-product',
+    );
+  });
+
   it('renders tags as chips', () => {
     const product = makeProductListItem({ tags: ['unity', 'game-asset'] });
     renderWithRouter(<ProductCard product={product} />);

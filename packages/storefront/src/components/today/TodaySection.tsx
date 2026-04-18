@@ -79,7 +79,14 @@ function LoadingSkeleton() {
 }
 
 export function TodaySection() {
-  const { sections, isLoading, error, refetch } = useEditorial();
+  const {
+    sections,
+    isLoading,
+    error,
+    hasFreshContent,
+    dismissFreshContent,
+    refetch,
+  } = useEditorial();
   const visibleSections = [...sections]
     .sort((left, right) => left.sortOrder - right.sortOrder || left.name.localeCompare(right.name))
     .filter((section) => section.items.length > 0);
@@ -94,6 +101,15 @@ export function TodaySection() {
           Editorial picks curated by the Simket content team.
         </p>
       </div>
+
+      {hasFreshContent && (
+        <div className="flex items-center justify-between gap-4 rounded-2xl border border-primary/20 bg-primary-50 px-4 py-3 text-primary-700">
+          <p className="text-sm font-medium">New content available.</p>
+          <Button size="sm" variant="flat" onPress={dismissFreshContent}>
+            Dismiss
+          </Button>
+        </div>
+      )}
 
       {isLoading && visibleSections.length === 0 && <LoadingSkeleton />}
 

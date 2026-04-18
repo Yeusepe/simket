@@ -13,6 +13,7 @@
 export type DashboardSection =
   | 'home'
   | 'products'
+  | 'templates'
   | 'collaborations'
   | 'flows'
   | 'settings';

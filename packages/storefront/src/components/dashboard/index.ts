@@ -17,6 +17,7 @@ export { QuickActions } from './QuickActions';
 export { RecentActivity } from './RecentActivity';
 export * from './analytics';
 export * from './products';
+export * from './templates';
 export type {
   ActivityItem,
   DashboardSection,

@@ -14,6 +14,11 @@ import { PluginCommonModule, VendurePlugin } from '@vendure/core';
 import type { RuntimeVendureConfig } from '@vendure/core';
 import { StorePageEntity } from './storefront.entity.js';
 import type { StorePageScope } from './storefront.entity.js';
+import { templateAdminApiExtensions } from './template.api.js';
+import { TemplateEntity } from './template.entity.js';
+import { TemplateResolver } from './template.resolver.js';
+import { templateJsonScalar } from './template.scalar.js';
+import { TemplateService } from './template.service.js';
 
 const STORE_PAGE_SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
@@ -128,13 +133,22 @@ function cloneContent(content: string): string {
 
 @VendurePlugin({
   imports: [PluginCommonModule],
-  entities: [StorePageEntity],
+  entities: [StorePageEntity, TemplateEntity],
+  providers: [TemplateService],
+  adminApiExtensions: {
+    schema: templateAdminApiExtensions,
+    resolvers: [TemplateResolver],
+    scalars: {
+      JSON: templateJsonScalar,
+    },
+  },
   configuration: storefrontConfiguration,
   compatibility: '^3.0.0',
 })
 export class StorefrontPlugin {}
 
 export {
+  TemplateEntity,
   STORE_PAGE_SLUG_PATTERN,
   storefrontConfiguration,
   validateStorePage,

@@ -167,6 +167,40 @@ describe('ProductDetailPage', () => {
     });
   });
 
+  it('supports store-scoped dependency links', async () => {
+    const product = makeProductDetail({
+      dependencyRequirements: [
+        {
+          requiredProductId: 'product-99',
+          requiredVariantId: 'variant-99',
+          requiredProductName: 'Base Package',
+          requiredProductSlug: 'base-package',
+          requiredProductPrice: 1500,
+          currencyCode: 'USD',
+          requiredProductHeroImageUrl: null,
+          message: 'Requires Base Package first.',
+        },
+      ],
+    });
+    mockFetcher.mockResolvedValue(product);
+    render(
+      <MemoryRouter>
+        <ProductDetailPage
+          fetcher={mockFetcher}
+          slug="test-product"
+          buildProductHref={(productSlug) => `/store/alex-artist/product/${productSlug}`}
+        />
+      </MemoryRouter>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByRole('link', { name: 'Base Package' })).toHaveAttribute(
+        'href',
+        '/store/alex-artist/product/base-package',
+      );
+    });
+  });
+
   it('renders bundle offers and adds the selected bundle to cart', async () => {
     const user = userEvent.setup();
     const product = makeProductDetail({

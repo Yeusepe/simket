@@ -1,6 +1,6 @@
 /**
- * Purpose: Load and validate Today editorial sections from the PayloadCMS REST
- * surface exposed to the storefront.
+ * Purpose: Load and auto-refresh Today editorial collections from the
+ * vendure-server editorial gateway exposed to the storefront.
  * Governing docs:
  *   - docs/architecture.md
  *   - docs/service-architecture.md
@@ -12,24 +12,22 @@
  * Tests:
  *   - packages/storefront/src/components/today/use-editorial.test.ts
  */
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { EditorialItem, EditorialSection, UseEditorialResult } from './today-types';
 import { TODAY_LAYOUTS } from './today-types';
 
-type RawPaginatedResponse<T> = {
-  readonly docs: readonly T[];
-  readonly hasNextPage: boolean;
-  readonly hasPrevPage: boolean;
-  readonly limit: number;
-  readonly pagingCounter: number;
-  readonly totalDocs: number;
-  readonly totalPages: number;
-};
+type Fetcher = typeof globalThis.fetch;
 
-type RawMediaAsset = {
+type RawItem = {
   readonly id: string;
-  readonly url: string;
-  readonly filename: string;
+  readonly title: string;
+  readonly excerpt: string;
+  readonly heroImage: string;
+  readonly heroTransparent?: string;
+  readonly author: string;
+  readonly publishedAt: string;
+  readonly slug: string;
+  readonly tags: readonly string[];
 };
 
 type RawSection = {
@@ -38,22 +36,24 @@ type RawSection = {
   readonly slug: string;
   readonly layout: EditorialSection['layout'];
   readonly sortOrder: number;
-  readonly isActive: boolean;
+  readonly items: readonly RawItem[];
 };
 
-type RawArticle = {
-  readonly id: string;
-  readonly title: string;
-  readonly excerpt: string;
-  readonly heroImage: RawMediaAsset;
-  readonly heroTransparent?: RawMediaAsset;
-  readonly author: string;
-  readonly publishedAt: string;
-  readonly slug: string;
-  readonly status: 'draft' | 'published' | 'archived';
-  readonly tags: readonly string[];
-  readonly section?: RawSection;
+type RawCollectionsResponse = {
+  readonly collections: readonly RawSection[];
 };
+
+type RawUpdatesResponse = {
+  readonly hasUpdate: boolean;
+  readonly version: number;
+};
+
+interface UseEditorialOptions {
+  readonly fetcher?: Fetcher;
+  readonly pollIntervalMs?: number;
+}
+
+const DEFAULT_POLL_INTERVAL_MS = 30_000;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
@@ -71,12 +71,18 @@ function isLayout(value: unknown): value is EditorialSection['layout'] {
   return typeof value === 'string' && TODAY_LAYOUTS.includes(value as EditorialSection['layout']);
 }
 
-function isRawMediaAsset(value: unknown): value is RawMediaAsset {
+function isRawItem(value: unknown): value is RawItem {
   return (
     isRecord(value) &&
     isString(value.id) &&
-    isString(value.url) &&
-    isString(value.filename)
+    isString(value.title) &&
+    typeof value.excerpt === 'string' &&
+    isString(value.heroImage) &&
+    (value.heroTransparent === undefined || isString(value.heroTransparent)) &&
+    isString(value.author) &&
+    isString(value.publishedAt) &&
+    isString(value.slug) &&
+    isStringArray(value.tags)
   );
 }
 
@@ -89,41 +95,20 @@ function isRawSection(value: unknown): value is RawSection {
     isLayout(value.layout) &&
     typeof value.sortOrder === 'number' &&
     Number.isFinite(value.sortOrder) &&
-    typeof value.isActive === 'boolean'
+    Array.isArray(value.items) &&
+    value.items.every((item) => isRawItem(item))
   );
 }
 
-function isRawArticle(value: unknown): value is RawArticle {
-  return (
-    isRecord(value) &&
-    isString(value.id) &&
-    isString(value.title) &&
-    typeof value.excerpt === 'string' &&
-    isRawMediaAsset(value.heroImage) &&
-    (value.heroTransparent === undefined || isRawMediaAsset(value.heroTransparent)) &&
-    isString(value.author) &&
-    isString(value.publishedAt) &&
-    isString(value.slug) &&
-    (value.status === 'draft' || value.status === 'published' || value.status === 'archived') &&
-    isStringArray(value.tags) &&
-    (value.section === undefined || isRawSection(value.section))
-  );
+function isCollectionsResponse(value: unknown): value is RawCollectionsResponse {
+  return isRecord(value) && Array.isArray(value.collections) && value.collections.every(isRawSection);
 }
 
-function isPaginatedResponse<T>(
-  value: unknown,
-  guard: (entry: unknown) => entry is T,
-): value is RawPaginatedResponse<T> {
+function isUpdatesResponse(value: unknown): value is RawUpdatesResponse {
   return (
     isRecord(value) &&
-    Array.isArray(value.docs) &&
-    value.docs.every((entry) => guard(entry)) &&
-    typeof value.hasNextPage === 'boolean' &&
-    typeof value.hasPrevPage === 'boolean' &&
-    typeof value.limit === 'number' &&
-    typeof value.pagingCounter === 'number' &&
-    typeof value.totalDocs === 'number' &&
-    typeof value.totalPages === 'number'
+    typeof value.hasUpdate === 'boolean' &&
+    typeof value.version === 'number'
   );
 }
 
@@ -134,107 +119,103 @@ function getEditorialBaseUrl(): string {
     : window.location.origin;
 }
 
-function buildCollectionUrl(
-  collection: 'editorial-sections' | 'articles',
-  params: Record<string, string>,
-): URL {
-  const url = new URL(`/api/${collection}`, getEditorialBaseUrl());
+function buildGatewayUrl(path: string, params: Record<string, string> = {}): URL {
+  const url = new URL(path, getEditorialBaseUrl());
   for (const [key, value] of Object.entries(params)) {
     url.searchParams.set(key, value);
   }
   return url;
 }
 
-async function fetchCollection<T>(
+async function fetchJson<T>(
+  fetcher: Fetcher,
   url: URL,
   signal: AbortSignal,
-  guard: (entry: unknown) => entry is T,
-  collectionName: string,
-): Promise<readonly T[]> {
-  const response = await globalThis.fetch(url, {
+  validate: (value: unknown) => value is T,
+  resourceName: string,
+): Promise<T> {
+  const response = await fetcher(url, {
     method: 'GET',
     headers: { Accept: 'application/json' },
     signal,
   });
 
   if (!response.ok) {
-    throw new Error(`Failed to load ${collectionName}: ${response.status}.`);
+    throw new Error(`Failed to load ${resourceName}: ${response.status}.`);
   }
 
   const json = (await response.json()) as unknown;
-  if (!isPaginatedResponse(json, guard)) {
-    throw new Error(`Invalid ${collectionName} response.`);
+  if (!validate(json)) {
+    throw new Error(`Invalid ${resourceName} response.`);
   }
 
-  return json.docs;
+  return json;
 }
 
-function mapArticleToItem(article: RawArticle): EditorialItem {
+function mapItem(item: RawItem): EditorialItem {
   return {
-    id: article.id,
-    title: article.title,
-    excerpt: article.excerpt,
-    heroImage: article.heroImage.url,
-    heroTransparent: article.heroTransparent?.url,
-    author: article.author,
-    publishedAt: article.publishedAt,
-    slug: article.slug,
-    tags: article.tags,
+    id: item.id,
+    title: item.title,
+    excerpt: item.excerpt,
+    heroImage: item.heroImage,
+    heroTransparent: item.heroTransparent,
+    author: item.author,
+    publishedAt: item.publishedAt,
+    slug: item.slug,
+    tags: item.tags,
   };
 }
 
-async function loadEditorialSections(signal: AbortSignal): Promise<readonly EditorialSection[]> {
-  const [rawSections, rawArticles] = await Promise.all([
-    fetchCollection(
-      buildCollectionUrl('editorial-sections', {
-        sort: 'sortOrder',
-        where: JSON.stringify({ isActive: { equals: true } }),
-      }),
+async function loadEditorialState(
+  fetcher: Fetcher,
+  signal: AbortSignal,
+): Promise<{
+  readonly sections: readonly EditorialSection[];
+  readonly version: number;
+}> {
+  const [collectionsResponse, updatesResponse] = await Promise.all([
+    fetchJson(
+      fetcher,
+      buildGatewayUrl('/editorial/collections'),
       signal,
-      isRawSection,
-      'editorial sections',
+      isCollectionsResponse,
+      'editorial collections',
     ),
-    fetchCollection(
-      buildCollectionUrl('articles', {
-        depth: '2',
-        limit: '100',
-        sort: '-publishedAt',
-        where: JSON.stringify({ status: { equals: 'published' } }),
-      }),
+    fetchJson(
+      fetcher,
+      buildGatewayUrl('/editorial/updates'),
       signal,
-      isRawArticle,
-      'editorial articles',
+      isUpdatesResponse,
+      'editorial updates',
     ),
   ]);
 
-  const itemsBySectionId = new Map<string, EditorialItem[]>();
-
-  for (const article of rawArticles) {
-    if (!article.section) {
-      continue;
-    }
-
-    const sectionItems = itemsBySectionId.get(article.section.id) ?? [];
-    sectionItems.push(mapArticleToItem(article));
-    itemsBySectionId.set(article.section.id, sectionItems);
-  }
-
-  return [...rawSections]
-    .sort((left, right) => left.sortOrder - right.sortOrder || left.name.localeCompare(right.name))
-    .map((section) => ({
-      id: section.id,
-      name: section.name,
-      slug: section.slug,
-      layout: section.layout,
-      sortOrder: section.sortOrder,
-      items: itemsBySectionId.get(section.id) ?? [],
-    }));
+  return {
+    sections: [...collectionsResponse.collections]
+      .sort((left, right) => left.sortOrder - right.sortOrder || left.name.localeCompare(right.name))
+      .map((section) => ({
+        id: section.id,
+        name: section.name,
+        slug: section.slug,
+        layout: section.layout,
+        sortOrder: section.sortOrder,
+        items: section.items.map(mapItem),
+      })),
+    version: updatesResponse.version,
+  };
 }
 
-export function useEditorial(): UseEditorialResult {
+export function useEditorial(options: UseEditorialOptions = {}): UseEditorialResult {
+  const fetcher = useMemo<Fetcher>(
+    () => options.fetcher ?? globalThis.fetch.bind(globalThis),
+    [options.fetcher],
+  );
+  const pollIntervalMs = options.pollIntervalMs ?? DEFAULT_POLL_INTERVAL_MS;
   const [sections, setSections] = useState<readonly EditorialSection[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error>();
+  const [version, setVersion] = useState(0);
+  const [hasFreshContent, setHasFreshContent] = useState(false);
   const [requestVersion, setRequestVersion] = useState(0);
 
   useEffect(() => {
@@ -243,9 +224,10 @@ export function useEditorial(): UseEditorialResult {
     setIsLoading(true);
     setError(undefined);
 
-    void loadEditorialSections(abortController.signal)
-      .then((nextSections) => {
-        setSections(nextSections);
+    void loadEditorialState(fetcher, abortController.signal)
+      .then((response) => {
+        setSections(response.sections);
+        setVersion(response.version);
         setIsLoading(false);
       })
       .catch((reason: unknown) => {
@@ -266,16 +248,66 @@ export function useEditorial(): UseEditorialResult {
     return () => {
       abortController.abort();
     };
-  }, [requestVersion]);
+  }, [fetcher, requestVersion]);
+
+  useEffect(() => {
+    const intervalId = globalThis.setInterval(() => {
+      const abortController = new AbortController();
+
+      void fetchJson(
+        fetcher,
+        buildGatewayUrl('/editorial/updates', { since: String(version) }),
+        abortController.signal,
+        isUpdatesResponse,
+        'editorial updates',
+      )
+        .then((response) => {
+          if (!response.hasUpdate || response.version <= version) {
+            return;
+          }
+
+          return loadEditorialState(fetcher, abortController.signal).then((nextState) => {
+            setSections(nextState.sections);
+            setVersion(nextState.version);
+            setHasFreshContent(true);
+            setError(undefined);
+          });
+        })
+        .catch((reason: unknown) => {
+          if (
+            reason instanceof DOMException &&
+            reason.name === 'AbortError'
+          ) {
+            return;
+          }
+
+          setError(
+            reason instanceof Error ? reason : new Error('Failed to refresh editorial data.'),
+          );
+        });
+    }, pollIntervalMs);
+
+    return () => {
+      globalThis.clearInterval(intervalId);
+    };
+  }, [fetcher, pollIntervalMs, version]);
 
   const refetch = useCallback(() => {
+    setHasFreshContent(false);
     setRequestVersion((current) => current + 1);
+  }, []);
+
+  const dismissFreshContent = useCallback(() => {
+    setHasFreshContent(false);
   }, []);
 
   return {
     sections,
     isLoading,
     error,
+    version,
+    hasFreshContent,
+    dismissFreshContent,
     refetch,
   };
 }

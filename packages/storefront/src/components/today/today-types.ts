@@ -44,5 +44,8 @@ export interface UseEditorialResult {
   readonly sections: readonly EditorialSection[];
   readonly isLoading: boolean;
   readonly error?: Error;
+  readonly version: number;
+  readonly hasFreshContent: boolean;
+  readonly dismissFreshContent: () => void;
   readonly refetch: () => void;
 }

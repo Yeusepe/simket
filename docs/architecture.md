@@ -179,7 +179,7 @@ its own runtime (noted below).
 | **Bundle plugin**        | Commerce team   | Vendure plugin  | Bundle definition, bundle pricing, bundle-to-product associations.                                                                         |
 | **Dependency plugin**    | Commerce team   | Vendure plugin  | Purchase prerequisites ("buy X before Y"), optional dependency discounts.                                                                  |
 | **Collaboration plugin** | Commerce team   | Vendure plugin  | Multi-creator revenue splits (% based), invitation flow, settlement via Convex action.                                                     |
-| **Storefront plugin**    | Storefront team | Vendure plugin  | Generic product template, post-sale pages, universal vs product-scoped page config. Template duplication.                                  |
+| **Storefront plugin**    | Storefront team | Vendure plugin  | Generic product template, post-sale pages, universal vs product-scoped page config, saved page templates, system template gallery, and template duplication. |
 | **Framely integration**  | Storefront team | Next.js app     | Custom creator stores, drag-and-drop page builder with HeroUI components, subdomain routing.                                               |
 | **Tagging plugin**       | Discovery team  | Vendure plugin  | Product tags, creator tags, tag suggestions, tag enforcement rules.                                                                        |
 | **Flow plugin**          | Commerce team   | Vendure plugin  | Checkout flow builder, upsell/cross-sell steps, flow templates.                                                                            |

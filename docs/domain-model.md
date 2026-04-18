@@ -25,6 +25,7 @@ identity model, and ownership rules.
 | `OrderLine`             | Vendure core           | Vendure DB                    | Vendure auto-increment ID                        | A single item in an order.                                                                               |
 | `Tag`                   | Tagging                | Vendure DB                    | Vendure auto-increment ID                        | A classification label applied to products.                                                              |
 | `StorePage`             | Storefront             | Vendure DB                    | Vendure auto-increment ID                        | A content page (post-sale info, product details).                                                        |
+| `Template`              | Storefront             | Vendure DB                    | Vendure auto-increment ID                        | A reusable Framely block preset for store, product, or landing pages.                                   |
 | `CheckoutFlow`          | Flow                   | Vendure DB                    | Vendure auto-increment ID                        | A checkout flow definition with ordered steps.                                                           |
 | `FramelyProject`        | Framely                | Framely DB (Prisma)           | UUID                                             | A custom store page built in the Framely editor.                                                         |
 | `EditorElement`         | Framely                | Framely DB (Prisma)           | UUID                                             | A single element in a Framely page tree.                                                                 |
@@ -140,6 +141,16 @@ erDiagram
         string scope
         boolean isTemplate
         boolean isPostSale
+    }
+
+    Template {
+        int id
+        string name
+        string category
+        json blocks
+        boolean isSystem
+        string creatorId
+        int usageCount
     }
 
     CheckoutFlow {
@@ -279,7 +290,19 @@ Content pages associated with product or the platform.
 | **Content**    | TipTap JSON document with rich text, embeds, and media.                       |
 | **Ordering**   | `sortOrder` controls display sequence.                                        |
 
-### 4.6 CheckoutFlow
+### 4.6 Template
+
+Reusable builder presets for creator storefront work.
+
+| Responsibility | Details                                                                                      |
+| -------------- | -------------------------------------------------------------------------------------------- |
+| **Category**   | Classified as `store-page`, `product-page`, or `landing-page` for gallery filtering.        |
+| **Blocks**     | Stores the canonical Framely block array copied from an existing persisted page.             |
+| **Ownership**  | `isSystem: true` means the template is platform-provided; otherwise `creatorId` owns it.    |
+| **Reuse**      | Can be applied directly into the page builder and duplicated into new creator-owned entries. |
+| **Popularity** | `usageCount` tracks how often the template is chosen so galleries can rank proven starters.  |
+
+### 4.7 CheckoutFlow
 
 Defines the steps a buyer goes throug during checkout.
 
@@ -290,7 +313,7 @@ Defines the steps a buyer goes throug during checkout.
 | **Templates**  | `isTemplate: true` can be duplicated.                                                    |
 | **Execution**  | The Flow plugin renders the appropriate step UI and manages step transitions.            |
 
-### 4.7 Tag
+### 4.8 Tag
 
 Classification labels for products.
 

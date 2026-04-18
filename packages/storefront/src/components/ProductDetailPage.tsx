@@ -38,9 +38,14 @@ export type ProductDetailFetcher = (slug: string) => Promise<ProductDetail>;
 interface ProductDetailPageProps {
   readonly fetcher: ProductDetailFetcher;
   readonly slug: string;
+  readonly buildProductHref?: (productSlug: string) => string;
 }
 
-export function ProductDetailPage({ fetcher, slug }: ProductDetailPageProps) {
+export function ProductDetailPage({
+  fetcher,
+  slug,
+  buildProductHref = (productSlug) => `/product/${productSlug}`,
+}: ProductDetailPageProps) {
   const [product, setProduct] = useState<ProductDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -136,7 +141,7 @@ export function ProductDetailPage({ fetcher, slug }: ProductDetailPageProps) {
                 <span key={requirement.requiredProductId}>
                   {index > 0 ? ', ' : ''}
                   <Link
-                    to={`/product/${requirement.requiredProductSlug}`}
+                    to={buildProductHref(requirement.requiredProductSlug)}
                     className="font-semibold underline underline-offset-2"
                   >
                     {requirement.requiredProductName}

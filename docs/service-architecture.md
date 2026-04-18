@@ -623,7 +623,7 @@ type FlowStep = {
 
 Manages page templates and configurations:
 
-**Entity**: `StorePage`
+**Entities**: `StorePage`, `Template`
 
 ```typescript
 @Entity()
@@ -640,6 +640,11 @@ class StorePage extends VendureEntity {
 
 **Template duplication**: `duplicateStorePage(id)` creates
 a deep copy of a page, including its TipTap content, with `isTemplate: false`.
+
+**Template gallery queries**: `templates(category?, scope?, creatorId?)` returns
+system templates plus creator-owned templates, while `createTemplateFromPage`,
+`duplicateTemplate`, and `deleteTemplate` provide creator CRUD over persisted
+Framely block presets.
 
 ### 7.8 Recommend plugin (Vendure side)
 

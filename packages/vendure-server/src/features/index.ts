@@ -89,6 +89,31 @@ export type {
   RefType,
 } from './asset-refs/index.js';
 export {
+  EditorialCacheService,
+  EDITORIAL_ARTICLES_COLLECTION,
+  EDITORIAL_ARTICLES_SCHEMA,
+  TypesenseEditorialArticleIndexer,
+  buildEditorialArticleSearchDocument,
+  EditorialSyncService,
+  createEditorialRouteHandlers,
+  editorialWebhookJsonVerifier,
+  mountEditorialRoutes,
+  verifyEditorialWebhookSignature,
+} from './editorial/index.js';
+export type {
+  EditorialArticleIndexer,
+  CuratedCollection,
+  CuratedCollectionItem,
+  EditorialArticleSearchDocument,
+  EditorialCollectionSlug,
+  EditorialInvalidationResult,
+  EditorialUpdate,
+  EditorialUpdateStatus,
+  EditorialWebhookDocument,
+  EditorialWebhookEvent,
+  EditorialWebhookOperation,
+} from './editorial/index.js';
+export {
   DEFAULT_TRANSFORM_CONFIG,
   FfmpegVideoTransformer,
   MediaTransformService,

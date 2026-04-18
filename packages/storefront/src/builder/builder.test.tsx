@@ -298,4 +298,28 @@ describe('useBuilder', () => {
     expect(result.current.selectedBlock?.id).toBe('button-1');
     expect(result.current.isDirty).toBe(true);
   });
+
+  it('replaces the schema when applying a template to the builder', () => {
+    const { result } = renderHook(() => useBuilder());
+
+    act(() => {
+      result.current.actions.replaceSchema(
+        createPageSchema({
+          blocks: [
+            {
+              id: 'template-hero',
+              type: 'hero',
+              props: { ...heroBlockDefinition.defaultProps, title: 'Template Hero' },
+            },
+          ],
+          theme: { primaryColor: '#7c3aed' },
+        }),
+      );
+    });
+
+    expect(result.current.schema.blocks).toHaveLength(1);
+    expect(result.current.schema.blocks[0]?.id).toBe('template-hero');
+    expect(result.current.schema.theme).toEqual({ primaryColor: '#7c3aed' });
+    expect(result.current.selectedBlockId).toBe('template-hero');
+  });
 });

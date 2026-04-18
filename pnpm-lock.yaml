@@ -308,6 +308,9 @@ importers:
       '@scalar/express-api-reference':
         specifier: ^0.9.8
         version: 0.9.8
+      '@simket/editorial':
+        specifier: workspace:*
+        version: link:../editorial
       '@simket/shared':
         specifier: workspace:*
         version: link:../shared

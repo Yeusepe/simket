@@ -67,6 +67,9 @@ describe('TodaySection', () => {
       ],
       isLoading: false,
       error: undefined,
+      version: 1,
+      hasFreshContent: false,
+      dismissFreshContent: vi.fn(),
       refetch: vi.fn(),
     });
 
@@ -90,6 +93,9 @@ describe('TodaySection', () => {
       sections: [],
       isLoading: true,
       error: undefined,
+      version: 0,
+      hasFreshContent: false,
+      dismissFreshContent: vi.fn(),
       refetch: vi.fn(),
     });
 
@@ -104,6 +110,9 @@ describe('TodaySection', () => {
       sections: [],
       isLoading: false,
       error: new Error('Editorial service unavailable'),
+      version: 0,
+      hasFreshContent: false,
+      dismissFreshContent: vi.fn(),
       refetch,
     });
 
@@ -112,5 +121,24 @@ describe('TodaySection', () => {
     expect(screen.getByText(/editorial service unavailable/i)).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: /try again/i }));
     expect(refetch).toHaveBeenCalledTimes(1);
+  });
+
+  it('renders a new-content indicator and lets the user dismiss it', () => {
+    const dismissFreshContent = vi.fn();
+    useEditorialMock.mockReturnValue({
+      sections: [makeSection({ id: 'hero', name: 'Hero', layout: 'hero-banner', sortOrder: 1 })],
+      isLoading: false,
+      error: undefined,
+      version: 2,
+      hasFreshContent: true,
+      dismissFreshContent,
+      refetch: vi.fn(),
+    });
+
+    render(<TodaySection />);
+
+    expect(screen.getByText(/new content available/i)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /dismiss/i }));
+    expect(dismissFreshContent).toHaveBeenCalledTimes(1);
   });
 });

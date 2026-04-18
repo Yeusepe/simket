@@ -26,16 +26,17 @@ export function formatPrice(minorUnits: number, currencyCode: string): string {
 
 interface ProductCardProps {
   readonly product: ProductListItem;
+  readonly href?: string;
 }
 
-export function ProductCard({ product }: ProductCardProps) {
+export function ProductCard({ product, href }: ProductCardProps) {
   const hasPriceRange = product.priceMin !== product.priceMax;
   const priceDisplay = hasPriceRange
     ? `${formatPrice(product.priceMin, product.currencyCode)} – ${formatPrice(product.priceMax, product.currencyCode)}`
     : formatPrice(product.priceMin, product.currencyCode);
 
   return (
-    <Link to={`/product/${product.slug}`} className="block focus-visible:outline-none">
+    <Link to={href ?? `/product/${product.slug}`} className="block focus-visible:outline-none">
       <Card className="h-full transition-shadow hover:shadow-lg focus-visible:ring-2 focus-visible:ring-primary">
         {/* Hero image */}
         <div className="aspect-video overflow-hidden">

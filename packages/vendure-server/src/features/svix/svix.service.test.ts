@@ -36,6 +36,7 @@ const VALID_EVENT_TYPES = [
   'product.deleted',
   'order.completed',
   'order.refunded',
+  'editorial.content.updated',
   'collaboration.invited',
   'collaboration.accepted',
   'collaboration.revoked',

@@ -216,6 +216,12 @@ export function useBuilder(initialSchema?: PageSchema) {
         }));
         setIsDirty(true);
       },
+      replaceSchema(nextSchema: PageSchema) {
+        const normalized = createPageSchema(nextSchema);
+        setSchema(normalized);
+        setSelectedBlockId(findFirstBlock(normalized.blocks)?.id ?? null);
+        setIsDirty(true);
+      },
       selectBlock(id: string | null) {
         setSelectedBlockId(id);
       },

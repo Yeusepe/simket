@@ -69,6 +69,12 @@ export function DashboardHomePage() {
           href: '/dashboard/collaborations',
         },
         {
+          id: 'manage-templates',
+          label: 'Manage Templates',
+          icon: 'edit',
+          href: '/dashboard/templates',
+        },
+        {
           id: 'edit-store',
           label: 'Edit Store',
           icon: 'edit',

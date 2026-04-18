@@ -2,6 +2,7 @@ import { Routes, Route } from 'react-router-dom';
 import { CreatorDashboardLayout } from '../layouts/CreatorDashboardLayout';
 import { DashboardHomePage } from './dashboard/DashboardHomePage';
 import { DashboardProductsPage } from './dashboard/DashboardProductsPage';
+import { DashboardTemplatesPage } from './dashboard/DashboardTemplatesPage';
 import { DashboardCollaborationsPage } from './dashboard/DashboardCollaborationsPage';
 import { DashboardFlowsPage } from './dashboard/DashboardFlowsPage';
 import { DashboardSettingsPage } from './dashboard/DashboardSettingsPage';
@@ -22,6 +23,7 @@ export function CreatorDashboardPage() {
       <Routes>
         <Route index element={<DashboardHomePage />} />
         <Route path="products" element={<DashboardProductsPage />} />
+        <Route path="templates" element={<DashboardTemplatesPage />} />
         <Route path="collaborations" element={<DashboardCollaborationsPage />} />
         <Route path="flows" element={<DashboardFlowsPage />} />
         <Route path="settings" element={<DashboardSettingsPage />} />
