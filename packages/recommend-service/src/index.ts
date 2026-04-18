@@ -10,6 +10,7 @@
  *   - https://qdrant.tech/documentation/ (potential backend)
  * Tests:
  *   - packages/recommend-service/src/recommend.test.ts
+ *   - packages/recommend-service/src/pipeline.test.ts
  */
 
 // Types
@@ -20,8 +21,17 @@ export type {
   RecommendContext,
   RecommenderBackend,
   FeedbackType,
+  CandidateSource,
+  PipelineContext,
+  PostProcessor,
+  Ranker,
+  RawCandidate,
+  ScoredCandidate,
 } from './types.js';
 export { FEEDBACK_TYPES } from './types.js';
+
+// Pipeline
+export { PipelineExecutor } from './pipeline.js';
 
 // Pure logic
 export {
@@ -34,6 +44,13 @@ export {
 
 // Registry
 export { RecommenderRegistry } from './registry.js';
+
+// Pipeline implementations
+export {
+  DiversityPostProcessor,
+  PopularCandidateSource,
+  TakeRateBoostRanker,
+} from './implementations/index.js';
 
 // API handlers
 export {

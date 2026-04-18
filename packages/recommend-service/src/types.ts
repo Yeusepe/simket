@@ -11,6 +11,7 @@
  *   - https://qdrant.tech/documentation/ (potential backend)
  * Tests:
  *   - packages/recommend-service/src/recommend.test.ts
+ *   - packages/recommend-service/src/pipeline.test.ts
  */
 
 // --- Feedback ---
@@ -84,3 +85,12 @@ export interface RecommenderBackend {
   /** Return true when the backend is healthy and reachable. */
   healthCheck(): Promise<boolean>;
 }
+
+export type {
+  CandidateSource,
+  PipelineContext,
+  PostProcessor,
+  Ranker,
+  RawCandidate,
+  ScoredCandidate,
+} from './pipeline.js';
