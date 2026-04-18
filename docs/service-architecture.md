@@ -550,7 +550,7 @@ checks if the buyer owns all required products. If not, it returns a
 
 ### 7.4 Collaboration plugin
 
-**Entity**: `Collaboration`
+**Entities**: `Collaboration`, `CollaborationInvitation`
 
 ```typescript
 @Entity()
@@ -564,8 +564,14 @@ class Collaboration extends VendureEntity {
 }
 ```
 
-**Constraint**: The sum of all `revenueSharePercent` for a product
-(including the owner's implicit share) must equal 100%.
+**Invitation flow**: Product owners create `CollaborationInvitation`
+records with a secure token, proposed split percentage, 7-day expiry,
+and Svix notification payload. Accepting a valid invitation creates the
+corresponding `Collaboration` row and marks the invitation accepted.
+
+**Constraint**: The sum of all accepted `revenueSharePercent` for a
+product (including the owner's implicit share) must remain ≤ 100% at
+invitation time and acceptance time.
 
 **Settlement**: On order placement, the Collaboration plugin emits a
 `CollaborationSettlementEvent`. A Convex action picks this up and

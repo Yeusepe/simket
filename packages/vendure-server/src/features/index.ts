@@ -88,3 +88,26 @@ export type {
   EntityType,
   RefType,
 } from './asset-refs/index.js';
+export {
+  DEFAULT_TRANSFORM_CONFIG,
+  FfmpegVideoTransformer,
+  MediaTransformService,
+  SharpImageTransformer,
+  buildOutputFilename,
+  calculateResizeDimensions,
+  detectMediaType,
+  isAnimatedImage,
+  resolveTransformConfig,
+} from './media-transform/index.js';
+export type {
+  ImageInspection,
+  ImageTransformer,
+  MediaType,
+  OutputFormat,
+  TransformConfig,
+  TransformInput,
+  TransformOutput,
+  TransformResult,
+  VideoInspection,
+  VideoTransformer,
+} from './media-transform/index.js';

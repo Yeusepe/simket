@@ -49,14 +49,32 @@ export function DashboardLayout({
 
       <div className="min-w-0 flex-1 space-y-6">
         <div className="flex items-start gap-3">
-          <Button
-            variant="ghost"
-            className="lg:hidden"
-            aria-label="Open dashboard navigation"
-            onPress={navigationDrawer.open}
-          >
-            ☰
-          </Button>
+          <Drawer state={navigationDrawer}>
+            <Drawer.Trigger>
+              <Button
+                variant="ghost"
+                className="lg:hidden"
+                aria-label="Open dashboard navigation"
+              >
+                ☰
+              </Button>
+            </Drawer.Trigger>
+            <Drawer.Backdrop className="lg:hidden">
+              <Drawer.Content placement="left" className="lg:hidden">
+                <Drawer.Dialog aria-label="Creator dashboard navigation" className="max-w-xs">
+                  <Drawer.Header className="items-center justify-between gap-3">
+                    <Drawer.Heading>Creator Dashboard</Drawer.Heading>
+                    <Drawer.CloseTrigger aria-label="Close dashboard navigation">
+                      ✕
+                    </Drawer.CloseTrigger>
+                  </Drawer.Header>
+                  <Drawer.Body>
+                    <DashboardNav currentSection={currentSection} onNavigate={handleNavigate} />
+                  </Drawer.Body>
+                </Drawer.Dialog>
+              </Drawer.Content>
+            </Drawer.Backdrop>
+          </Drawer>
           <div className="min-w-0 flex-1">
             <DashboardHeader currentSection={currentSection} />
           </div>
@@ -64,24 +82,6 @@ export function DashboardLayout({
 
         <main>{children}</main>
       </div>
-
-      <Drawer state={navigationDrawer}>
-        <Drawer.Backdrop className="lg:hidden">
-          <Drawer.Content placement="left" className="lg:hidden">
-            <Drawer.Dialog aria-label="Creator dashboard navigation" className="max-w-xs">
-              <Drawer.Header className="items-center justify-between gap-3">
-                <Drawer.Heading>Creator Dashboard</Drawer.Heading>
-                <Drawer.CloseTrigger aria-label="Close dashboard navigation">
-                  ✕
-                </Drawer.CloseTrigger>
-              </Drawer.Header>
-              <Drawer.Body>
-                <DashboardNav currentSection={currentSection} onNavigate={handleNavigate} />
-              </Drawer.Body>
-            </Drawer.Dialog>
-          </Drawer.Content>
-        </Drawer.Backdrop>
-      </Drawer>
     </div>
   );
 }

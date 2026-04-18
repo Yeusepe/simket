@@ -1,13 +1,21 @@
 /**
- * Profile / Account Settings page.
+ * Purpose: Route-level account settings page for buyer profile, security, notifications, linked providers, and account lifecycle controls.
+ * Governing docs:
+ *   - docs/architecture.md
+ *   - docs/service-architecture.md
+ *   - docs/domain-model.md
+ * External references:
+ *   - https://heroui.com/react/llms.txt
+ *   - https://www.better-auth.com/docs
+ * Tests:
+ *   - packages/storefront/src/components/settings/SettingsPage.test.tsx
  */
+import { SettingsPage } from '../components/settings';
+
 export function ProfilePage() {
   return (
-    <div className="mx-auto max-w-3xl px-4 py-8">
-      <h1 className="mb-6 text-3xl font-bold">Account Settings</h1>
-      <p className="text-muted-foreground">
-        Profile management, Stripe Connect onboarding, and API key management.
-      </p>
+    <div className="mx-auto max-w-6xl px-4 py-8">
+      <SettingsPage />
     </div>
   );
 }

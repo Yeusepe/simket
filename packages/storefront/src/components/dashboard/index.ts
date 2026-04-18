@@ -15,6 +15,8 @@ export { DashboardNav } from './DashboardNav';
 export { DashboardStats } from './DashboardStats';
 export { QuickActions } from './QuickActions';
 export { RecentActivity } from './RecentActivity';
+export * from './analytics';
+export * from './products';
 export type {
   ActivityItem,
   DashboardSection,

@@ -6,6 +6,7 @@ describe('@simket/recommend-service', () => {
 
     expect(mod).toBeDefined();
     expect(mod.PipelineExecutor).toBeDefined();
+    expect(mod.DiscoveryService).toBeDefined();
     expect(mod.PopularCandidateSource).toBeDefined();
     expect(mod.TakeRateBoostRanker).toBeDefined();
     expect(mod.DiversityPostProcessor).toBeDefined();

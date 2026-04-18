@@ -32,6 +32,16 @@ export { FEEDBACK_TYPES } from './types.js';
 
 // Pipeline
 export { PipelineExecutor } from './pipeline.js';
+export {
+  decodeDiscoveryCursor,
+  DiscoveryService,
+  encodeDiscoveryCursor,
+} from './discovery/index.js';
+export type {
+  DiscoveryItem,
+  DiscoveryRequest,
+  DiscoveryResponse,
+} from './discovery/index.js';
 
 // Pure logic
 export {

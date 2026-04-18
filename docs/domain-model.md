@@ -18,6 +18,7 @@ identity model, and ownership rules.
 | `Bundle`                | Bundle                 | Vendure DB                    | Vendure auto-increment ID                        | A group of products sold together at a discount.                                                         |
 | `ProductDependency`     | Dependency             | Vendure DB                    | Vendure auto-increment ID                        | A prerequisite relationship: "product X requires ownership of product Y".                                |
 | `Collaboration`         | Collaboration          | Vendure DB                    | Vendure auto-increment ID                        | A revenue-sharing agreement between a product owner and collaborators.                                   |
+| `CollaborationInvitation` | Collaboration        | Vendure DB                    | UUID                                             | A time-bounded invitation token that proposes a collaborator email, split percentage, and lifecycle state before acceptance creates a Collaboration. |
 | `Customer`              | Vendure core           | Vendure DB                    | Vendure auto-increment ID + `Better Auth userId` | A marketplace user. Cached profile from Better Auth.                                                     |
 | `Order`                 | Vendure core           | Vendure DB                    | Vendure auto-increment ID + order code           | A completed or in-progress purchase.                                                                     |
 | `OrderLine`             | Vendure core           | Vendure DB                    | Vendure auto-increment ID                        | A single item in an order.                                                                               |
@@ -239,6 +240,18 @@ Revenue-sharing agreement between product creators.
 | **Lifecycle**     | Pending → Invited → Active → Revoked.                                                          |
 | **Settlement**    | Convex action processes payouts on each order.                                                 |
 | **Invitation**    | Convex action with scheduled timeout.                                                          |
+
+### 4.4.1 CollaborationInvitation
+
+Persisted invitation state for collaboration onboarding before an active split exists.
+
+| Responsibility      | Details                                                                 |
+| ------------------- | ----------------------------------------------------------------------- |
+| **Invitee target**  | Stores `inviteeEmail` until acceptance resolves a Better Auth user ID.  |
+| **Lifecycle**       | Pending → Accepted / Declined / Expired / Revoked.                      |
+| **Expiry**          | Invitation tokens expire after 7 days and must not be accepted after that point. |
+| **Split proposal**  | `splitPercent` is validated against existing active collaborations so totals stay ≤ 100%. |
+| **Acceptance**      | Accepting an invitation creates the corresponding `Collaboration` record. |
 
 ### 4.5 StorePage
 

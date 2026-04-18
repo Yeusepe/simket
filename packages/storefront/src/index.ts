@@ -6,3 +6,6 @@
  */
 export { App } from './App';
 export * from './builder';
+export * from './components/discovery';
+export * from './components/settings';
+export * from './components/today';

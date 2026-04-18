@@ -13,6 +13,7 @@
 import { PluginCommonModule, VendurePlugin } from '@vendure/core';
 import type { RuntimeVendureConfig } from '@vendure/core';
 import { CollaborationEntity, CollaborationStatus } from './collaboration.entity.js';
+import { InvitationEntity } from './invitation.entity.js';
 
 // ─── Validation ───────────────────────────────────────────────────────
 
@@ -123,7 +124,7 @@ function collaborationConfiguration(config: RuntimeVendureConfig): RuntimeVendur
  */
 @VendurePlugin({
   imports: [PluginCommonModule],
-  entities: [CollaborationEntity],
+  entities: [CollaborationEntity, InvitationEntity],
   configuration: collaborationConfiguration,
   compatibility: '^3.0.0',
 })
@@ -134,6 +135,7 @@ export class CollaborationPlugin {}
 export {
   CollaborationEntity,
   CollaborationStatus,
+  InvitationEntity,
   collaborationConfiguration,
   validateRevenueShare,
   validateCollaborationShares,

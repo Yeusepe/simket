@@ -13,6 +13,8 @@
     "clean": "rimraf dist *.tsbuildinfo"
   },
   "dependencies": {
+    "@opentelemetry/api": "^1.9.1",
+    "@qdrant/js-client-rest": "^1.17.0",
     "@simket/shared": "workspace:*"
   },
   "devDependencies": {

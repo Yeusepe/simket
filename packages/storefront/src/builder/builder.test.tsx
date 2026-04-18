@@ -24,8 +24,12 @@ import {
   type PageSchema,
 } from './types';
 import { ButtonBlock, buttonBlockDefinition } from './blocks/button-block';
+import { CardGridBlock, cardGridBlockDefinition } from './blocks/card-grid-block';
+import { GalleryBlock } from './blocks/gallery-block';
 import { HeroBlock, heroBlockDefinition } from './blocks/hero-block';
 import { SpacerBlock, spacerBlockDefinition } from './blocks/spacer-block';
+import { TestimonialBlock } from './blocks/testimonial-block';
+import { TextBlock } from './blocks/text-block';
 import { getAllBlocks, getBlock, registerBlock } from './block-registry';
 import { useBuilder } from './use-builder';
 
@@ -79,6 +83,7 @@ describe('block registry', () => {
       expect.arrayContaining([
         heroBlockDefinition.type,
         buttonBlockDefinition.type,
+        cardGridBlockDefinition.type,
         spacerBlockDefinition.type,
       ]),
     );
@@ -157,6 +162,82 @@ describe('block components', () => {
       'style',
       expect.stringContaining('--builder-spacer-height: 48px'),
     );
+  });
+
+  it('renders card grid items with custom content', () => {
+    render(
+      <CardGridBlock
+        cards={[
+          {
+            id: 'product-1',
+            title: 'Shader pack',
+            description: 'Realtime shaders for stylized scenes.',
+            price: '$22.00',
+            href: '/products/shader-pack',
+            tags: ['Shaders'],
+          },
+        ]}
+        columns={2}
+        heading="Featured"
+      />,
+    );
+
+    expect(screen.getByText('Shader pack')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /view/i })).toHaveAttribute(
+      'href',
+      '/products/shader-pack',
+    );
+  });
+
+  it('renders gallery media and captions', () => {
+    render(
+      <GalleryBlock
+        items={[
+          {
+            id: 'gallery-1',
+            src: 'https://cdn.example.com/preview.png',
+            alt: 'Preview',
+            caption: 'Latest drop',
+          },
+        ]}
+      />,
+    );
+
+    expect(screen.getByRole('img', { name: 'Preview' })).toBeInTheDocument();
+    expect(screen.getByText('Latest drop')).toBeInTheDocument();
+  });
+
+  it('renders testimonial details and rating', () => {
+    render(
+      <TestimonialBlock
+        authorName="Alex Builder"
+        authorTitle="3D artist"
+        quote="Exactly the storefront flexibility I needed."
+        rating={4}
+      />,
+    );
+
+    expect(screen.getByText(/alex builder/i)).toBeInTheDocument();
+    expect(screen.getByText(/3d artist/i)).toBeInTheDocument();
+    expect(screen.getByText('4/5')).toBeInTheDocument();
+  });
+
+  it('renders text block content through TipTap read-only output', () => {
+    render(
+      <TextBlock
+        content={{
+          type: 'doc',
+          content: [
+            {
+              type: 'paragraph',
+              content: [{ type: 'text', text: 'Builder rich text content' }],
+            },
+          ],
+        }}
+      />,
+    );
+
+    expect(screen.getByText('Builder rich text content')).toBeInTheDocument();
   });
 });
 
