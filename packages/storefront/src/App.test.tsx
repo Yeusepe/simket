@@ -27,7 +27,7 @@ describe('AppRoutes', () => {
     renderRoutes('/store/alex-artist');
 
     await waitFor(() => {
-      expect(screen.getByText('Alex Artist')).toBeInTheDocument();
+      expect(screen.getByRole('link', { name: 'Alex Artist' })).toBeInTheDocument();
     });
   });
 
@@ -40,6 +40,6 @@ describe('AppRoutes', () => {
       ).toBeInTheDocument();
     });
 
-    expect(screen.getByText('Alex Artist')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Alex Artist' })).toBeInTheDocument();
   });
 });

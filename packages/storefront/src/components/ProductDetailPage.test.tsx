@@ -10,6 +10,7 @@
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { ProductDetailPage } from './ProductDetailPage';
@@ -20,16 +21,56 @@ import {
 import type { ProductDetail } from '../types/product';
 import { formatPrice } from './ProductCard';
 import { resetCartState, useCartState } from '../state/cart-state';
+import type { WishlistApi } from '../types/wishlist';
 import type { ExperimentVariantAssignment } from '../hooks/useExperimentVariant';
 
 export type ProductDetailFetcher = (slug: string) => Promise<ProductDetail>;
 
 function renderPage(fetcher: ProductDetailFetcher, slug = 'test-product') {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: { retry: false },
+      mutations: { retry: false },
+    },
+  });
+
   return render(
-    <MemoryRouter>
-      <ProductDetailPage fetcher={fetcher} slug={slug} />
-    </MemoryRouter>,
+    <QueryClientProvider client={queryClient}>
+      <MemoryRouter>
+        <ProductDetailPage fetcher={fetcher} slug={slug} wishlistApi={createWishlistApi()} />
+      </MemoryRouter>
+    </QueryClientProvider>,
   );
+}
+
+function createWishlistApi(): WishlistApi {
+  return {
+    listWishlist: async () => ({ items: [], totalItems: 0, page: 1, limit: 12 }),
+    getWishlistCount: async () => 0,
+    isInWishlist: async () => false,
+    addToWishlist: async ({ productId }) => ({
+      id: `wishlist-${productId}`,
+      customerId: 'customer-1',
+      productId,
+      addedAt: '2025-02-14T10:00:00.000Z',
+      notifyOnPriceDrop: false,
+      product: {
+        id: productId,
+        slug: 'wishlist-product',
+        name: 'Wishlist Product',
+        description: 'Wishlist product description',
+        priceMin: 1999,
+        priceMax: 1999,
+        currencyCode: 'USD',
+        heroImageUrl: null,
+        heroTransparentUrl: null,
+        creatorName: 'Alex Artist',
+        tags: ['unity'],
+        categorySlug: 'software',
+      },
+    }),
+    removeFromWishlist: async () => true,
+  };
 }
 
 describe('ProductDetailPage', () => {
@@ -144,6 +185,15 @@ describe('ProductDetailPage', () => {
     });
   });
 
+  it('renders an add to wishlist button', async () => {
+    mockFetcher.mockResolvedValue(makeProductDetail());
+    renderPage(mockFetcher);
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /add to wishlist/i })).toBeInTheDocument();
+    });
+  });
+
   it('shows dependency requirements with links when product has prerequisites', async () => {
     const product = makeProductDetail({
       requiredProductIds: ['product-99'],
@@ -185,13 +235,21 @@ describe('ProductDetailPage', () => {
     });
     mockFetcher.mockResolvedValue(product);
     render(
-      <MemoryRouter>
-        <ProductDetailPage
-          fetcher={mockFetcher}
-          slug="test-product"
-          buildProductHref={(productSlug) => `/store/alex-artist/product/${productSlug}`}
-        />
-      </MemoryRouter>,
+      <QueryClientProvider client={new QueryClient({
+        defaultOptions: {
+          queries: { retry: false },
+          mutations: { retry: false },
+        },
+      })}>
+        <MemoryRouter>
+          <ProductDetailPage
+            fetcher={mockFetcher}
+            slug="test-product"
+            buildProductHref={(productSlug) => `/store/alex-artist/product/${productSlug}`}
+            wishlistApi={createWishlistApi()}
+          />
+        </MemoryRouter>
+      </QueryClientProvider>,
     );
 
     await waitFor(() => {
