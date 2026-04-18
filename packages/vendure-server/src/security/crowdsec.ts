@@ -80,7 +80,7 @@ export class CrowdSecBouncer {
 
     this.policy = createResiliencePolicy('crowdsec-lapi', {
       timeout: 2_000,
-      retry: { maxAttempts: 2, initialDelay: 100, maxDelay: 1_000 },
+      retry: { maxAttempts: 1, initialDelay: 100, maxDelay: 500 },
       circuitBreaker: { threshold: 0.5, duration: 30_000, minimumRps: 0 },
     });
 
@@ -108,34 +108,40 @@ export class CrowdSecBouncer {
 
   private async fetchDecision(ip: string): Promise<CrowdSecDecision> {
     const url = `${this.lapiUrl}/v1/decisions?ip=${encodeURIComponent(ip)}`;
-    const response = await fetch(url, {
-      headers: {
-        'X-Api-Key': this.apiKey,
-        Accept: 'application/json',
-      },
-      signal: AbortSignal.timeout(2_000),
-    });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 2_000);
+    try {
+      const response = await fetch(url, {
+        headers: {
+          'X-Api-Key': this.apiKey,
+          Accept: 'application/json',
+        },
+        signal: controller.signal,
+      });
 
-    if (!response.ok) {
-      throw new Error(`CrowdSec LAPI error: ${response.status}`);
-    }
+      if (!response.ok) {
+        throw new Error(`CrowdSec LAPI error: ${response.status}`);
+      }
 
-    const body: unknown = await response.json();
+      const body: unknown = await response.json();
 
-    // CrowdSec returns null or empty array when no decision exists
-    if (body === null || (Array.isArray(body) && body.length === 0)) {
+      // CrowdSec returns null or empty array when no decision exists
+      if (body === null || (Array.isArray(body) && body.length === 0)) {
+        return 'allow';
+      }
+
+      if (Array.isArray(body) && body.length > 0) {
+        const first = body[0] as { type?: string };
+        if (first.type === 'ban') return 'deny';
+        if (first.type === 'captcha') return 'captcha';
+        // Unknown decision types are treated as deny (fail-closed)
+        return 'deny';
+      }
+
       return 'allow';
+    } finally {
+      clearTimeout(timeoutId);
     }
-
-    if (Array.isArray(body) && body.length > 0) {
-      const first = body[0] as { type?: string };
-      if (first.type === 'ban') return 'deny';
-      if (first.type === 'captcha') return 'captcha';
-      // Unknown decision types are treated as deny (fail-closed)
-      return 'deny';
-    }
-
-    return 'allow';
   }
 
   private handleFallback(ip: string): CrowdSecDecision {
@@ -163,7 +169,8 @@ type NextFunction = () => void;
 function extractIp(req: MiddlewareRequest): string {
   const xff = req.headers['x-forwarded-for'];
   if (xff) {
-    const first = (Array.isArray(xff) ? xff[0] : xff).split(',')[0]!.trim();
+    const raw = Array.isArray(xff) ? xff[0] : xff;
+    const first = raw?.split(',')[0]?.trim();
     if (first) return first;
   }
 
