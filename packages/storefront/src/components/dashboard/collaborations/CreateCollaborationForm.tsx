@@ -43,9 +43,9 @@ export interface CreateCollaborationFormProps {
 }
 
 interface ValidationErrors {
-  readonly productId?: string;
-  readonly ownerSplitPercent?: string;
-  readonly collaborators?: string;
+  productId?: string;
+  ownerSplitPercent?: string;
+  collaborators?: string;
 }
 
 function createInviteeDraft(index: number): InviteeDraft {

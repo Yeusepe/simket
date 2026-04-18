@@ -42,7 +42,7 @@ describe('CreateCollaborationForm', () => {
       />,
     );
 
-    await user.click(screen.getByRole('button', { name: 'Select a product' }));
+    await user.click(screen.getByLabelText('Product'));
     await user.click(screen.getByRole('option', { name: 'Nebula Materials Library' }));
     await user.type(screen.getByLabelText('Collaborator email or username'), 'maya@example.com');
     await user.clear(screen.getByLabelText('Split percentage'));
@@ -68,7 +68,7 @@ describe('CreateCollaborationForm', () => {
       />,
     );
 
-    await user.click(screen.getByRole('button', { name: 'Select a product' }));
+    await user.click(screen.getByLabelText('Product'));
     await user.click(screen.getByRole('option', { name: 'Nebula Materials Library' }));
     await user.type(screen.getByLabelText('Collaborator email or username'), '  @maya-light  ');
     await user.clear(screen.getByLabelText('Split percentage'));

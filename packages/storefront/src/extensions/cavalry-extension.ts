@@ -17,6 +17,7 @@ import {
   isValidCavalryUrl,
   type CavalryEmbedConfig,
 } from '../services/cavalry-service';
+import { sanitizeCavalryUrl } from '../sanitization/html-sanitizer';
 
 export interface CavalryEmbedAttributes {
   src: string | null;
@@ -54,7 +55,7 @@ function getCavalryAttributes(
   return {
     src:
       typeof attributes.src === 'string' && attributes.src.length > 0
-        ? attributes.src
+        ? sanitizeCavalryUrl(attributes.src)
         : null,
     width: getNullableNumberAttribute(attributes.width),
     height: getNullableNumberAttribute(attributes.height),

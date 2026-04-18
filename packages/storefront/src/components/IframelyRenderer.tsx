@@ -9,6 +9,8 @@
  * Tests:
  *   - packages/storefront/src/components/IframelyRenderer.test.tsx
  */
+import { SanitizedContent } from './common/SanitizedContent';
+
 export interface IframelyRendererProps {
   html: string;
   title?: string;
@@ -23,7 +25,7 @@ export function IframelyRenderer({
   return (
     <div className="iframely-renderer overflow-hidden rounded-xl border border-default-200 bg-content1 p-4 shadow-sm">
       {html ? (
-        <div dangerouslySetInnerHTML={{ __html: html }} />
+        <SanitizedContent html={html} />
       ) : (
         <a
           href={url}

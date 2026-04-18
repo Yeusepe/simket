@@ -3,13 +3,14 @@ import {
   VendurePlugin,
   EventBus,
   ProductEvent,
-  ProductService,
-  RequestContext,
+  Product,
+  TransactionalConnection,
   LanguageCode,
   Logger,
 } from '@vendure/core';
 import type { RuntimeVendureConfig } from '@vendure/core';
-import type { OnApplicationBootstrap } from '@nestjs/common';
+import type { OnApplicationBootstrap, OnApplicationShutdown } from '@nestjs/common';
+import { SanitizationService } from '../../sanitization/sanitization.service.js';
 
 const loggerCtx = 'CatalogPlugin';
 
@@ -157,12 +158,16 @@ function catalogConfiguration(config: RuntimeVendureConfig): RuntimeVendureConfi
  */
 @VendurePlugin({
   imports: [PluginCommonModule],
+  providers: [SanitizationService],
   configuration: catalogConfiguration,
 })
-export class CatalogPlugin implements OnApplicationBootstrap {
+export class CatalogPlugin implements OnApplicationBootstrap, OnApplicationShutdown {
+  private readonly sanitizingProductIds = new Set<string>();
+
   constructor(
     private eventBus: EventBus,
-    private productService: ProductService,
+    private connection: TransactionalConnection,
+    private sanitizationService: SanitizationService,
   ) {}
 
   onApplicationBootstrap() {
@@ -173,6 +178,36 @@ export class CatalogPlugin implements OnApplicationBootstrap {
         loggerCtx,
       );
     });
+
+    this.eventBus.ofType(ProductEvent).subscribe(async (event) => {
+      if (
+        (event.type !== 'created' && event.type !== 'updated') ||
+        this.sanitizingProductIds.has(String(event.entity.id))
+      ) {
+        return;
+      }
+
+      const result = this.sanitizationService.sanitizeProductCustomFields(
+        (event.entity as Product).customFields as Record<string, unknown> | undefined,
+      );
+
+      if (!result.changed || !result.customFields) {
+        return;
+      }
+
+      this.sanitizingProductIds.add(String(event.entity.id));
+
+      try {
+        (event.entity as Product).customFields = result.customFields as Product['customFields'];
+        await this.connection.getRepository(event.ctx, Product).save(event.entity as Product);
+      } finally {
+        this.sanitizingProductIds.delete(String(event.entity.id));
+      }
+    });
+  }
+
+  onApplicationShutdown() {
+    this.sanitizingProductIds.clear();
   }
 }
 

@@ -10,6 +10,7 @@
  *   - packages/storefront/src/extensions/iframely-embed.test.ts
  */
 import { mergeAttributes, Node } from '@tiptap/core';
+import { sanitizeEditorContent, sanitizeHtml, sanitizeLinkUrl } from '../sanitization/html-sanitizer';
 
 export interface IframelyEmbedAttributes {
   html: string;
@@ -32,11 +33,15 @@ declare module '@tiptap/core' {
 function getIframelyUrl(attributes: Record<string, unknown>): string | null {
   const url = attributes.url ?? attributes['data-iframely-url'];
 
-  return typeof url === 'string' && url.length > 0 ? url : null;
+  if (typeof url !== 'string' || url.length === 0) {
+    return null;
+  }
+
+  return sanitizeLinkUrl(url);
 }
 
 function getIframelyHtml(attributes: Record<string, unknown>): string {
-  return typeof attributes.html === 'string' ? attributes.html : '';
+  return typeof attributes.html === 'string' ? sanitizeHtml(attributes.html) : '';
 }
 
 function syncIframelyElement(
@@ -140,11 +145,11 @@ export const IframelyEmbed = Node.create({
         (options: SetIframelyEmbedOptions) =>
         ({ commands }) =>
           commands.insertContent({
-            type: this.name,
-            attrs: options,
-          }),
-    };
-  },
+             type: this.name,
+             attrs: sanitizeEditorContent(options),
+           }),
+     };
+   },
 
   addNodeView() {
     return ({ node }) => {

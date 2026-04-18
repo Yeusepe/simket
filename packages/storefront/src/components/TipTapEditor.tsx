@@ -11,6 +11,7 @@
  * Tests:
  *   - packages/storefront/src/components/TipTapEditor.test.tsx
  */
+import { useMemo } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
@@ -18,6 +19,7 @@ import Image from '@tiptap/extension-image';
 import Placeholder from '@tiptap/extension-placeholder';
 import { IframelyEmbed } from '../extensions/iframely-embed';
 import { CavalryEmbed } from '../extensions/cavalry-extension';
+import { sanitizeEditorContent } from '../sanitization/html-sanitizer';
 
 /**
  * TipTap JSON content structure.
@@ -68,6 +70,11 @@ export function TipTapEditor({
   placeholder,
   className,
 }: TipTapEditorProps) {
+  const sanitizedContent = useMemo(
+    () => (content === undefined ? undefined : sanitizeEditorContent(content)),
+    [content],
+  );
+
   const editor = useEditor({
     extensions: [
       // Disable StarterKit's built-in Link so we can configure our own below.
@@ -84,7 +91,7 @@ export function TipTapEditor({
         placeholder: placeholder ?? 'Start writing…',
       }),
     ],
-    content,
+    content: sanitizedContent,
     editable,
     // Apply Tailwind prose classes via ProseMirror editorProps.
     // Docs: https://tiptap.dev/docs/editor/api/editor#editorprops
@@ -94,7 +101,7 @@ export function TipTapEditor({
       },
     },
     onUpdate: ({ editor: e }) => {
-      onChange?.(e.getJSON());
+      onChange?.(sanitizeEditorContent(e.getJSON()));
     },
   });
 

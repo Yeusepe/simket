@@ -13,7 +13,8 @@
  */
 import type { DeepPartial } from '@vendure/common/lib/shared-types';
 import { VendureEntity } from '@vendure/core';
-import { Column, Entity, Index } from 'typeorm';
+import { BeforeInsert, BeforeUpdate, Column, Entity, Index } from 'typeorm';
+import { sanitizeStorePageContentValue } from '../../sanitization/sanitization.service.js';
 
 export type StorePageScope = 'universal' | 'product';
 
@@ -55,4 +56,10 @@ export class StorePageEntity extends VendureEntity {
 
   @Column({ type: 'boolean', default: true })
   enabled!: boolean;
+
+  @BeforeInsert()
+  @BeforeUpdate()
+  sanitizeContent(): void {
+    this.content = sanitizeStorePageContentValue(this.content);
+  }
 }
