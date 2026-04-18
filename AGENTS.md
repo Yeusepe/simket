@@ -69,6 +69,21 @@ The correct response to a workaround situation is always: **design the proper fl
 
 - Code, tests, docs, and operational expectations must move together.
 
+### 1.8 ALWAYS search online before writing code
+
+**Searching online is your friend. It is not optional.**
+
+Before writing ANY code that integrates with, wraps, or calls an external library, framework, service, or component:
+
+1. **Search online for the official documentation.** Read it. Understand what the library provides out of the box.
+2. **Fetch the library's LLM-friendly docs if they exist.** Many libraries publish `llms.txt`, agent docs, or API references specifically for AI assistants. Use them.
+3. **Do not rely on memory, training data, or cached knowledge of APIs.** Libraries change between versions. What you "know" may be wrong. The online docs are the source of truth.
+4. **Do not guess component APIs, prop names, compound patterns, or configuration shapes.** Look them up online first, then verify against the installed `.d.ts` types.
+
+**This applies to every library in the stack** — HeroUI, Vendure, Better Auth, Stripe, Typesense, Convex, Cedar, Cockatiel, OpenTelemetry, PayloadCMS, TipTap, and any other.
+
+The time spent searching online is always less than the time spent debugging wrong assumptions.
+
 ---
 
 ## 2. Required reading before coding
@@ -93,7 +108,7 @@ Then read domain-specific docs for the change area.
 | API routes, Bebop contracts, auth boundaries         | `docs/service-architecture.md`, `docs/regular-programming-practices/interfaces-and-data-flow.md`, `docs/regular-programming-practices/security-and-threat-modeling.md`   |
 | Vendure plugins, product CRUD, orders                | `docs/architecture.md`, `docs/domain-model.md`, [Vendure docs](https://docs.vendure.io/)                                                                                 |
 | Convex functions, creator dashboard, real-time state | `docs/architecture.md`, `docs/service-architecture.md`, [Convex docs](https://docs.convex.dev/)                                                                          |
-| HeroUI components, storefront UI, page builder       | `docs/architecture.md`, [HeroUI docs](https://heroui.com/docs), [Framely docs](https://github.com/belastrittmatter/Framely)                                              |
+| HeroUI components, storefront UI, page builder       | `docs/architecture.md`, [HeroUI React llms.txt](https://heroui.com/react/llms.txt) **(MUST fetch before any HeroUI work)**, [HeroUI component docs](https://heroui.com/docs/react/components), [Framely docs](https://github.com/belastrittmatter/Framely) |
 | Payment, checkout, Stripe integration                | `docs/service-architecture.md`, `docs/regular-programming-practices/security-and-threat-modeling.md`, [Stripe API docs](https://stripe.com/docs/api)                     |
 | Search, Typesense indexing                           | `docs/architecture.md`, [Typesense docs](https://typesense.org/docs/)                                                                                                    |
 | Recommendations, embeddings, Qdrant                  | `docs/architecture.md`, [Qdrant docs](https://qdrant.tech/documentation/), [Voyager docs](https://github.com/spotify/voyager)                                            |
@@ -157,7 +172,30 @@ Before writing ANY code that calls a library function, accesses a type, or uses 
 
 **The 30-second rule:** Spending 30 seconds reading a `.d.ts` file saves 30 minutes debugging a wrong assumption. Always read first.
 
-### 4.2 Use what libraries provide — NEVER reinvent the wheel
+### 4.2 HeroUI component usage rule
+
+**HeroUI is our ONLY UI library. Every UI component in Simket uses HeroUI v3.**
+
+Before writing ANY HeroUI component code:
+
+1. **Fetch `https://heroui.com/react/llms.txt` first.** This is the authoritative index of all HeroUI v3 React documentation. It lists every component with a link to its full docs page.
+2. **Then fetch the specific component doc page** from the index (e.g., `https://www.heroui.com/docs/react/components/select` for Select). Read the full API: props, compound sub-components, variants, events, and usage examples.
+3. **Then verify against the installed `.d.ts`** in `node_modules/@heroui/react/dist/components/<component>/`. The online docs tell you the intended API; the `.d.ts` tells you the exact types for your installed version.
+
+**Do ALL THREE steps. Do not skip any.**
+
+HeroUI v3 uses compound component patterns (e.g., `Select > Select.Trigger > Select.Value > Select.Popover > ListBox > ListBoxItem`). These are NOT the same as v2 flat props. Never assume a component's sub-component names, prop names, or composition patterns — always look them up.
+
+**Known HeroUI v3 gotchas (do not repeat):**
+
+| Wrong assumption | Actual API |
+|-----------------|------------|
+| `Select` has a `Select.Item` sub-component | Use `ListBox > ListBoxItem` inside `Select.Popover` |
+| `Alert` takes `color` prop | Uses `status` prop and compound: `Alert > Alert.Content > Alert.Title + Alert.Description` |
+| `Button` has `color` or `as` props | Uses `variant` prop; use `onPress` not `onClick` |
+| Components accept children directly | Most use compound pattern: Root > Sub-components |
+
+### 4.3 Use what libraries provide — NEVER reinvent the wheel
 
 **Before writing ANY module that wraps, calls, or integrates an external library, search online and read the library's documentation to understand what it already provides.** If the library ships a solution for what you need, use it. Do not reimplement it.
 
@@ -406,6 +444,8 @@ Work is done when:
 
 Do NOT:
 
+- **Write ANY HeroUI code without first fetching `https://heroui.com/react/llms.txt` and the specific component's doc page.** This is non-negotiable. Every HeroUI mistake so far came from guessing component APIs instead of reading the docs online.
+- **Write ANY library integration code without searching online first.** The online docs are the source of truth — not your training data, not cached knowledge, not memory.
 - **Reinvent functionality that installed libraries already provide.** Search online and read library docs before writing any wrapper, client, cache, provider, or middleware. If an official SDK or companion package exists, use it.
 - **Code library calls from memory.** Always read the installed `.d.ts` types first. This is the #1 source of wasted time.
 - **Write HTTP clients for APIs that have official SDKs.** Use the SDK.

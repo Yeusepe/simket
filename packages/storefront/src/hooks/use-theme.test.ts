@@ -6,11 +6,13 @@ describe('useTheme', () => {
   beforeEach(() => {
     localStorage.clear();
     document.documentElement.classList.remove('light', 'dark');
+    document.documentElement.removeAttribute('data-theme');
   });
 
   afterEach(() => {
     localStorage.clear();
     document.documentElement.classList.remove('light', 'dark');
+    document.documentElement.removeAttribute('data-theme');
   });
 
   it('defaults to light when no preference stored', () => {
@@ -23,6 +25,7 @@ describe('useTheme', () => {
     act(() => result.current.toggleTheme());
     expect(result.current.theme).toBe('dark');
     expect(document.documentElement.classList.contains('dark')).toBe(true);
+    expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
   });
 
   it('toggles from dark back to light', () => {
@@ -31,6 +34,7 @@ describe('useTheme', () => {
     act(() => result.current.toggleTheme());
     expect(result.current.theme).toBe('light');
     expect(document.documentElement.classList.contains('light')).toBe(true);
+    expect(document.documentElement.getAttribute('data-theme')).toBe('light');
   });
 
   it('persists theme to localStorage', () => {

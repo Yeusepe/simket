@@ -1,0 +1,97 @@
+/**
+ * Purpose: Cart state management hook — manages items, quantities, and derived totals.
+ * Governing docs:
+ *   - docs/architecture.md (§6.1 Storefront)
+ *   - docs/domain-model.md (Product dependency rules, pricing in minor units)
+ * External references:
+ *   - https://docs.vendure.io/reference/graphql-api/shop/object-types/#orderline
+ * Tests:
+ *   - packages/storefront/src/hooks/use-cart.test.ts
+ */
+import { useCallback, useMemo, useState } from 'react';
+import type { Cart, CartItem } from '../types/cart';
+
+/** Options for addItem — allows dependency checking before adding. */
+export interface AddItemOptions {
+  /** Product IDs that must already be in the cart before this item can be added. */
+  readonly requiredProductIds?: readonly string[];
+}
+
+export interface UseCartReturn {
+  readonly cart: Cart;
+  readonly addItem: (item: CartItem, options?: AddItemOptions) => void;
+  readonly removeItem: (variantId: string) => void;
+  readonly updateQuantity: (variantId: string, quantity: number) => void;
+  readonly clearCart: () => void;
+}
+
+export function useCart(): UseCartReturn {
+  const [items, setItems] = useState<readonly CartItem[]>([]);
+
+  const addItem = useCallback((item: CartItem, options?: AddItemOptions) => {
+    // Dependency check: ensure all required products are already in the cart
+    if (options?.requiredProductIds && options.requiredProductIds.length > 0) {
+      setItems((current) => {
+        const productIdsInCart = new Set(current.map((i) => i.productId));
+        const missing = options.requiredProductIds!.filter(
+          (id) => !productIdsInCart.has(id),
+        );
+        if (missing.length > 0) {
+          throw new Error(`Required products missing from cart: ${missing.join(', ')}`);
+        }
+        // Dependency check passed — add the item
+        const existing = current.find((i) => i.variantId === item.variantId);
+        if (existing) {
+          return current.map((i) =>
+            i.variantId === item.variantId
+              ? { ...i, quantity: i.quantity + item.quantity }
+              : i,
+          );
+        }
+        return [...current, item];
+      });
+      return;
+    }
+
+    setItems((current) => {
+      const existing = current.find((i) => i.variantId === item.variantId);
+      if (existing) {
+        return current.map((i) =>
+          i.variantId === item.variantId
+            ? { ...i, quantity: i.quantity + item.quantity }
+            : i,
+        );
+      }
+      return [...current, item];
+    });
+  }, []);
+
+  const removeItem = useCallback((variantId: string) => {
+    setItems((current) => current.filter((i) => i.variantId !== variantId));
+  }, []);
+
+  const updateQuantity = useCallback((variantId: string, quantity: number) => {
+    if (quantity <= 0) {
+      setItems((current) => current.filter((i) => i.variantId !== variantId));
+      return;
+    }
+    setItems((current) =>
+      current.map((i) =>
+        i.variantId === variantId ? { ...i, quantity } : i,
+      ),
+    );
+  }, []);
+
+  const clearCart = useCallback(() => {
+    setItems([]);
+  }, []);
+
+  const cart = useMemo<Cart>(() => {
+    const totalItems = items.reduce((sum, i) => sum + i.quantity, 0);
+    const subtotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
+    const currencyCode = items.length > 0 ? items[0].currencyCode : 'USD';
+    return { items, totalItems, subtotal, currencyCode };
+  }, [items]);
+
+  return { cart, addItem, removeItem, updateQuantity, clearCart };
+}
