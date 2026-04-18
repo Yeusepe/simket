@@ -24,9 +24,7 @@ export function correlationMiddleware(
 ): void {
   const existing = req.headers[CORRELATION_HEADER];
   const correlationId =
-    typeof existing === 'string' && existing.length > 0
-      ? existing
-      : randomUUID();
+    typeof existing === 'string' && existing.length > 0 ? existing : randomUUID();
 
   res.setHeader(CORRELATION_HEADER, correlationId);
 
@@ -61,11 +59,7 @@ export interface LogEntry {
  * and service name in JSON format.
  */
 export function createLogger(name: string): Logger {
-  function buildEntry(
-    level: string,
-    message: string,
-    data?: Record<string, unknown>,
-  ): LogEntry {
+  function buildEntry(level: string, message: string, data?: Record<string, unknown>): LogEntry {
     const span = trace.getSpan(context.active());
     const correlationId = span
       ? (span.attributes?.['correlation.id'] as string | undefined)

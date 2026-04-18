@@ -59,9 +59,7 @@ export class CedarAuthEngine {
       this.parseErrors = [];
     } else {
       this.policiesValid = false;
-      this.parseErrors = parseResult.errors.map(
-        (e: { message: string }) => e.message,
-      );
+      this.parseErrors = parseResult.errors.map((e: { message: string }) => e.message);
     }
   }
 
@@ -114,9 +112,7 @@ export class CedarAuthEngine {
       return {
         allowed: false,
         reasons: [],
-        errors: answer.errors.map(
-          (e: { message: string }) => e.message,
-        ),
+        errors: answer.errors.map((e: { message: string }) => e.message),
       };
     } catch (error: unknown) {
       // Fail-closed: unexpected errors → deny

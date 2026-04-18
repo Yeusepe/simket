@@ -22,13 +22,10 @@ function ensureMeter(): Meter {
 
 function ensureHttpDuration(): Histogram {
   if (!httpDurationHistogram) {
-    httpDurationHistogram = ensureMeter().createHistogram(
-      'http_request_duration_seconds',
-      {
-        description: 'Duration of HTTP requests in seconds',
-        unit: 's',
-      },
-    );
+    httpDurationHistogram = ensureMeter().createHistogram('http_request_duration_seconds', {
+      description: 'Duration of HTTP requests in seconds',
+      unit: 's',
+    });
   }
   return httpDurationHistogram;
 }
@@ -53,10 +50,9 @@ function ensureCacheMiss(): Counter {
 
 function ensureCircuitBreakerGauge(): ObservableGauge {
   if (!circuitBreakerGauge) {
-    circuitBreakerGauge = ensureMeter().createObservableGauge(
-      'circuit_breaker_state',
-      { description: 'Circuit breaker state (0=closed, 1=half-open, 2=open)' },
-    );
+    circuitBreakerGauge = ensureMeter().createObservableGauge('circuit_breaker_state', {
+      description: 'Circuit breaker state (0=closed, 1=half-open, 2=open)',
+    });
     circuitBreakerGauge.addCallback((result) => {
       for (const [service, state] of circuitBreakerStates) {
         result.observe(state, { service });
@@ -68,10 +64,9 @@ function ensureCircuitBreakerGauge(): ObservableGauge {
 
 function ensureEventLoopLagGauge(): ObservableGauge {
   if (!eventLoopLagGauge) {
-    eventLoopLagGauge = ensureMeter().createObservableGauge(
-      'event_loop_lag_ms',
-      { description: 'Event loop lag in milliseconds' },
-    );
+    eventLoopLagGauge = ensureMeter().createObservableGauge('event_loop_lag_ms', {
+      description: 'Event loop lag in milliseconds',
+    });
     eventLoopLagGauge.addCallback((result) => {
       for (const [label, value] of eventLoopLagValues) {
         result.observe(value, { source: label });
@@ -122,10 +117,7 @@ const CIRCUIT_BREAKER_STATE_MAP: Record<string, number> = {
   open: 2,
 };
 
-export function recordCircuitBreakerState(
-  service: string,
-  state: string,
-): void {
+export function recordCircuitBreakerState(service: string, state: string): void {
   ensureCircuitBreakerGauge();
   circuitBreakerStates.set(service, CIRCUIT_BREAKER_STATE_MAP[state] ?? -1);
 }

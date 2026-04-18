@@ -68,7 +68,11 @@ function withCorsHeaders(response: Response): Response {
   headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-User-Segment');
   headers.set('Access-Control-Max-Age', '86400');
-  return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -176,13 +180,20 @@ async function revalidate(
   const now = Math.floor(Date.now() / 1000);
   headers.set('x-cache-stored-at', String(now));
   headers.set('x-cache-age', '0');
-  headers.set('Cache-Control', `s-maxage=${config.ttl + config.swr}, stale-while-revalidate=${config.swr}`);
+  headers.set(
+    'Cache-Control',
+    `s-maxage=${config.ttl + config.swr}, stale-while-revalidate=${config.swr}`,
+  );
 
   if (config.tags.length > 0) {
     headers.set('Cache-Tag', config.tags.join(','));
   }
 
-  const cacheable = new Response(origin.body, { status: origin.status, statusText: origin.statusText, headers });
+  const cacheable = new Response(origin.body, {
+    status: origin.status,
+    statusText: origin.statusText,
+    headers,
+  });
 
   // Store a clone in cache; return the original
   await cache.put(cacheKey, cacheable.clone());

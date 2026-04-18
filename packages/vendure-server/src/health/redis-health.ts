@@ -1,8 +1,4 @@
-import {
-  HealthIndicator,
-  HealthIndicatorResult,
-  HealthCheckError,
-} from '@nestjs/terminus';
+import { HealthIndicator, HealthIndicatorResult, HealthCheckError } from '@nestjs/terminus';
 import { getCacheRedis, getQueueRedis } from '../cache/index.js';
 
 /**
@@ -28,10 +24,7 @@ export class RedisHealthIndicator extends HealthIndicator {
     }
 
     if (errors.length > 0) {
-      throw new HealthCheckError(
-        'Redis check failed',
-        this.getStatus(key, false, { errors }),
-      );
+      throw new HealthCheckError('Redis check failed', this.getStatus(key, false, { errors }));
     }
     return this.getStatus(key, true);
   }

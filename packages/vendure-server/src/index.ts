@@ -12,10 +12,13 @@ export {
   SERVICE_POLICIES,
   DEFAULT_RESILIENCE_OPTIONS,
 } from './resilience/index.js';
+export type { ResiliencePolicy, ResiliencePolicyOptions } from './resilience/index.js';
+export { CrowdSecBouncer, crowdSecMiddleware, RateLimiter } from './security/index.js';
 export type {
-  ResiliencePolicy,
-  ResiliencePolicyOptions,
-} from './resilience/index.js';
+  CrowdSecBouncerOptions,
+  CrowdSecDecision,
+  RateLimiterOptions,
+} from './security/index.js';
 export { CedarAuthEngine } from './auth/index.js';
 export type {
   AuthorizationRequest,
@@ -23,3 +26,39 @@ export type {
   EntityUid,
   EntityData,
 } from './auth/index.js';
+export {
+  initFeatureFlags,
+  getFlag,
+  isEnabled,
+  InMemoryProvider,
+} from './features/index.js';
+export type {
+  FlagConfiguration,
+  FlagDefinition,
+  TargetingRule,
+} from './features/index.js';
+export { buildOpenApiSpec, mountApiDocs } from './docs/index.js';
+export type { OpenApiSpec } from './docs/index.js';
+export {
+  initTracing,
+  getTracer,
+  getMeter,
+  shutdownTracing,
+  recordHttpDuration,
+  recordCacheHit,
+  recordCacheMiss,
+  recordCircuitBreakerState,
+  recordEventLoopLag,
+  recordQueueDepth,
+  resetMetrics,
+  correlationMiddleware,
+  createLogger,
+  CORRELATION_HEADER,
+} from './observability/index.js';
+export type {
+  TracingOptions,
+  Logger,
+  LogEntry,
+  CorrelationRequest,
+  CorrelationResponse,
+} from './observability/index.js';

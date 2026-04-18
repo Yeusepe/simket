@@ -1,8 +1,4 @@
-import {
-  HealthIndicator,
-  HealthIndicatorResult,
-  HealthCheckError,
-} from '@nestjs/terminus';
+import { HealthIndicator, HealthIndicatorResult, HealthCheckError } from '@nestjs/terminus';
 
 const EVENT_LOOP_LAG_THRESHOLD_MS = 500;
 

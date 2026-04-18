@@ -1,9 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import {
-  CedarAuthEngine,
-  AuthorizationDecision,
-  AuthorizationRequest,
-} from './cedar-engine.js';
+import { CedarAuthEngine, AuthorizationDecision, AuthorizationRequest } from './cedar-engine.js';
 
 describe('CedarAuthEngine', () => {
   const simplePolicies = `

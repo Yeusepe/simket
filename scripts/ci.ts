@@ -32,7 +32,7 @@ function run(name: string, cmd: string, opts?: { allowFail?: boolean }): void {
       stdio: ['pipe', 'pipe', 'pipe'],
       encoding: 'utf-8',
       cwd: process.cwd(),
-      env: { ...process.env, CI: '1', FORCE_COLOR: '0' },
+      env: { ...process.env, FORCE_COLOR: '0' },
       timeout: 300_000, // 5 min max per step
     });
     const elapsed = Date.now() - start;
@@ -58,9 +58,7 @@ function run(name: string, cmd: string, opts?: { allowFail?: boolean }): void {
 
 // ── Pipeline steps ──
 
-run('Format check', fixMode
-  ? 'npx pnpm@9.15.4 format'
-  : 'npx pnpm@9.15.4 format:check');
+run('Format check', fixMode ? 'npx pnpm@9.15.4 format' : 'npx pnpm@9.15.4 format:check');
 
 run('Build', 'npx pnpm@9.15.4 build');
 

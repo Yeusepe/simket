@@ -1,0 +1,123 @@
+apiVersion: backstage.io/v1alpha1
+kind: System
+metadata:
+  name: simket
+  description: Simket digital goods marketplace
+  annotations:
+    github.com/project-slug: Yeusepe/simket
+spec:
+  owner: simket-team
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: vendure-server
+  description: Vendure-based commerce API server with Cedar auth, OpenTelemetry, and resilience policies
+  annotations:
+    github.com/project-slug: Yeusepe/simket
+    backstage.io/techdocs-ref: dir:../../packages/vendure-server
+  tags:
+    - typescript
+    - vendure
+    - nestjs
+spec:
+  type: service
+  lifecycle: production
+  owner: simket-team
+  system: simket
+  dependsOn:
+    - component:better-auth
+    - component:recommend-service
+    - component:cdngine
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: recommend-service
+  description: Recommendation service using Qdrant vector search and Encore.ts
+  annotations:
+    github.com/project-slug: Yeusepe/simket
+  tags:
+    - typescript
+    - encore
+    - qdrant
+spec:
+  type: service
+  lifecycle: experimental
+  owner: simket-team
+  system: simket
+  dependsOn:
+    - component:vendure-server
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: storefront
+  description: Customer-facing storefront web application
+  annotations:
+    github.com/project-slug: Yeusepe/simket
+  tags:
+    - typescript
+    - web
+spec:
+  type: website
+  lifecycle: production
+  owner: simket-team
+  system: simket
+  dependsOn:
+    - component:vendure-server
+    - component:cdngine
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: framely-app
+  description: Page builder and creator dashboard application
+  annotations:
+    github.com/project-slug: Yeusepe/simket
+  tags:
+    - typescript
+    - web
+    - framely
+spec:
+  type: website
+  lifecycle: production
+  owner: simket-team
+  system: simket
+  dependsOn:
+    - component:vendure-server
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: cdngine
+  description: Cloudflare Workers CDN edge layer with SWR caching and rate limiting
+  annotations:
+    github.com/project-slug: Yeusepe/simket
+  tags:
+    - typescript
+    - cloudflare-workers
+    - cdn
+spec:
+  type: service
+  lifecycle: production
+  owner: simket-team
+  system: simket
+  dependsOn:
+    - component:vendure-server
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: better-auth
+  description: Identity and authentication service using Better Auth
+  annotations:
+    github.com/project-slug: Yeusepe/simket
+  tags:
+    - typescript
+    - auth
+spec:
+  type: service
+  lifecycle: production
+  owner: simket-team
+  system: simket

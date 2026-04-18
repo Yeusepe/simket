@@ -10,12 +10,7 @@ import {
   ATTR_SERVICE_VERSION,
   ATTR_DEPLOYMENT_ENVIRONMENT_NAME,
 } from '@opentelemetry/semantic-conventions';
-import {
-  trace,
-  metrics,
-  type Tracer,
-  type Meter,
-} from '@opentelemetry/api';
+import { trace, metrics, type Tracer, type Meter } from '@opentelemetry/api';
 
 export interface TracingOptions {
   otlpEndpoint?: string;
@@ -25,10 +20,7 @@ const DEFAULT_OTLP_ENDPOINT = 'http://localhost:4318';
 
 let sdk: NodeSDK | undefined;
 
-export function initTracing(
-  serviceName: string,
-  opts?: TracingOptions,
-): NodeSDK {
+export function initTracing(serviceName: string, opts?: TracingOptions): NodeSDK {
   const endpoint = opts?.otlpEndpoint ?? DEFAULT_OTLP_ENDPOINT;
 
   const resource = new Resource({
@@ -54,10 +46,7 @@ export function initTracing(
     resource,
     traceExporter,
     metricReader,
-    instrumentations: [
-      new HttpInstrumentation(),
-      new ExpressInstrumentation(),
-    ],
+    instrumentations: [new HttpInstrumentation(), new ExpressInstrumentation()],
   });
 
   sdk.start();

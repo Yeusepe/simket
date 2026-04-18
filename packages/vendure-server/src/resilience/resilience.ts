@@ -151,8 +151,4 @@ export const SERVICE_POLICIES = {
   }),
 } as const;
 
-export {
-  TaskCancelledError,
-  BulkheadRejectedError,
-  BrokenCircuitError,
-};
+export { TaskCancelledError, BulkheadRejectedError, BrokenCircuitError };
