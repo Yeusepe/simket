@@ -9,9 +9,12 @@
 
 export { GiftPlugin } from './gift.plugin.js';
 export {
+  GiftService,
   generateGiftCode,
   validateGiftCode,
   isGiftClaimable,
   formatGiftCodeForDisplay,
   GiftStatus,
 } from './gift.service.js';
+export { GiftEntity } from './gift.entity.js';
+export type { GiftFilter, GiftRecord } from './gift.types.js';

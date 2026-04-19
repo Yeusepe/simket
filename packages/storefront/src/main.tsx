@@ -2,6 +2,7 @@ import './styles/globals.css';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ConvexClientProvider } from './providers/ConvexClientProvider';
 import { App } from './App';
 
 const root = document.getElementById('root');
@@ -22,7 +23,9 @@ const queryClient = new QueryClient({
 createRoot(root).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
-      <App />
+      <ConvexClientProvider>
+        <App />
+      </ConvexClientProvider>
     </QueryClientProvider>
   </StrictMode>,
 );

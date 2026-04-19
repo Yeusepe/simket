@@ -15,14 +15,19 @@
  *   - https://docs.vendure.io/guides/developer-guide/plugins/
  * Tests:
  *   - packages/vendure-server/src/plugins/product-metadata/product-metadata.service.test.ts
+ *   - packages/vendure-server/src/plugins/product-metadata/product-metadata.resolver.test.ts
  */
 
-import { PluginCommonModule, VendurePlugin, LanguageCode, Logger } from '@vendure/core';
+import { PluginCommonModule, VendurePlugin, LanguageCode } from '@vendure/core';
 import type { RuntimeVendureConfig } from '@vendure/core';
-import type { OnApplicationBootstrap } from '@nestjs/common';
+import {
+  ProductMetadataAdminResolver,
+  ProductMetadataShopResolver,
+  productMetadataAdminApiExtensions,
+  productMetadataShopApiExtensions,
+} from './product-metadata.api.js';
 import { validateTryAvatarUrl } from './product-metadata.service.js';
-
-const loggerCtx = 'ProductMetadataPlugin';
+import { ProductMetadataService } from './product-metadata.service.js';
 
 /**
  * Applies product metadata custom fields to a Vendure config.
@@ -97,6 +102,20 @@ export function productMetadataConfiguration(
         public: true,
         readonly: false,
       },
+      {
+        name: 'metadataJson',
+        type: 'text',
+        label: [{ languageCode: LanguageCode.en, value: 'Metadata JSON' }],
+        description: [
+          {
+            languageCode: LanguageCode.en,
+            value: 'JSON payload for flexible product metadata beyond typed compatibility fields.',
+          },
+        ],
+        nullable: true,
+        public: false,
+        readonly: false,
+      },
     ],
   };
   return config;
@@ -105,12 +124,15 @@ export function productMetadataConfiguration(
 @VendurePlugin({
   imports: [PluginCommonModule],
   configuration: productMetadataConfiguration,
+  providers: [ProductMetadataService],
+  adminApiExtensions: {
+    schema: productMetadataAdminApiExtensions,
+    resolvers: [ProductMetadataAdminResolver],
+  },
+  shopApiExtensions: {
+    schema: productMetadataShopApiExtensions,
+    resolvers: [ProductMetadataShopResolver],
+  },
+  compatibility: '^3.0.0',
 })
-export class ProductMetadataPlugin implements OnApplicationBootstrap {
-  onApplicationBootstrap() {
-    Logger.info(
-      'ProductMetadataPlugin initialized — avatar metadata and compatibility flags ready',
-      loggerCtx,
-    );
-  }
-}
+export class ProductMetadataPlugin {}

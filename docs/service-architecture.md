@@ -21,8 +21,8 @@ resolvers, replacing the default GraphQL transport with compact binary messages.
 
 | API           | Audience                  | Auth                      | Examples                                                                     |
 | ------------- | ------------------------- | ------------------------- | ---------------------------------------------------------------------------- |
-| **Shop API**  | Buyers, anonymous         | JWT (optional for browse) | `products`, `addToCart`, `checkout`, `discoverFeed`, `activeCustomerLibrary` |
-| **Admin API** | Creators, platform admins | JWT + role permissions    | `createProduct`, `updateCollaboration`, `manageFlows`, `publishProduct`      |
+| **Shop API**  | Buyers, anonymous         | JWT (optional for browse) | `products`, `addToCart`, `validateCart`, `initiateCheckout`, `checkoutStatus`, `localizedPrice`, `activeCustomerLibrary` |
+| **Admin API** | Creators, platform admins | JWT + role permissions    | `createProduct`, `setPlatformFee`, `setRegionalPricing`, `updateCollaboration`, `manageFlows`, `publishProduct`      |
 
 Both APIs are served from the same Vendure server process on different
 Bebop endpoints (`/shop-api`, `/admin-api`).
@@ -31,6 +31,8 @@ AB testing extends these same surfaces:
 
 - **Admin API**: creators manage experiments via `createExperiment`, `startExperiment`, `stopExperiment`, `experiments`, and `experimentResults`.
 - **Shop API**: product pages resolve `activeExperimentVariant(productId)` and emit `trackEvent` mutations for `view`, `click`, and `purchase` outcomes.
+- **Admin API**: commerce administrators manage bundles and dependencies via `createBundle`, `updateBundle`, `deleteBundle`, `bundles`, `bundle`, `addDependency`, `removeDependency`, and `productDependencies`; they also review gifts via `gifts(filter)` and `gift(id)`.
+- **Shop API**: buyers resolve `bundle(id)`, `bundlesForProduct(productId)`, `checkDependenciesMet(productId)`, `productRequirements(productId)`, `myGifts`, and execute `sendGift(productId, recipientEmail)` and `claimGift(giftCode)`.
 
 ### 1.2 Recommend service API (internal)
 

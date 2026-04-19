@@ -23,6 +23,7 @@ identity model, and ownership rules.
 | `Customer`              | Vendure core           | Vendure DB                    | Vendure auto-increment ID + `Better Auth userId` | A marketplace user. Cached profile from Better Auth.                                                     |
 | `Order`                 | Vendure core           | Vendure DB                    | Vendure auto-increment ID + order code           | A completed or in-progress purchase.                                                                     |
 | `OrderLine`             | Vendure core           | Vendure DB                    | Vendure auto-increment ID                        | A single item in an order.                                                                               |
+| `Gift`                  | Gifts                  | Vendure DB                    | Vendure auto-increment ID + unique gift code     | A purchased gift code that can be claimed by another user for a product entitlement.                     |
 | `Tag`                   | Tagging                | Vendure DB                    | Vendure auto-increment ID                        | A classification label applied to products.                                                              |
 | `StorePage`             | Storefront             | Vendure DB                    | Vendure auto-increment ID                        | A content page (post-sale info, product details).                                                        |
 | `Template`              | Storefront             | Vendure DB                    | Vendure auto-increment ID                        | A reusable Framely block preset for store, product, or landing pages.                                   |
@@ -243,6 +244,18 @@ Defines prerequisite relationships between products.
 | **Prerequisite check** | At add-to-cart time, the Dependency plugin verifies the buyer owns the required product.                    |
 | **Discount**           | Optional `discountPercent` if the buyer has the prerequisite in their library or current checkout, they get a discount on the dependent product. |
 | **UI hint**            | Storefront shows "Requires: [Product X]" with a link and blocks checkout until missing prerequisites are added. |
+
+### 4.3.1 Gift
+
+Tracks a purchased product gift until the recipient claims it.
+
+| Responsibility      | Details                                                                                   |
+| ------------------- | ----------------------------------------------------------------------------------------- |
+| **Sender**          | `senderUserId` identifies the user who purchased and sent the gift.                       |
+| **Recipient**       | `recipientEmail` is captured at send time; `recipientUserId` is populated on claim.       |
+| **Code**            | `giftCode` is unique, human-shareable, and claimable exactly once while in `PURCHASED`.   |
+| **Lifecycle**       | `PURCHASED` → `CLAIMED`, with administrative terminal states `REVOKED` and `EXPIRED`.     |
+| **Product linkage** | `productId` points at the product entitlement that will be granted when the gift is used. |
 
 ### 4.4 Collaboration
 

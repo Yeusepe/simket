@@ -12,6 +12,7 @@ export {
   calculateBundlePrice,
   allocateBundleLinePricing,
 } from './bundle.plugin.js';
+export { BundleService } from './bundle.service.js';
 export { BundleEntity } from './bundle.entity.js';
 
 export type {

@@ -17,6 +17,7 @@ export {
   buildDependencyGraph,
   detectCircularDependencies,
 } from './dependency.plugin.js';
+export { DependencyService } from './dependency.service.js';
 
 export type {
   DependencyLike,

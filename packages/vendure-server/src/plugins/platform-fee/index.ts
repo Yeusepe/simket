@@ -11,6 +11,13 @@
 
 export { PlatformFeePlugin } from './platform-fee.plugin.js';
 export {
+  platformFeeAdminApiExtensions,
+  platformFeeShopApiExtensions,
+  PlatformFeeAdminResolver,
+  PlatformFeeShopResolver,
+} from './platform-fee.api.js';
+export {
+  PlatformFeeService,
   calculatePlatformFee,
   calculateCreatorRevenue,
   getRecommendationBoost,
@@ -19,4 +26,8 @@ export {
   MAX_TAKE_RATE,
   MIN_PRICE_CENTS,
 } from './platform-fee.service.js';
-export type { FeeValidationResult } from './platform-fee.service.js';
+export type {
+  FeeValidationResult,
+  PlatformFeeSummary,
+  PlatformFeeDefaults,
+} from './platform-fee.service.js';

@@ -11,11 +11,25 @@
 
 import { PluginCommonModule, VendurePlugin, Logger } from '@vendure/core';
 import type { OnApplicationBootstrap } from '@nestjs/common';
+import { giftAdminApiExtensions, giftShopApiExtensions, GiftAdminResolver, GiftShopResolver } from './gift.api.js';
+import { GiftEntity } from './gift.entity.js';
+import { GiftService } from './gift.service.js';
 
 const loggerCtx = 'GiftPlugin';
 
 @VendurePlugin({
   imports: [PluginCommonModule],
+  entities: [GiftEntity],
+  providers: [GiftService],
+  adminApiExtensions: {
+    schema: giftAdminApiExtensions,
+    resolvers: [GiftAdminResolver],
+  },
+  shopApiExtensions: {
+    schema: giftShopApiExtensions,
+    resolvers: [GiftShopResolver],
+  },
+  compatibility: '^3.0.0',
 })
 export class GiftPlugin implements OnApplicationBootstrap {
   onApplicationBootstrap() {

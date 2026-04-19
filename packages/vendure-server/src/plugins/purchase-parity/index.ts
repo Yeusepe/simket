@@ -9,6 +9,13 @@
 
 export { PurchaseParityPlugin } from './purchase-parity.plugin.js';
 export {
+  purchaseParityAdminApiExtensions,
+  purchaseParityShopApiExtensions,
+  PurchaseParityAdminResolver,
+  PurchaseParityShopResolver,
+} from './purchase-parity.api.js';
+export {
+  PurchaseParityService,
   resolveRegionalDiscount,
   applyRegionalDiscount,
   validateRegionalPricing,
@@ -17,6 +24,9 @@ export {
 export type {
   RegionalPricingRule,
   RegionalPricingValidationResult,
+  RegionalPricingRecord,
+  PurchaseParityRegionDescriptor,
+  LocalizedPriceResult,
 } from './purchase-parity.service.js';
 export {
   resolveRegion,

@@ -4,7 +4,9 @@ import { AbTestingPlugin } from '../plugins/ab-testing/index.js';
 import { BundlePlugin } from '../plugins/bundle/index.js';
 import { CatalogPlugin } from '../plugins/catalog/index.js';
 import { CheckoutPlugin } from '../plugins/checkout/index.js';
+import { CollaborationPlugin } from '../plugins/collaboration/index.js';
 import { DependencyPlugin } from '../plugins/dependency/index.js';
+import { EmailNotificationsPlugin } from '../plugins/email-notifications/index.js';
 import { GiftPlugin } from '../plugins/gifts/index.js';
 import { NotificationPlugin } from '../plugins/notification/index.js';
 import { PaymentWebhookPlugin } from '../plugins/payment-webhook/index.js';
@@ -14,6 +16,8 @@ import { PurchaseParityPlugin } from '../plugins/purchase-parity/index.js';
 import { ReportingPlugin } from '../plugins/reporting/index.js';
 import { SearchSyncPlugin } from '../plugins/search/index.js';
 import { SettlementPlugin } from '../plugins/settlement/index.js';
+import { StorefrontPlugin } from '../plugins/storefront/index.js';
+import { StoreRoutingPlugin } from '../plugins/store-routing/index.js';
 import { WishlistPlugin } from '../plugins/wishlist/index.js';
 
 /**
@@ -70,6 +74,8 @@ export const config: VendureConfig = {
     CatalogPlugin,
     BundlePlugin,
     DependencyPlugin,
+    CollaborationPlugin,
+    StorefrontPlugin,
     SearchSyncPlugin,
     NotificationPlugin,
     WishlistPlugin,
@@ -81,6 +87,8 @@ export const config: VendureConfig = {
     ReportingPlugin,
     CheckoutPlugin,
     PaymentWebhookPlugin,
+    EmailNotificationsPlugin,
+    StoreRoutingPlugin,
     SettlementPlugin,
   ],
 };

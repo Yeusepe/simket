@@ -9,7 +9,7 @@
  * Tests:
  *   - packages/vendure-server/src/plugins/bundle/bundle.plugin.test.ts
  */
-import { DeepPartial } from '@vendure/common/lib/shared-types';
+import type { DeepPartial } from '@vendure/common/lib/shared-types';
 import { VendureEntity, Product } from '@vendure/core';
 import { Column, Entity, JoinTable, ManyToMany } from 'typeorm';
 
@@ -25,22 +25,22 @@ export class BundleEntity extends VendureEntity {
 
   /** Display name for the bundle. */
   @Column({ type: 'varchar' })
-  name: string;
+  name!: string;
 
   /** Optional description of the bundle. */
   @Column({ type: 'text', nullable: true, default: null })
-  description: string | null;
+  description: string | null = null;
 
   /** Discount percentage applied to the total of all bundled product prices (0–100). */
   @Column({ type: 'int', default: 0 })
-  discountPercent: number;
+  discountPercent = 0;
 
   /** Whether this bundle is currently active and visible. */
   @Column({ type: 'boolean', default: true })
-  enabled: boolean;
+  enabled = true;
 
   /** Products included in this bundle (many-to-many). */
   @ManyToMany(() => Product)
   @JoinTable()
-  products: Product[];
+  products!: Product[];
 }

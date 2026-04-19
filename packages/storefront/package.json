@@ -31,6 +31,7 @@
     "@uppy/core": "^5.2.0",
     "@uppy/react": "^5.2.0",
     "@uppy/tus": "^5.1.1",
+    "convex": "^1.28.3",
     "isomorphic-dompurify": "2.29.0",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",

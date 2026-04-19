@@ -1,4 +1,5 @@
 export { PaymentWebhookPlugin } from './payment-webhook.plugin.js';
+export { PaymentWebhookController } from './payment-webhook.controller.js';
 export {
   parseWebhookEventType,
   isPaymentSuccessEvent,

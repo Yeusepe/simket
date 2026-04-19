@@ -58,6 +58,16 @@ describe('CheckoutService', () => {
       expect(totals.totalCents).toBe(2480);
     });
 
+    it('prefers per-item regional discounts when provided', () => {
+      const totals = calculateCheckoutTotals([
+        { productId: 'prod-1', title: 'Avatar A', priceCents: 1000, quantity: 1, takeRate: 5, regionalDiscountPercent: 50, currencyCode: 'USD' },
+        { productId: 'prod-2', title: 'Texture Pack', priceCents: 1000, quantity: 1, takeRate: 5, regionalDiscountPercent: 25, currencyCode: 'USD' },
+      ]);
+
+      expect(totals.discountedSubtotalCents).toBe(1250);
+      expect(totals.totalCents).toBe(1250);
+    });
+
     it('handles empty cart', () => {
       const totals = calculateCheckoutTotals([]);
       expect(totals.subtotalCents).toBe(0);
@@ -131,6 +141,25 @@ describe('CheckoutService', () => {
 
       // 3100 * 0.50 = 1550
       expect(params.amount).toBe(1550);
+    });
+
+    it('uses item-level regional discounts in order details and totals', () => {
+      const params = buildCheckoutPaymentParams({
+        items: [
+          { productId: 'prod-1', title: 'Avatar A', priceCents: 1000, quantity: 1, takeRate: 5, regionalDiscountPercent: 50, currencyCode: 'USD' },
+          { productId: 'prod-2', title: 'Texture Pack', priceCents: 1000, quantity: 1, takeRate: 10, regionalDiscountPercent: 25, currencyCode: 'USD' },
+        ],
+        customerId: 'cust-123',
+        currency: 'USD',
+        returnUrl: 'https://simket.com/checkout/return',
+        orderId: 'order-456',
+      });
+
+      expect(params.amount).toBe(1250);
+      expect(params.orderDetails).toEqual([
+        expect.objectContaining({ amount: 500 }),
+        expect.objectContaining({ amount: 750 }),
+      ]);
     });
 
     it('includes metadata with orderId', () => {
