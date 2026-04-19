@@ -14,6 +14,7 @@ import { Button, Chip } from '@heroui/react';
 
 import { BentoHeroFrame, DEFAULT_BENTO_SHELL_COLOR } from './BentoHeroFrame';
 import { editorialBentoFields } from './editorial-bento-fields';
+import { getEditorialStoryHref } from './editorial-links';
 import type { EditorialItem } from './today-types';
 
 interface HeroBannerProps {
@@ -38,12 +39,8 @@ function formatPublishedDate(value: string): string {
   }).format(new Date(value));
 }
 
-function getEditorialHref(slug: string): string {
-  return `/editorial/${slug}`;
-}
-
 function navigateToEditorialStory(slug: string): void {
-  window.location.assign(getEditorialHref(slug));
+  window.location.assign(getEditorialStoryHref(slug));
 }
 
 export function HeroBanner({
@@ -69,7 +66,7 @@ export function HeroBanner({
         productName={bento.productName}
         creatorName={bento.creatorName}
         productThumbnailUrl={item.productThumbnailUrl}
-        storyHref={getEditorialHref(item.slug)}
+        storyHref={getEditorialStoryHref(item.slug)}
         onReadMore={onReadMore}
         spotlightCtaLabel={bento.spotlightCtaLabel}
         showSpotlightCta={bento.showSpotlightCta}

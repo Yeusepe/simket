@@ -10,11 +10,8 @@
 import { BentoHeroFrame, DEFAULT_BENTO_SHELL_COLOR } from './BentoHeroFrame';
 import { editorialBentoFields } from './editorial-bento-fields';
 import { HeroBanner } from './HeroBanner';
+import { getEditorialStoryHref } from './editorial-links';
 import type { EditorialSection } from './today-types';
-
-function editorialHref(slug: string): string {
-  return `/editorial/${slug}`;
-}
 
 interface BentoTodayHeroProps {
   readonly heroSection: EditorialSection;
@@ -65,7 +62,7 @@ export function BentoTodayHero({ heroSection, picksSection, shellColor, onHeroRe
                 productName={bento.productName}
                 creatorName={bento.creatorName}
                 productThumbnailUrl={item.productThumbnailUrl}
-                storyHref={editorialHref(item.slug)}
+                storyHref={getEditorialStoryHref(item.slug)}
                 spotlightCtaLabel={bento.spotlightCtaLabel}
                 showSpotlightCta={bento.showSpotlightCta}
                 testId={`bento-pick-${item.slug}`}

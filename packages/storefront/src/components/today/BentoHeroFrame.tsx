@@ -6,11 +6,18 @@
  *   - docs/architecture.md
  * External references:
  *   - https://www.heroui.com/docs/react/components/card
+ *   - https://github.com/adobe/leonardo (footer contrasts via `createBentoSpotlightFooterColors`)
  */
+import { useMemo } from 'react';
+
+import { createBentoSpotlightFooterColors } from '../../color/leonardo-theme';
 import { SpotlightHeroFooter } from './SpotlightHeroFooter';
 
 /** Default shell / frame color (Tailwind violet-200). Pass any valid CSS color. */
 export const DEFAULT_BENTO_SHELL_COLOR = '#ddd6fe';
+
+/** Matches the article padding edge when `rounded-[2rem]` + `border-[10px]` — keeps image/gradient clip aligned and avoids corner bleed. */
+const INNER_MEDIA_RADIUS = 'calc(2rem - 10px)';
 
 /** Fluid type scale from headline length (title stays readable in the bento tile). */
 export function spotlightHeadlineClass(
@@ -104,6 +111,11 @@ export function BentoHeroFrame({
   const subline = spotlightSubline?.trim();
   const isCompact = density === 'compact';
 
+  const footerColors = useMemo(
+    () => createBentoSpotlightFooterColors(shellColor),
+    [shellColor],
+  );
+
   return (
     <article
       data-testid={testId}
@@ -116,13 +128,22 @@ export function BentoHeroFrame({
         backgroundColor: shellColor,
       }}
     >
-      <div className="relative min-h-0 flex-1 overflow-hidden">
-        <img src={heroImage} alt={heroImageAlt} className="absolute inset-0 h-full w-full object-cover" />
+      <div
+        className="relative min-h-0 flex-1 overflow-hidden"
+        style={{ borderRadius: INNER_MEDIA_RADIUS }}
+      >
+        <img
+          src={heroImage}
+          alt={heroImageAlt}
+          className="absolute inset-0 h-full w-full object-cover"
+          style={{ borderRadius: INNER_MEDIA_RADIUS }}
+        />
         {/* Compact picks: always use the strong lower-third fade (same as narrow-stack featured). */}
         {isCompact ? (
           <div
             className="pointer-events-none absolute inset-0"
             style={{
+              borderRadius: INNER_MEDIA_RADIUS,
               background: `linear-gradient(to top, ${shellColor} 0%, ${shellColor} 18%, color-mix(in oklab, ${shellColor} 62%, transparent) 33%, color-mix(in oklab, ${shellColor} 22%, transparent) 54%, transparent 84%)`,
             }}
             aria-hidden
@@ -132,6 +153,7 @@ export function BentoHeroFrame({
             <div
               className="pointer-events-none absolute inset-0 lg:hidden"
               style={{
+                borderRadius: INNER_MEDIA_RADIUS,
                 background: `linear-gradient(to top, ${shellColor} 0%, ${shellColor} 18%, color-mix(in oklab, ${shellColor} 62%, transparent) 33%, color-mix(in oklab, ${shellColor} 22%, transparent) 54%, transparent 84%)`,
               }}
               aria-hidden
@@ -139,7 +161,9 @@ export function BentoHeroFrame({
             <div
               className="pointer-events-none absolute inset-0 hidden lg:block"
               style={{
-                background: `linear-gradient(to top, ${shellColor} 0%, color-mix(in oklab, ${shellColor} 35%, transparent) 45%, transparent 72%)`,
+                borderRadius: INNER_MEDIA_RADIUS,
+                // Taller fully-opaque bottom band so curved corners stay covered (linear fade alone can show image at L/R bottom).
+                background: `linear-gradient(to top, ${shellColor} 0%, ${shellColor} 24%, color-mix(in oklab, ${shellColor} 38%, transparent) 48%, transparent 74%)`,
               }}
               aria-hidden
             />
@@ -188,6 +212,7 @@ export function BentoHeroFrame({
             showCta={showSpotlightCta}
             onCtaPress={handleRead}
             compact={isCompact}
+            footerColors={footerColors}
           />
         </div>
       </div>

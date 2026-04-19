@@ -13,6 +13,7 @@ import {
   createSimketPalette,
   createCreatorStorePalette,
   applyPaletteAsCSSVariables,
+  createBentoSpotlightFooterColors,
   SIMKET_BRAND,
   type SimketPaletteOptions,
   type PaletteOutput,
@@ -148,6 +149,31 @@ describe('Leonardo theme engine', () => {
       expect(SIMKET_BRAND.accent).toBeDefined();
       expect(SIMKET_BRAND.neutral).toBeDefined();
       expect(typeof SIMKET_BRAND.accent).toBe('string');
+    });
+  });
+
+  describe('createBentoSpotlightFooterColors', () => {
+    const hex = /^#[0-9a-fA-F]{6}$/;
+
+    it('returns hex pairs for a light shell', () => {
+      const c = createBentoSpotlightFooterColors('#ddd6fe');
+
+      expect(c.product).toMatch(hex);
+      expect(c.creator).toMatch(hex);
+      expect(c.ctaBackground).toMatch(hex);
+      expect(c.ctaForeground).toMatch(hex);
+    });
+
+    it('returns hex pairs for a dark shell', () => {
+      const c = createBentoSpotlightFooterColors('#1e1b4b');
+
+      expect(c.product).toMatch(hex);
+      expect(c.ctaBackground).toMatch(hex);
+    });
+
+    it('accepts 3-digit hex shorthand', () => {
+      const c = createBentoSpotlightFooterColors('#d6e');
+      expect(c.product).toMatch(hex);
     });
   });
 });

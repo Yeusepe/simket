@@ -13,10 +13,12 @@ export {
   createSimketPalette,
   createCreatorStorePalette,
   applyPaletteAsCSSVariables,
+  createBentoSpotlightFooterColors,
   SIMKET_BRAND,
   type SimketPaletteOptions,
   type CreatorStorePaletteOptions,
   type PaletteOutput,
+  type BentoSpotlightFooterColors,
 } from './leonardo-theme';
 
 export { useAdaptiveColors } from './use-adaptive-colors';
