@@ -1,8 +1,8 @@
 /**
- * Purpose: Pure functions for product metadata validation and processing.
+ * Purpose: Provide product metadata validation helpers plus Product-backed metadata persistence.
  *
  * Handles: try-avatar URL validation, compatibility flags parsing/validation,
- * avatar ranking clamping, and known flag definitions.
+ * avatar ranking clamping, known flag definitions, and persisted product metadata reads/writes.
  *
  * Governing docs:
  *   - docs/architecture.md §4.1 (Product entity)

@@ -1,12 +1,13 @@
 /**
- * Purpose: Revenue settlement and collaboration split calculation.
+ * Purpose: Provide payout split helpers plus standalone order settlement processing workflows.
  *
  * Computes per-collaborator payouts after platform fees, with floor rounding
- * so the product owner receives the remainder (no overpay).
+ * so the product owner receives the remainder (no overpay), and persists order-level settlement status.
  *
  * Governing docs:
  *   - docs/architecture.md §7 (Payment — Hyperswitch)
  *   - docs/domain-model.md §Collaboration
+ *   - docs/service-architecture.md §1.13 (Hyperswitch)
  * External references:
  *   - https://api-reference.hyperswitch.io/v1/payouts/payouts--create
  *   - https://docs.hyperswitch.io/features/payment-flows/payouts

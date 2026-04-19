@@ -1,8 +1,8 @@
 /**
- * Purpose: Pure functions for content reporting and moderation.
+ * Purpose: Provide report validation helpers plus repository-backed moderation workflows.
  *
  * Handles: report validation, priority assignment, status checks,
- * and user eligibility. IO-free for testability.
+ * user eligibility, and persisted report management.
  *
  * Governing docs:
  *   - docs/architecture.md §10 (Trust & Safety)
