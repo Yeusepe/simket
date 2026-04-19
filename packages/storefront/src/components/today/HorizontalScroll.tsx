@@ -41,7 +41,7 @@ export function HorizontalScroll({ title, items }: HorizontalScrollProps) {
         isIconOnly
         variant="secondary"
         onPress={() => scrollTrack('left')}
-        className="absolute left-2 top-1/2 z-10 hidden -translate-y-1/2 opacity-0 shadow-lg transition-opacity group-hover:opacity-100 md:inline-flex"
+        className="absolute left-2 top-1/2 z-10 hidden -translate-y-1/2 opacity-0 transition-opacity group-hover:opacity-100 md:inline-flex"
       >
         <span aria-hidden="true">←</span>
       </Button>
@@ -63,7 +63,7 @@ export function HorizontalScroll({ title, items }: HorizontalScrollProps) {
         isIconOnly
         variant="secondary"
         onPress={() => scrollTrack('right')}
-        className="absolute right-2 top-1/2 z-10 hidden -translate-y-1/2 opacity-0 shadow-lg transition-opacity group-hover:opacity-100 md:inline-flex"
+        className="absolute right-2 top-1/2 z-10 hidden -translate-y-1/2 opacity-0 transition-opacity group-hover:opacity-100 md:inline-flex"
       >
         <span aria-hidden="true">→</span>
       </Button>

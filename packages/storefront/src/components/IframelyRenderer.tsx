@@ -23,7 +23,7 @@ export function IframelyRenderer({
   url,
 }: IframelyRendererProps) {
   return (
-    <div className="iframely-renderer overflow-hidden rounded-xl border border-default-200 bg-content1 p-4 shadow-sm">
+    <div className="iframely-renderer overflow-hidden rounded-xl border border-default-200 bg-content1 p-4">
       {html ? (
         <SanitizedContent html={html} />
       ) : (

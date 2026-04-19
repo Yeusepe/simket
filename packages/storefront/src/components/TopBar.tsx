@@ -49,7 +49,7 @@ export function TopBar({ wishlistApi }: TopBarProps) {
 
   return (
     <header className="fixed left-0 right-0 top-4 z-50 mx-auto max-w-7xl px-4">
-      <div className="flex h-14 items-center gap-3 rounded-2xl border border-divider bg-background/70 px-4 shadow-lg backdrop-blur-xl">
+      <div className="flex h-14 items-center gap-3 rounded-2xl border border-divider bg-background/70 px-4 backdrop-blur-xl">
         {/* Logo / Home */}
         <Link to="/" className="flex-shrink-0 text-xl font-bold text-foreground">
           Simket

@@ -263,16 +263,6 @@ const MOCK_EDITORIAL_ITEMS: readonly EditorialItem[] = [
   },
 ];
 
-/** Resolve dev preview shell color when API payloads omit `previewColor`. */
-export function mockPreviewColorForProductSlug(slug: string): string | undefined {
-  return MOCK_PRODUCTS.find((p) => p.slug === slug)?.previewColor ?? undefined;
-}
-
-/** Resolve dev preview shell color for editorial rows when API payloads omit `previewColor`. */
-export function mockPreviewColorForEditorialSlug(slug: string): string | undefined {
-  return MOCK_EDITORIAL_ITEMS.find((e) => e.slug === slug)?.previewColor ?? undefined;
-}
-
 export const MOCK_EDITORIAL_SECTIONS: readonly EditorialSection[] = [
   {
     id: 'section-hero',

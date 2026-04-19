@@ -13,12 +13,18 @@
  *   - packages/storefront/src/components/discovery/DiscoveryFeed.test.tsx
  */
 
+import type { ReactNode } from 'react';
 import { render, screen } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { DiscoveryFeed } from './DiscoveryFeed';
 import type { DiscoveryFeedItem } from './discovery-types';
 import type { UseDiscoveryReturn } from './use-discovery';
+
+function renderWithRouter(node: ReactNode) {
+  return render(<MemoryRouter>{node}</MemoryRouter>);
+}
 
 function makeDiscoveryItem(
   index: number,
@@ -85,7 +91,7 @@ describe('DiscoveryFeed', () => {
   it('renders recommendation cards from the discovery hook', () => {
     const hookValue = createHookValue();
 
-    render(
+    renderWithRouter(
       <DiscoveryFeed
         userId="user-1"
         useDiscoveryHook={() => hookValue}
@@ -97,7 +103,7 @@ describe('DiscoveryFeed', () => {
   });
 
   it('shows loading skeletons while the first page is fetching', () => {
-    render(
+    renderWithRouter(
       <DiscoveryFeed
         userId="user-1"
         useDiscoveryHook={() =>
@@ -110,7 +116,7 @@ describe('DiscoveryFeed', () => {
   });
 
   it('shows the end-of-feed state when there are no more recommendations', () => {
-    render(
+    renderWithRouter(
       <DiscoveryFeed
         userId="user-1"
         useDiscoveryHook={() =>
@@ -127,7 +133,7 @@ describe('DiscoveryFeed', () => {
   it('shows an error state with retry', () => {
     const retry = vi.fn(async () => undefined);
 
-    render(
+    renderWithRouter(
       <DiscoveryFeed
         userId="user-1"
         useDiscoveryHook={() =>
@@ -147,7 +153,7 @@ describe('DiscoveryFeed', () => {
   it('requests another page when the sentinel intersects', () => {
     const loadMore = vi.fn(async () => undefined);
 
-    render(
+    renderWithRouter(
       <DiscoveryFeed
         userId="user-1"
         useDiscoveryHook={() => createHookValue({ loadMore })}

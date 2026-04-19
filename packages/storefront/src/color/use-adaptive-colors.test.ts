@@ -37,8 +37,8 @@ describe('useAdaptiveColors', () => {
     );
 
     expect(result.current.background).toBeDefined();
-    expect(getCSSVar('--simket-background')).toBe(result.current.background);
-    expect(getCSSVar('--simket-accent100')).toBeTruthy();
+    expect(getCSSVar('--simket-bg')).toBe(result.current.background);
+    expect(getCSSVar('--simket-accent')).toBeTruthy();
   });
 
   it('updates CSS variables when mode changes', () => {
@@ -54,7 +54,7 @@ describe('useAdaptiveColors', () => {
 
     const darkBg = result.current.background;
     expect(lightBg).not.toBe(darkBg);
-    expect(getCSSVar('--simket-background')).toBe(darkBg);
+    expect(getCSSVar('--simket-bg')).toBe(darkBg);
   });
 
   it('cleans up CSS variables on unmount', () => {
@@ -62,11 +62,11 @@ describe('useAdaptiveColors', () => {
       useAdaptiveColors({ mode: 'light' }),
     );
 
-    expect(getCSSVar('--simket-background')).toBeTruthy();
+    expect(getCSSVar('--simket-bg')).toBeTruthy();
 
     unmount();
 
-    expect(getCSSVar('--simket-background')).toBe('');
+    expect(getCSSVar('--simket-bg')).toBe('');
   });
 
   it('supports custom prefix for creator stores', () => {
@@ -78,7 +78,7 @@ describe('useAdaptiveColors', () => {
       }),
     );
 
-    expect(getCSSVar('--store-background')).toBeTruthy();
-    expect(getCSSVar('--store-accent100')).toBeTruthy();
+    expect(getCSSVar('--store-bg')).toBeTruthy();
+    expect(getCSSVar('--store-accent')).toBeTruthy();
   });
 });

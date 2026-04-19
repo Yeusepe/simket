@@ -8,11 +8,11 @@ import type { EditorialItem } from './today-types';
 
 const DEPTH_LAYER_CLASSES = {
   square:
-    'absolute inset-x-5 bottom-0 top-3 h-[calc(100%-0.75rem)] w-[calc(100%-2.5rem)] object-contain drop-shadow-2xl',
+    'absolute inset-x-5 bottom-0 top-3 h-[calc(100%-0.75rem)] w-[calc(100%-2.5rem)] object-contain',
   small:
-    'absolute inset-x-4 bottom-0 top-2 h-[calc(100%-0.5rem)] w-[calc(100%-2rem)] object-contain drop-shadow-xl',
+    'absolute inset-x-4 bottom-0 top-2 h-[calc(100%-0.5rem)] w-[calc(100%-2rem)] object-contain',
   medium:
-    'absolute inset-x-6 bottom-0 top-4 h-[calc(100%-1rem)] w-[calc(100%-3rem)] object-contain drop-shadow-2xl',
+    'absolute inset-x-6 bottom-0 top-4 h-[calc(100%-1rem)] w-[calc(100%-3rem)] object-contain',
 } as const;
 
 type DepthPreset = keyof typeof DEPTH_LAYER_CLASSES;

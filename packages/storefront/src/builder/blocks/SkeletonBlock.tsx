@@ -114,7 +114,7 @@ function renderSkeletonLayout(variant: SkeletonVariant, animationType: SkeletonA
     case 'card':
     default:
       return (
-        <div className="w-full max-w-sm space-y-5 rounded-[var(--builder-border-radius,1.5rem)] bg-transparent p-4 shadow-panel">
+        <div className="w-full max-w-sm space-y-5 rounded-[var(--builder-border-radius,1.5rem)] bg-transparent p-4">
           <Skeleton
             animationType={animationType}
             className="h-32 rounded-lg"

@@ -13,6 +13,7 @@ export type { TodaySectionProps } from './TodaySection';
 export { HeroBanner } from './HeroBanner';
 export {
   BentoHeroFrame,
+  BENTO_FRAME_BORDER_PX,
   BENTO_INNER_MEDIA_RADIUS,
   DEFAULT_BENTO_SHELL_COLOR,
   spotlightHeadlineClass,

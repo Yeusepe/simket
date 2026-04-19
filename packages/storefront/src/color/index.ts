@@ -14,11 +14,21 @@ export {
   createCreatorStorePalette,
   applyPaletteAsCSSVariables,
   createBentoSpotlightFooterColors,
+  getBentoSpotlightReadingBackground,
+  shellHarmonyDividerColor,
+  wcagContrastRatio,
+  preferLightForegroundOnBackground,
+  foregroundAnchorForBackground,
+  approximateSrgbSaturation,
   SIMKET_BRAND,
+  SEMANTIC_TOKENS,
+  type SemanticToken,
   type SimketPaletteOptions,
   type CreatorStorePaletteOptions,
   type PaletteOutput,
   type BentoSpotlightFooterColors,
+  type BentoSpotlightContrastSurface,
+  type CreateBentoSpotlightFooterColorsOptions,
 } from './leonardo-theme';
 
 export { useAdaptiveColors } from './use-adaptive-colors';

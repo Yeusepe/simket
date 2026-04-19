@@ -1,6 +1,6 @@
 /**
  * Purpose: Reusable square spotlight card — full-bleed image, shell-colored frame,
- * gradient from transparent (top) to shell color (bottom), eyebrow / title / optional subline,
+ * gradient from transparent (top) to the Leonardo reading surface (bottom), eyebrow / title / optional subline,
  * footer with product thumb and CTA. Use `density="compact"` for small bento grid cells.
  * Governing docs:
  *   - docs/architecture.md
@@ -16,8 +16,11 @@ import { SpotlightHeroFooter } from './SpotlightHeroFooter';
 /** Default shell / frame color (Tailwind violet-200). Pass any valid CSS color. */
 export const DEFAULT_BENTO_SHELL_COLOR = '#ddd6fe';
 
-/** Matches the article padding edge when `rounded-[2rem]` + `border-[10px]` — keeps image/gradient clip aligned and avoids corner bleed. */
-export const BENTO_INNER_MEDIA_RADIUS = 'calc(2rem - 10px)';
+/** Shell frame thickness (px). Keep in sync with `BENTO_INNER_MEDIA_RADIUS`. */
+export const BENTO_FRAME_BORDER_PX = 3;
+
+/** Matches `rounded-[2rem]` outer radius minus the frame border — keeps image/gradient clip aligned. */
+export const BENTO_INNER_MEDIA_RADIUS = `calc(2rem - ${BENTO_FRAME_BORDER_PX}px)`;
 
 /** Fluid type scale from headline length (title stays readable in the bento tile). */
 export function spotlightHeadlineClass(
@@ -50,7 +53,7 @@ export function spotlightHeadlineClass(
 }
 
 export interface BentoHeroFrameProps {
-  /** Border and bottom gradient use this color (e.g. `#ddd6fe`, `oklch(...)`, `var(--my-token)`). */
+  /** Shell tint for Leonardo; frame border/fill use the derived reading `surface` to match the gradient foot. */
   readonly shellColor?: string;
   readonly heroImage: string;
   readonly heroImageAlt: string;
@@ -116,8 +119,8 @@ export function BentoHeroFrame({
     [shellColor],
   );
 
-  /** Single lower-third fade: shell at bottom → transparent (no multi-stop color-mix chain). */
-  const imageFadeGradient = `linear-gradient(to top, ${shellColor} 0%, ${shellColor} 22%, transparent 100%)`;
+  /** Single lower-third fade: derived reading surface at bottom → transparent. */
+  const imageFadeGradient = `linear-gradient(to top, ${footerColors.surface} 0%, ${footerColors.surface} 22%, transparent 100%)`;
 
   return (
     <article
@@ -125,10 +128,11 @@ export function BentoHeroFrame({
       data-variant={dataVariant}
       data-shell-color={shellColor}
       data-bento-density={density}
-      className={`flex h-full min-h-0 flex-col overflow-hidden rounded-[2rem] border-[10px] ${className ?? ''}`}
+      className={`flex h-full min-h-0 flex-col overflow-hidden rounded-[2rem] border-solid ${className ?? ''}`}
       style={{
-        borderColor: shellColor,
-        backgroundColor: shellColor,
+        borderColor: footerColors.surface,
+        backgroundColor: footerColors.surface,
+        borderWidth: BENTO_FRAME_BORDER_PX,
       }}
     >
       <div
@@ -169,6 +173,7 @@ export function BentoHeroFrame({
               : 'relative z-10 flex h-full min-h-0 flex-col justify-end gap-3 p-4 sm:gap-3 sm:p-5'
           }
           data-bento-text-themed="leonardo"
+          style={{ color: footerColors.product }}
         >
           <div className={isCompact ? 'space-y-0.5' : 'space-y-0.5'}>
             <p

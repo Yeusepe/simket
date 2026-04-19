@@ -47,13 +47,14 @@ export function HeroBanner({
   item,
   sectionName = 'Today',
   variant = 'full',
-  shellColor = DEFAULT_BENTO_SHELL_COLOR,
+  shellColor: shellColorProp,
   onReadMore,
 }: HeroBannerProps) {
   const isBento = variant === 'bento';
 
   if (isBento) {
     const bento = editorialBentoFields(item, sectionName);
+    const shellColor = shellColorProp ?? item.previewColor ?? DEFAULT_BENTO_SHELL_COLOR;
 
     return (
       <BentoHeroFrame
@@ -80,7 +81,7 @@ export function HeroBanner({
     <article
       data-testid="hero-banner"
       data-variant={variant}
-      className="grid overflow-hidden rounded-[2rem] border border-divider bg-content1 shadow-xl lg:grid-cols-[minmax(0,1fr)_18rem]"
+      className="grid overflow-hidden rounded-[2rem] border border-divider bg-content1 lg:grid-cols-[minmax(0,1fr)_18rem]"
     >
       <div className="relative min-h-[28rem] overflow-hidden">
         <img
@@ -137,7 +138,7 @@ export function HeroBanner({
               src={item.heroTransparent}
               alt=""
               aria-hidden="true"
-              className="absolute inset-6 h-[calc(100%-3rem)] w-[calc(100%-3rem)] translate-y-3 object-contain drop-shadow-[0_30px_50px_rgba(0,0,0,0.45)] transition-transform duration-300"
+              className="absolute inset-6 h-[calc(100%-3rem)] w-[calc(100%-3rem)] translate-y-3 object-contain transition-transform duration-300"
             />
           </>
         ) : (

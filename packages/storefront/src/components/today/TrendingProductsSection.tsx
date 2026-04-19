@@ -23,7 +23,7 @@ export function TrendingProductsSection({ title }: TrendingProductsSectionProps)
           {Array.from({ length: 4 }, (_, i) => (
             <div
               key={i}
-              className="flex w-64 flex-none flex-col self-stretch overflow-hidden rounded-[2rem] bg-gradient-to-b from-primary/15 to-secondary/10 shadow-sm"
+              className="flex w-64 flex-none flex-col self-stretch overflow-hidden rounded-[2rem] bg-gradient-to-b from-primary/15 to-secondary/10"
             >
               <Skeleton className="aspect-square w-full shrink-0 rounded-none bg-gradient-to-br from-primary/30 to-secondary/25" />
               <div className="flex min-h-0 flex-1 flex-col gap-2 px-3 py-3">

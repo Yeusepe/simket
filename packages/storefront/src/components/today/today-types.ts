@@ -55,7 +55,7 @@ export interface EditorialItem {
   readonly slug: string;
   readonly tags: readonly string[];
   /**
-   * Dev / mock only: CSS color for bento shell or card accent. Production may omit.
+   * Optional CSS shell/accent from CMS/API for bento frame or card stripe; omit if not provided.
    */
   readonly previewColor?: string | null;
 }

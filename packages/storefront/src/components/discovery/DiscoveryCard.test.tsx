@@ -15,11 +15,20 @@
 
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { resetCartState, useCartState } from '../../state/cart-state';
 import { DiscoveryCard } from './DiscoveryCard';
 import type { DiscoveryFeedItem } from './discovery-types';
+
+function renderDiscoveryCard(item: DiscoveryFeedItem) {
+  return render(
+    <MemoryRouter>
+      <DiscoveryCard item={item} />
+    </MemoryRouter>,
+  );
+}
 
 function makeDiscoveryItem(
   overrides: Partial<DiscoveryFeedItem> = {},
@@ -46,7 +55,7 @@ describe('DiscoveryCard', () => {
   });
 
   it('renders product information and the recommendation reason', () => {
-    render(<DiscoveryCard item={makeDiscoveryItem()} />);
+    renderDiscoveryCard(makeDiscoveryItem());
 
     expect(screen.getByText('Shader Lab')).toBeInTheDocument();
     expect(screen.getByText('Pixel Forge')).toBeInTheDocument();
@@ -59,7 +68,7 @@ describe('DiscoveryCard', () => {
   it('adds the product to the cart when the quick action is pressed', async () => {
     const user = userEvent.setup();
 
-    render(<DiscoveryCard item={makeDiscoveryItem()} />);
+    renderDiscoveryCard(makeDiscoveryItem());
 
     await user.click(screen.getByRole('button', { name: /add to cart/i }));
 

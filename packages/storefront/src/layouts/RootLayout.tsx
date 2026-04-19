@@ -8,7 +8,7 @@ export function RootLayout() {
   useAdaptiveColors({ mode: theme });
 
   return (
-    <div className="flex min-h-dvh flex-col bg-[var(--simket-background)] text-[var(--simket-neutral400,inherit)]">
+    <div className="flex min-h-dvh flex-col bg-[var(--simket-bg)] text-[var(--simket-fg)]">
       <TopBar />
       {/* pt-24 accounts for the floating top bar (top-4 + h-14 + gap) */}
       <main className="flex-1 pt-24">

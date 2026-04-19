@@ -145,7 +145,7 @@ export function StoreLayout({
       <div
         data-testid="store-layout"
         style={buildStoreThemeStyle(store)}
-        className="min-h-dvh bg-[var(--store-background,#09090b)] text-[var(--store-neutral400,#f8fafc)] [font-family:var(--store-font-family,inherit)]"
+        className="min-h-dvh bg-[var(--store-bg,#09090b)] text-[var(--store-fg,#f8fafc)] [font-family:var(--store-font-family,inherit)]"
       >
         <header className="border-b border-white/10 bg-black/10 backdrop-blur">
           <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-5">

@@ -16,7 +16,7 @@ const TRENDING_LIMIT = 12;
 
 /**
  * Returns trending / popular products for the home carousel.
- * Currently serves catalog-shaped mock data; swap `queryFn` for shop GraphQL when wired.
+ * Dev-only: `queryFn` uses local fixtures — replace with the real catalog query in production.
  */
 export function useTrendingProducts() {
   return useQuery({

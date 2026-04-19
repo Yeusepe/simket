@@ -40,8 +40,8 @@ export interface ProductListItem {
   readonly averageRating?: number | null;
   readonly reviewCount?: number | null;
   /**
-   * Dev / mock only: CSS color (e.g. `#7c3aed`) for listing shell or accent stripes.
-   * Omitted in production catalog APIs unless explicitly modeled.
+   * Optional CSS shell/accent (e.g. `#7c3aed`) when the listing API exposes a brand tint for cards.
+   * Omit when unknown; components fall back to the default bento shell.
    */
   readonly previewColor?: string | null;
 }

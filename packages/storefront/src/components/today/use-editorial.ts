@@ -13,7 +13,6 @@
  *   - packages/storefront/src/components/today/use-editorial.test.ts
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { mockPreviewColorForEditorialSlug } from '../../mock-data';
 import type { EditorialItem, EditorialSection, UseEditorialResult } from './today-types';
 import { TODAY_LAYOUTS } from './today-types';
 
@@ -175,8 +174,6 @@ async function fetchJson<T>(
 }
 
 function mapItem(item: RawItem): EditorialItem {
-  const previewColor =
-    item.previewColor ?? mockPreviewColorForEditorialSlug(item.slug) ?? undefined;
   return {
     id: item.id,
     title: item.title,
@@ -195,7 +192,7 @@ function mapItem(item: RawItem): EditorialItem {
     publishedAt: item.publishedAt,
     slug: item.slug,
     tags: item.tags,
-    ...(previewColor ? { previewColor } : {}),
+    ...(item.previewColor !== undefined ? { previewColor: item.previewColor } : {}),
   };
 }
 

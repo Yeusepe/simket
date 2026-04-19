@@ -31,9 +31,7 @@ export interface DiscoveryFeedItem {
   readonly score: number;
   readonly source: string;
   readonly variantId: string;
-  /**
-   * Dev / mock only: CSS hex for card accent (e.g. left stripe). Production may omit.
-   */
+  /** Optional CSS accent when the feed API provides a per-item tint (e.g. discovery stripe). */
   readonly previewColor?: string | null;
 }
 

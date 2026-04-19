@@ -54,7 +54,7 @@ export function ProductCard({
         />
       ) : null}
       <Link to={href ?? `/product/${product.slug}`} className="block focus-visible:outline-none">
-        <Card className="h-full transition-shadow hover:shadow-lg focus-visible:ring-2 focus-visible:ring-primary">
+        <Card className="h-full focus-visible:ring-2 focus-visible:ring-primary">
           {/* Hero image */}
           <div className="aspect-video overflow-hidden">
             {product.heroImageUrl ? (

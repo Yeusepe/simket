@@ -25,7 +25,6 @@ export function BentoTodayHero({ heroSection, picksSection, shellColor, onHeroRe
   const heroItem = heroSection.items[0]!;
   const picks = picksSection.items.slice(0, 4);
   const pickShell = shellColor ?? DEFAULT_BENTO_SHELL_COLOR;
-  const heroShell = heroItem.previewColor ?? shellColor ?? DEFAULT_BENTO_SHELL_COLOR;
 
   return (
     <div data-testid="today-layout-bento" className="space-y-4">
@@ -43,7 +42,7 @@ export function BentoTodayHero({ heroSection, picksSection, shellColor, onHeroRe
             item={heroItem}
             sectionName={heroSection.name}
             variant="bento"
-            shellColor={heroShell}
+            shellColor={shellColor}
             onReadMore={onHeroReadMore}
           />
         </div>

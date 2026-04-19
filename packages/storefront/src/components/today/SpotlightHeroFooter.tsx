@@ -26,7 +26,7 @@ export interface SpotlightHeroFooterProps {
    * When true, always uses the narrowest (phone-style) truncation and sizing at every breakpoint.
    */
   readonly compact?: boolean;
-  /** Leonardo-derived colors vs shell (from `createBentoSpotlightFooterColors`). */
+  /** Leonardo-derived colors vs the spotlight reading surface. */
   readonly footerColors?: BentoSpotlightFooterColors;
   readonly className?: string;
   readonly testId?: string;
@@ -110,7 +110,10 @@ export function SpotlightHeroFooter({
               }
               style={
                 footerColors
-                  ? { backgroundColor: footerColors.ctaBackground, color: footerColors.ctaForeground }
+                  ? {
+                      backgroundColor: footerColors.ctaBackground,
+                      color: footerColors.product,
+                    }
                   : undefined
               }
               onPress={handleCta}

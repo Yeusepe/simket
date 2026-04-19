@@ -1,5 +1,5 @@
 /**
- * Purpose: Render the discovery recommendation grid with HeroUI cards,
+ * Purpose: Render the discovery recommendation grid with product tiles (same shell layout as Today trending),
  * loading/error states, and IntersectionObserver-driven infinite scroll.
  *
  * Governing docs:
