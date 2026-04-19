@@ -9,6 +9,7 @@
  *   - packages/storefront/src/components/notifications/NotificationBell.test.tsx
  *   - packages/storefront/src/pages/NotificationsPage.test.tsx
  */
+import type { IconName } from '../common/Icon';
 import type { AppNotification, NotificationType } from '../../types/notifications';
 
 export const NOTIFICATION_TYPE_LABELS: Record<NotificationType, string> = {
@@ -23,16 +24,16 @@ export const NOTIFICATION_TYPE_LABELS: Record<NotificationType, string> = {
   settlement: 'Settlements',
 };
 
-const NOTIFICATION_TYPE_ICONS: Record<NotificationType, string> = {
-  purchase: '🛒',
-  collaboration_invite: '🤝',
-  collaboration_accepted: '✅',
-  product_update: '📦',
-  price_drop: '💸',
-  system: '🔔',
-  gift_received: '🎁',
-  review: '⭐',
-  settlement: '💰',
+const NOTIFICATION_TYPE_ICON_NAMES: Record<NotificationType, IconName> = {
+  purchase: 'purchase',
+  collaboration_invite: 'collaboration-invite',
+  collaboration_accepted: 'collaboration-accepted',
+  product_update: 'product-update',
+  price_drop: 'price-drop',
+  system: 'system',
+  gift_received: 'gift-received',
+  review: 'review',
+  settlement: 'settlement',
 };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -48,8 +49,8 @@ export function getNotificationTypeLabel(type: NotificationType): string {
   return NOTIFICATION_TYPE_LABELS[type];
 }
 
-export function getNotificationIcon(type: NotificationType): string {
-  return NOTIFICATION_TYPE_ICONS[type];
+export function getNotificationIcon(type: NotificationType): IconName {
+  return NOTIFICATION_TYPE_ICON_NAMES[type];
 }
 
 export function resolveNotificationHref(notification: AppNotification): string {

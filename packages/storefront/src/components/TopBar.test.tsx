@@ -6,7 +6,7 @@ import { TopBar } from './TopBar';
 import type { WishlistApi } from '../types/wishlist';
 
 vi.mock('./notifications', () => ({
-  NotificationBell: () => <button aria-label="Notifications">🔔</button>,
+  NotificationBell: () => <button aria-label="Notifications">Bell</button>,
 }));
 
 function renderWithRouter(ui: React.ReactElement, { route = '/' } = {}) {
@@ -63,13 +63,13 @@ describe('TopBar', () => {
   it('renders search input', () => {
     renderWithRouter(<TopBar wishlistApi={createWishlistApi()} />);
     // HeroUI SearchField renders an input — find by placeholder
-    const input = screen.getByPlaceholderText('Search products…');
+    const input = screen.getByPlaceholderText('Search products...');
     expect(input).toBeInTheDocument();
   });
 
   it('renders Home button', () => {
     renderWithRouter(<TopBar wishlistApi={createWishlistApi()} />);
-    expect(screen.getByText('Home')).toBeInTheDocument();
+    expect(screen.getByLabelText('Home')).toBeInTheDocument();
   });
 
   it('renders theme toggle button', () => {
@@ -80,7 +80,7 @@ describe('TopBar', () => {
 
   it('renders Cart button', () => {
     renderWithRouter(<TopBar wishlistApi={createWishlistApi()} />);
-    expect(screen.getByText('Cart')).toBeInTheDocument();
+    expect(screen.getByLabelText('Cart')).toBeInTheDocument();
   });
 
   it('renders Notifications button', () => {
@@ -90,7 +90,7 @@ describe('TopBar', () => {
 
   it('renders Library button', () => {
     renderWithRouter(<TopBar wishlistApi={createWishlistApi()} />);
-    expect(screen.getByText('Library')).toBeInTheDocument();
+    expect(screen.getByLabelText('Library')).toBeInTheDocument();
   });
 
   it('renders profile avatar', () => {
@@ -101,7 +101,7 @@ describe('TopBar', () => {
   it('renders a wishlist link with the current count', async () => {
     renderWithRouter(<TopBar wishlistApi={createWishlistApi()} />);
 
-    expect(await screen.findByText('Wishlist')).toBeInTheDocument();
+    expect(screen.getByLabelText('Wishlist')).toBeInTheDocument();
     expect(await screen.findByText('3')).toBeInTheDocument();
   });
 });

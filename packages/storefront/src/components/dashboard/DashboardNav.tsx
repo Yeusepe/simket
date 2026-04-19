@@ -11,6 +11,8 @@
  */
 import { Button } from '@heroui/react';
 import type { DashboardSection } from './dashboard-types';
+import { Icon } from '../common/Icon';
+import type { IconName } from '../common/Icon';
 
 interface DashboardNavProps {
   readonly currentSection: DashboardSection;
@@ -20,17 +22,17 @@ interface DashboardNavProps {
 interface DashboardNavItem {
   readonly section: DashboardSection;
   readonly label: string;
-  readonly icon: string;
+  readonly icon: IconName;
 }
 
 const DASHBOARD_NAV_ITEMS: readonly DashboardNavItem[] = [
-  { section: 'home', label: 'Home', icon: '⌂' },
-  { section: 'products', label: 'Products', icon: '□' },
-  { section: 'licenses', label: 'Licenses', icon: '⌘' },
-  { section: 'templates', label: 'Templates', icon: '▤' },
-  { section: 'collaborations', label: 'Collaborations', icon: '◌' },
-  { section: 'flows', label: 'Flows', icon: '⇄' },
-  { section: 'settings', label: 'Settings', icon: '⚙' },
+  { section: 'home', label: 'Home', icon: 'home' },
+  { section: 'products', label: 'Products', icon: 'products' },
+  { section: 'licenses', label: 'Licenses', icon: 'licenses' },
+  { section: 'templates', label: 'Templates', icon: 'templates' },
+  { section: 'collaborations', label: 'Collaborations', icon: 'collaborations' },
+  { section: 'flows', label: 'Flows', icon: 'flows' },
+  { section: 'settings', label: 'Settings', icon: 'settings' },
 ];
 
 export function DashboardNav({ currentSection, onNavigate }: DashboardNavProps) {
@@ -48,7 +50,7 @@ export function DashboardNav({ currentSection, onNavigate }: DashboardNavProps) 
             onPress={() => onNavigate(item.section)}
           >
             <span aria-hidden="true" className="w-5 text-center">
-              {item.icon}
+              <Icon name={item.icon} size={18} />
             </span>
             <span>{item.label}</span>
           </Button>

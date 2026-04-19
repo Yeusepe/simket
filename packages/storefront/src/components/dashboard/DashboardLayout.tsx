@@ -16,6 +16,7 @@ import { Button, Card, Drawer, useOverlayState } from '@heroui/react';
 import { DashboardHeader } from './DashboardHeader';
 import { DashboardNav } from './DashboardNav';
 import type { DashboardSection } from './dashboard-types';
+import { Icon } from '../common/Icon';
 
 interface DashboardLayoutProps {
   readonly currentSection: DashboardSection;
@@ -56,7 +57,7 @@ export function DashboardLayout({
                 className="lg:hidden"
                 aria-label="Open dashboard navigation"
               >
-                ☰
+                <Icon name="menu" size={20} />
               </Button>
             </Drawer.Trigger>
             <Drawer.Backdrop className="lg:hidden">
@@ -65,7 +66,7 @@ export function DashboardLayout({
                   <Drawer.Header className="items-center justify-between gap-3">
                     <Drawer.Heading>Creator Dashboard</Drawer.Heading>
                     <Drawer.CloseTrigger aria-label="Close dashboard navigation">
-                      ✕
+                      <Icon name="close" size={18} />
                     </Drawer.CloseTrigger>
                   </Drawer.Header>
                   <Drawer.Body>

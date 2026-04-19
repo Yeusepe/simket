@@ -13,6 +13,7 @@
 import { Button, Card, Chip } from '@heroui/react';
 import { formatPrice } from '../ProductCard';
 import type { OrderSummary } from './checkout-types';
+import { Icon } from '../common/Icon';
 
 export interface OrderConfirmationProps {
   readonly orderSummary: OrderSummary;
@@ -29,8 +30,8 @@ export function OrderConfirmation({
     <div className="mx-auto max-w-4xl px-4 py-8">
       <Card>
         <Card.Header className="flex flex-col items-start gap-3">
-          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-success/15 text-3xl">
-            ✓
+          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-success/15">
+            <Icon name="check" size={32} />
           </div>
           <div>
             <Card.Title>Thanks for your purchase</Card.Title>

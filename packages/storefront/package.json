@@ -18,6 +18,8 @@
     "@cloudflare/vite-plugin": "^1.32.3",
     "@heroui/react": "^3.0.3",
     "@heroui/styles": "^3.0.3",
+    "@iconify-json/streamline-plump": "^1.2.0",
+    "@iconify/react": "^6.0.2",
     "@simket/shared": "workspace:*",
     "@stripe/react-stripe-js": "^6.2.0",
     "@stripe/stripe-js": "^9.2.0",

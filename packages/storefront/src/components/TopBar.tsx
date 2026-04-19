@@ -11,9 +11,10 @@ import { useWishlist } from '../hooks/useWishlist';
 import { useCartState } from '../state/cart-state';
 import type { WishlistApi } from '../types/wishlist';
 import { NotificationBell } from './notifications';
+import { Icon } from './common/Icon';
 
 /**
- * Top navigation bar with:
+ * Floating top navigation bar with:
  * - Search input
  * - Home, dark/light toggle, cart, notifications, library, profile
  * - Profile dropdown: inventory, account settings, creator dashboard
@@ -29,8 +30,8 @@ export function TopBar({ wishlistApi }: TopBarProps) {
   const { wishlistCount } = useWishlist({ api: wishlistApi });
 
   return (
-    <header className="sticky top-0 z-50 border-b border-divider bg-background/80 backdrop-blur-lg">
-      <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4">
+    <header className="fixed left-0 right-0 top-4 z-50 mx-auto max-w-7xl px-4">
+      <div className="flex h-14 items-center gap-4 rounded-2xl border border-divider bg-background/70 px-4 shadow-lg backdrop-blur-xl">
         {/* Logo / Home */}
         <Link to="/" className="flex-shrink-0 text-xl font-bold text-foreground">
           Simket
@@ -41,58 +42,66 @@ export function TopBar({ wishlistApi }: TopBarProps) {
           <SearchField aria-label="Search products" className="max-w-md">
             <SearchField.Group>
               <SearchField.SearchIcon />
-              <SearchField.Input placeholder="Search products…" />
+              <SearchField.Input placeholder="Search products..." />
               <SearchField.ClearButton />
             </SearchField.Group>
           </SearchField>
         </div>
 
         {/* Actions */}
-        <nav className="flex items-center gap-2">
+        <nav className="flex items-center gap-1">
           {/* Home */}
           <Button
+            isIconOnly
             variant="ghost"
             size="sm"
             aria-label="Home"
             onPress={() => navigate('/')}
           >
-            Home
+            <Icon name="home" size={18} />
           </Button>
 
           {/* Theme toggle */}
           <Button
+            isIconOnly
             variant="ghost"
             size="sm"
             aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
             onPress={toggleTheme}
           >
-            {theme === 'light' ? '🌙' : '☀️'}
+            <Icon name={theme === 'light' ? 'moon' : 'sun'} size={18} />
           </Button>
 
           {/* Cart */}
           <Badge.Anchor>
             <Button
+              isIconOnly
               variant="ghost"
               size="sm"
               aria-label="Cart"
               onPress={() => navigate('/cart')}
             >
-              Cart
+              <Icon name="cart" size={18} />
             </Button>
-            <Badge color="danger" size="sm">{totalItems}</Badge>
+            {totalItems > 0 ? (
+              <Badge color="danger" size="sm">{totalItems}</Badge>
+            ) : null}
           </Badge.Anchor>
 
           {/* Wishlist */}
           <Badge.Anchor>
             <Button
+              isIconOnly
               variant="ghost"
               size="sm"
               aria-label="Wishlist"
               onPress={() => navigate('/wishlist')}
             >
-              Wishlist
+              <Icon name="heart-outline" size={18} />
             </Button>
-            <Badge color="accent" size="sm">{wishlistCount}</Badge>
+            {wishlistCount > 0 ? (
+              <Badge color="accent" size="sm">{wishlistCount}</Badge>
+            ) : null}
           </Badge.Anchor>
 
           {/* Notifications */}
@@ -100,12 +109,13 @@ export function TopBar({ wishlistApi }: TopBarProps) {
 
           {/* Library */}
           <Button
+            isIconOnly
             variant="ghost"
             size="sm"
             aria-label="Library"
             onPress={() => navigate('/library')}
           >
-            Library
+            <Icon name="library" size={18} />
           </Button>
 
           {/* Profile dropdown */}

@@ -21,6 +21,7 @@ import {
   getNotificationIcon,
   resolveNotificationHref,
 } from './notification-utils';
+import { Icon } from '../common/Icon';
 
 export interface NotificationBellProps {
   readonly api?: NotificationsApi;
@@ -71,7 +72,7 @@ export function NotificationBell({
       <Popover.Trigger aria-label="Notifications">
         <Badge.Anchor>
           <Button isIconOnly variant="ghost" size="sm" aria-label="Notifications">
-            🔔
+            <Icon name="notifications" size={18} />
           </Button>
           {unreadCount > 0 ? (
             <Badge color="warning" size="sm">
@@ -124,7 +125,7 @@ export function NotificationBell({
                         <div className="flex items-start justify-between gap-3">
                           <div className="flex items-start gap-3">
                             <span aria-hidden="true" className="text-lg">
-                              {getNotificationIcon(notification.type)}
+                              <Icon name={getNotificationIcon(notification.type)} size={20} />
                             </span>
                             <div className="space-y-1">
                               <p className="font-medium">{notification.title}</p>

@@ -12,6 +12,8 @@
  */
 import { Card } from '@heroui/react';
 import type { DashboardStats as DashboardStatsData } from './dashboard-types';
+import { Icon } from '../common/Icon';
+import type { IconName } from '../common/Icon';
 
 interface DashboardStatsProps {
   readonly stats: DashboardStatsData;
@@ -20,7 +22,7 @@ interface DashboardStatsProps {
 interface StatCardDefinition {
   readonly id: string;
   readonly label: string;
-  readonly icon: string;
+  readonly icon: IconName;
   readonly value: string;
   readonly change: number;
   readonly changeLabel: string;
@@ -68,7 +70,7 @@ function buildStatCards(stats: DashboardStatsData): readonly StatCardDefinition[
     {
       id: 'revenue',
       label: 'Total Revenue',
-      icon: '💰',
+      icon: 'revenue',
       value: formatCurrencyFromCents(stats.totalRevenue),
       change: stats.revenueChange,
       changeLabel: 'Revenue',
@@ -76,7 +78,7 @@ function buildStatCards(stats: DashboardStatsData): readonly StatCardDefinition[
     {
       id: 'sales',
       label: 'Total Sales',
-      icon: '🛒',
+      icon: 'sales',
       value: formatCount(stats.totalSales),
       change: stats.salesChange,
       changeLabel: 'Sales',
@@ -84,7 +86,7 @@ function buildStatCards(stats: DashboardStatsData): readonly StatCardDefinition[
     {
       id: 'views',
       label: 'Total Views',
-      icon: '👁',
+      icon: 'views',
       value: formatCount(stats.totalViews),
       change: stats.salesChange,
       changeLabel: 'Views',
@@ -92,7 +94,7 @@ function buildStatCards(stats: DashboardStatsData): readonly StatCardDefinition[
     {
       id: 'conversion',
       label: 'Conversion Rate',
-      icon: '⚡',
+      icon: 'conversion',
       value: formatRate(stats.conversionRate),
       change: stats.revenueChange,
       changeLabel: 'Conversion',
@@ -114,9 +116,9 @@ export function DashboardStats({ stats }: DashboardStatsProps) {
             </div>
             <span
               aria-hidden="true"
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-background text-lg"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-background"
             >
-              {card.icon}
+              <Icon name={card.icon} size={22} />
             </span>
           </Card.Header>
           <Card.Footer className="pt-0">

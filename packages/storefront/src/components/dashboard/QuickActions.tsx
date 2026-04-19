@@ -11,17 +11,19 @@
  */
 import { Button, Card } from '@heroui/react';
 import type { QuickAction } from './dashboard-types';
+import { Icon } from '../common/Icon';
+import type { IconName } from '../common/Icon';
 
 interface QuickActionsProps {
   readonly actions: readonly QuickAction[];
   readonly onNavigate?: (href: string) => void;
 }
 
-const ACTION_ICONS: Record<string, string> = {
-  plus: '+',
-  chart: '▥',
-  collaboration: '∞',
-  edit: '✎',
+const ACTION_ICON_MAP: Record<string, IconName> = {
+  plus: 'plus',
+  chart: 'chart',
+  collaboration: 'collaborations',
+  edit: 'edit',
 };
 
 export function QuickActions({ actions, onNavigate }: QuickActionsProps) {
@@ -40,7 +42,7 @@ export function QuickActions({ actions, onNavigate }: QuickActionsProps) {
             onPress={() => onNavigate?.(action.href)}
           >
             <span aria-hidden="true" className="w-5 text-center">
-              {ACTION_ICONS[action.icon] ?? '•'}
+              <Icon name={ACTION_ICON_MAP[action.icon] ?? 'plus'} size={18} />
             </span>
             <span>{action.label}</span>
           </Button>

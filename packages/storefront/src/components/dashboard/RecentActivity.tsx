@@ -12,16 +12,18 @@
  */
 import { Card, Link } from '@heroui/react';
 import type { ActivityItem } from './dashboard-types';
+import { Icon } from '../common/Icon';
+import type { IconName } from '../common/Icon';
 
 interface RecentActivityProps {
   readonly items: readonly ActivityItem[];
 }
 
-const ACTIVITY_ICONS: Record<ActivityItem['type'], string> = {
-  sale: '💸',
-  review: '⭐',
-  collaboration: '🤝',
-  product_update: '📝',
+const ACTIVITY_ICON_MAP: Record<ActivityItem['type'], IconName> = {
+  sale: 'sale',
+  review: 'review',
+  collaboration: 'collaboration',
+  product_update: 'product-edit',
 };
 
 function formatRelativeTimestamp(timestamp: string): string {
@@ -68,9 +70,9 @@ export function RecentActivity({ items }: RecentActivityProps) {
               <li key={item.id} className="flex gap-3">
                 <span
                   aria-hidden="true"
-                  className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-secondary/60 text-lg"
+                  className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-secondary/60"
                 >
-                  {ACTIVITY_ICONS[item.type]}
+                  <Icon name={ACTIVITY_ICON_MAP[item.type]} size={20} />
                 </span>
                 <div className="min-w-0 flex-1 space-y-1">
                   <div className="flex flex-wrap items-center justify-between gap-2">

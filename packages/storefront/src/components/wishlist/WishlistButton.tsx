@@ -12,6 +12,7 @@
 import { Button } from '@heroui/react';
 import type { WishlistApi } from '../../types/wishlist';
 import { useWishlist } from '../../hooks/useWishlist';
+import { Icon } from '../common/Icon';
 
 interface WishlistButtonProps {
   readonly api?: WishlistApi;
@@ -41,9 +42,7 @@ export function WishlistButton({
       variant={currentProductInWishlist ? 'secondary' : 'ghost'}
       onPress={() => void toggleWishlist(productId, notifyOnPriceDrop)}
     >
-      <span aria-hidden="true" className="text-lg leading-none">
-        {currentProductInWishlist ? '♥' : '♡'}
-      </span>
+      <Icon name={currentProductInWishlist ? 'heart-filled' : 'heart-outline'} size={20} />
     </Button>
   );
 }
