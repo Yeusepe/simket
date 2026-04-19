@@ -87,9 +87,12 @@ export function TrendingProductCard({
           type="button"
           size="lg"
           variant="primary"
-          className="h-auto min-h-0 w-full justify-start rounded-xl border-0 px-0 py-1 text-left font-semibold tabular-nums shadow-none sm:text-lg"
+          className="h-auto min-h-0 w-full justify-start rounded-xl border border-white/15 px-3 py-2 text-left font-semibold tabular-nums text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.16),0_10px_30px_rgba(2,6,23,0.18)] backdrop-blur-xl sm:text-lg"
           style={{
-            backgroundColor: 'transparent',
+            backgroundColor: `color-mix(in srgb, ${footerColors.ctaBackground} 78%, transparent)`,
+            backgroundImage:
+              'linear-gradient(135deg, color-mix(in srgb, white 16%, transparent), transparent)',
+            borderColor: `color-mix(in srgb, ${footerColors.ctaForeground} 22%, transparent)`,
             color: footerColors.ctaForeground,
           }}
           onPress={() => {

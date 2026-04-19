@@ -254,6 +254,20 @@ function ensureBackgroundSupports(fg: string, bg: string, minRatio: number, anch
   return best;
 }
 
+function deriveHuePreservingReadingSurface(
+  shell: string,
+  options?: {
+    readonly baseDarken?: number;
+    readonly maxDarken?: number;
+  },
+): string {
+  const baseDarken = options?.baseDarken ?? 0.18;
+  const maxDarken = options?.maxDarken ?? 0.62;
+  const start = mixHexRgb(shell, '#000000', baseDarken);
+  const anchor = mixHexRgb(shell, '#000000', maxDarken);
+  return ensureBackgroundSupports('#f8fafc', start, WCAG_AA, anchor);
+}
+
 // ─── Core palette builder ────────────────────────────────────────────────────
 
 function buildPalette(
@@ -409,8 +423,9 @@ const FOOTER_FALLBACK: BentoSpotlightFooterColors = {
 const WCAG_AA = 4.5;
 
 function effectiveReadingBackground(shell: string): string {
-  const cooled = mixHexRgb(shell, '#020617', 0.28);
-  return ensureBackgroundSupports('#f8fafc', cooled, WCAG_AA, '#020617');
+  const baseDarken = isLightSurface(shell) ? 0.3 : 0.2;
+  const maxDarken = isLightSurface(shell) ? 0.72 : 0.62;
+  return deriveHuePreservingReadingSurface(shell, { baseDarken, maxDarken });
 }
 
 export function getBentoSpotlightReadingBackground(
@@ -430,7 +445,9 @@ export function getBentoSpotlightReadingBackground(
       luminance >= 0.08 &&
       luminance <= 0.4;
 
-    return isVioletFamily ? ensureBackgroundSupports('#f8fafc', shell, WCAG_AA, '#020617') : shell;
+    return isVioletFamily
+      ? deriveHuePreservingReadingSurface(shell, { baseDarken: 0.08, maxDarken: 0.46 })
+      : shell;
   }
   return effectiveReadingBackground(shell);
 }
@@ -462,14 +479,11 @@ export function createBentoSpotlightFooterColors(
       ? ensureReadable('#94a3b8', surface, WCAG_AA)
       : ensureReadable('#475569', surface, WCAG_AA);
 
-    const ctaBackground = useLightText
-      ? mixHexRgb(surface, '#f8fafc', 0.82)
-      : mixHexRgb(surface, '#0f172a', 0.78);
-    const ctaForeground = ensureReadable(
-      foregroundAnchorForBackground(ctaBackground),
-      ctaBackground,
-      WCAG_AA,
-    );
+    const ctaBackground = deriveHuePreservingReadingSurface(surface, {
+      baseDarken: isLightSurface(surface) ? 0.3 : 0.18,
+      maxDarken: isLightSurface(surface) ? 0.74 : 0.6,
+    });
+    const ctaForeground = ensureReadable('#f8fafc', ctaBackground, WCAG_AA);
 
     return { surface, product, creator, ctaBackground, ctaForeground };
   } catch {

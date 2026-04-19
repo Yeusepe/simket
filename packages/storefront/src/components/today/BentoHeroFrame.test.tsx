@@ -6,7 +6,6 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
-import { createBentoSpotlightFooterColors } from '../../color/leonardo-theme';
 import { BentoHeroFrame } from './BentoHeroFrame';
 
 describe('BentoHeroFrame', () => {
@@ -27,8 +26,7 @@ describe('BentoHeroFrame', () => {
 
     const root = screen.getByTestId('spotlight-card');
     expect(root).toHaveAttribute('data-shell-color', '#ff00aa');
-    const { surface } = createBentoSpotlightFooterColors('#ff00aa');
-    expect(root).toHaveStyle({ borderColor: surface, backgroundColor: surface });
+    expect(root).toHaveStyle({ borderColor: '#ff00aa', backgroundColor: '#ff00aa' });
   });
 
   it('renders headline, product name, creator, thumb, and read action', () => {
@@ -66,7 +64,7 @@ describe('BentoHeroFrame', () => {
       />,
     );
 
-    expect(screen.getByRole('button', { name: '€35.00+' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '€35.00+' })).toHaveClass('backdrop-blur-xl');
 
     rerender(
       <BentoHeroFrame

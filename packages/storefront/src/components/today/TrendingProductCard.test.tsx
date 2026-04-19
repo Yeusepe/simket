@@ -2,11 +2,10 @@
  * Tests:
  *   - packages/storefront/src/components/today/TrendingProductCard.test.tsx
  */
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { describe, expect, it } from 'vitest';
 
-import { createBentoSpotlightFooterColors } from '../../color/leonardo-theme';
 import { makeProductListItem, resetProductCounter } from '../../types/product.factory';
 import { TrendingProductCard } from './TrendingProductCard';
 
@@ -34,10 +33,12 @@ describe('TrendingProductCard', () => {
     expect(screen.getByTestId('product-creators-byline')).toBeInTheDocument();
     expect(screen.getByTestId('trending-product-price')).toBeInTheDocument();
     expect(screen.getByText('Alex Kim')).toBeInTheDocument();
+    expect(within(screen.getByTestId('trending-product-price')).getByRole('button')).toHaveClass(
+      'backdrop-blur-xl',
+    );
 
     const shell = document.querySelector('[data-bento-text-themed="leonardo"]');
     expect(shell).toBeTruthy();
-    const footerColors = createBentoSpotlightFooterColors('#8b5cf6', { contrastSurface: 'solidShell' });
-    expect(shell).toHaveStyle({ backgroundColor: footerColors.surface });
+    expect(shell).toHaveStyle({ backgroundColor: '#8b5cf6' });
   });
 });

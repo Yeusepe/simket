@@ -119,8 +119,12 @@ export function BentoHeroFrame({
     [shellColor],
   );
 
-  /** Single lower-third fade: derived reading surface at bottom → transparent. */
-  const imageFadeGradient = `linear-gradient(to top, ${footerColors.surface} 0%, ${footerColors.surface} 22%, transparent 100%)`;
+  /** Keep the shell vivid; blend only enough reading surface into the lower-third scrim for text. */
+  const overlayShellColor =
+    footerColors.surface.trim().toLowerCase() === shellColor.trim().toLowerCase()
+      ? shellColor
+      : `color-mix(in srgb, ${footerColors.surface} 72%, ${shellColor})`;
+  const imageFadeGradient = `linear-gradient(to top, ${overlayShellColor} 0%, ${overlayShellColor} 22%, transparent 100%)`;
 
   return (
     <article
@@ -130,8 +134,8 @@ export function BentoHeroFrame({
       data-bento-density={density}
       className={`flex h-full min-h-0 flex-col overflow-hidden rounded-[2rem] border-solid ${className ?? ''}`}
       style={{
-        borderColor: footerColors.surface,
-        backgroundColor: footerColors.surface,
+        borderColor: shellColor,
+        backgroundColor: shellColor,
         borderWidth: BENTO_FRAME_BORDER_PX,
       }}
     >

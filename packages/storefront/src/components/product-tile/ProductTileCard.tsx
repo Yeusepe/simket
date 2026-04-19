@@ -71,9 +71,16 @@ export function ProductTileCard({
     [shellColor],
   );
   const priceDividerColor = useMemo(
-    () => shellHarmonyDividerColor(footerColors.surface),
-    [footerColors.surface],
+    () => shellHarmonyDividerColor(shellColor),
+    [shellColor],
   );
+  const usesReadingScrim =
+    footerColors.surface.trim().toLowerCase() !== shellColor.trim().toLowerCase();
+  const shellBodyStyle = usesReadingScrim
+    ? ({
+        backgroundImage: `linear-gradient(180deg, color-mix(in srgb, ${footerColors.surface} 70%, ${shellColor}) 0%, color-mix(in srgb, ${footerColors.surface} 88%, ${shellColor}) 100%)`,
+      } satisfies CSSProperties)
+    : undefined;
 
   const shellCtx: ProductTileShellRenderProps = {
     footerColors,
@@ -97,7 +104,8 @@ export function ProductTileCard({
         className="flex min-h-0 flex-1 flex-col"
         data-bento-text-themed="leonardo"
         style={{
-          backgroundColor: footerColors.surface,
+          backgroundColor: shellColor,
+          ...(shellBodyStyle ?? {}),
           color: footerColors.product,
         }}
       >
@@ -154,7 +162,9 @@ export function ProductTileCard({
             .join(' ')}
           style={{
             ...(priceStripeProps?.style as CSSProperties | undefined),
-            borderTopColor: priceDividerColor,
+            borderTopColor: usesReadingScrim
+              ? `color-mix(in srgb, ${footerColors.product} 12%, transparent)`
+              : priceDividerColor,
           }}
         >
           {renderShellSlot(priceSection, shellCtx)}

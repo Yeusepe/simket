@@ -78,9 +78,9 @@ export function SpotlightHeroFooter({
         </div>
 
         <div
-          className={`flex min-h-0 min-w-0 flex-1 items-center ${compact ? 'gap-2' : 'max-sm:gap-3 gap-2'}`}
+          className={`flex min-h-min min-w-0 flex-1 items-center ${compact ? 'gap-2' : 'max-sm:gap-3 gap-2'}`}
         >
-          <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-0.5">
+          <div className="flex min-h-min min-w-0 flex-1 flex-col gap-0.5 overflow-visible">
             <p
               className={`min-w-0 text-pretty font-medium leading-tight [overflow-wrap:anywhere] ${footerColors ? '' : 'text-white'} ${compact ? 'truncate whitespace-nowrap text-[0.7rem]' : 'max-sm:truncate max-sm:whitespace-nowrap sm:whitespace-normal sm:line-clamp-2 sm:break-words text-xs'}`}
               style={footerColors ? { color: footerColors.product } : undefined}
@@ -89,7 +89,7 @@ export function SpotlightHeroFooter({
             </p>
             <Link
               href={storyHref}
-              className={`min-w-0 max-w-full text-pretty leading-snug underline underline-offset-2 [overflow-wrap:anywhere] ${footerColors ? 'decoration-[color-mix(in_srgb,currentColor_55%,transparent)]' : 'text-white/95 decoration-white/60'} ${compact ? 'line-clamp-1 text-[0.6rem]' : 'line-clamp-2 break-words text-[0.65rem] sm:text-[0.7rem]'}`}
+              className={`min-w-0 max-w-full overflow-visible text-pretty leading-normal underline underline-offset-2 [overflow-wrap:anywhere] ${footerColors ? 'decoration-[color-mix(in_srgb,currentColor_55%,transparent)]' : 'text-white/95 decoration-white/60'} ${compact ? 'line-clamp-1 text-[0.6rem]' : 'break-words text-[0.65rem] sm:text-[0.7rem]'}`}
               style={footerColors ? { color: footerColors.creator } : undefined}
             >
               {creatorName}
@@ -102,8 +102,8 @@ export function SpotlightHeroFooter({
               className={
                 footerColors
                   ? compact
-                    ? 'h-6 min-h-6 shrink-0 rounded-full border-0 px-2 text-[0.6rem] leading-none shadow-none'
-                    : 'h-7 min-h-7 shrink-0 rounded-full border-0 px-3 text-[0.7rem] leading-none shadow-none max-sm:h-6 max-sm:min-h-6 max-sm:px-2 max-sm:text-[0.65rem] sm:text-xs'
+                    ? 'h-6 min-h-6 shrink-0 rounded-full border border-white/15 px-2 text-[0.6rem] leading-none text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.16),0_10px_30px_rgba(2,6,23,0.18)] backdrop-blur-xl'
+                    : 'h-7 min-h-7 shrink-0 rounded-full border border-white/15 px-3 text-[0.7rem] leading-none text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.16),0_10px_30px_rgba(2,6,23,0.18)] backdrop-blur-xl max-sm:h-6 max-sm:min-h-6 max-sm:px-2 max-sm:text-[0.65rem] sm:text-xs'
                   : compact
                     ? 'h-6 min-h-6 shrink-0 rounded-full bg-white px-2 text-[0.6rem] leading-none text-default-foreground shadow-none'
                     : 'h-7 min-h-7 shrink-0 rounded-full bg-white px-3 text-[0.7rem] leading-none text-default-foreground shadow-none max-sm:h-6 max-sm:min-h-6 max-sm:px-2 max-sm:text-[0.65rem] sm:text-xs'
@@ -111,8 +111,11 @@ export function SpotlightHeroFooter({
               style={
                 footerColors
                   ? {
-                      backgroundColor: footerColors.ctaBackground,
-                      color: footerColors.product,
+                      backgroundColor: `color-mix(in srgb, ${footerColors.ctaBackground} 78%, transparent)`,
+                      backgroundImage:
+                        'linear-gradient(135deg, color-mix(in srgb, white 16%, transparent), transparent)',
+                      borderColor: `color-mix(in srgb, ${footerColors.ctaForeground} 22%, transparent)`,
+                      color: footerColors.ctaForeground,
                     }
                   : undefined
               }
