@@ -1,5 +1,6 @@
 import { VendureConfig } from '@vendure/core';
 import path from 'node:path';
+import { FeatureFlagsPlugin } from '../feature-flags/feature-flags.plugin.js';
 import { AbTestingPlugin } from '../plugins/ab-testing/index.js';
 import { BundlePlugin } from '../plugins/bundle/index.js';
 import { CatalogPlugin } from '../plugins/catalog/index.js';
@@ -19,6 +20,7 @@ import { SettlementPlugin } from '../plugins/settlement/index.js';
 import { StorefrontPlugin } from '../plugins/storefront/index.js';
 import { StoreRoutingPlugin } from '../plugins/store-routing/index.js';
 import { WishlistPlugin } from '../plugins/wishlist/index.js';
+import { CrowdSecPlugin } from '../security/crowdsec.plugin.js';
 
 /**
  * Core Vendure configuration.
@@ -71,6 +73,8 @@ export const config: VendureConfig = {
   },
 
   plugins: [
+    CrowdSecPlugin,
+    FeatureFlagsPlugin,
     CatalogPlugin,
     BundlePlugin,
     DependencyPlugin,

@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import * as http from 'node:http';
 import { CrowdSecBouncer, crowdSecMiddleware } from './crowdsec.js';
+import { BrokenCircuitError } from '../resilience/resilience.js';
 
 /* ---------- helpers ---------- */
 
@@ -58,7 +59,10 @@ function listenOnRandomPort(server: http.Server): Promise<number> {
 }
 
 function closeServer(server: http.Server): Promise<void> {
-  return new Promise((resolve) => server.close(() => resolve()));
+  return new Promise((resolve) => {
+    server.closeAllConnections?.();
+    server.close(() => resolve());
+  });
 }
 
 /** Minimal Express-compatible request/response stubs for middleware tests. */
@@ -182,6 +186,21 @@ describe('CrowdSecBouncer', () => {
     });
     const decision = await bouncer.checkIp('77.77.77.77');
     expect(decision).toBe('deny');
+  });
+
+  it('should deny immediately when the CrowdSec circuit breaker is open', async () => {
+    const bouncer = new CrowdSecBouncer({
+      lapiUrl: `http://127.0.0.1:${port}`,
+      apiKey: 'test-key',
+      fallbackMode: 'rate-limit',
+      policy: {
+        execute: async () => {
+          throw new BrokenCircuitError();
+        },
+      },
+    });
+
+    await expect(bouncer.checkIp('10.0.0.99')).resolves.toBe('deny');
   });
 });
 

@@ -155,6 +155,12 @@ export const SERVICE_POLICIES = {
     timeout: 10_000,
     retry: { maxAttempts: 3, initialDelay: 500, maxDelay: 5_000 },
   }),
+  crowdsec: createResiliencePolicy('crowdsec', {
+    timeout: 1_000,
+    retry: { maxAttempts: 1, initialDelay: 100, maxDelay: 250 },
+    circuitBreaker: { threshold: 0.25, duration: 30_000, minimumRps: 2 },
+    bulkhead: { maxConcurrent: 25, maxQueue: 100 },
+  }),
 } as const;
 
 export { TaskCancelledError, BulkheadRejectedError, BrokenCircuitError };

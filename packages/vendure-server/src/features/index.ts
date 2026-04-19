@@ -9,6 +9,8 @@ export {
   getFlag,
   isEnabled,
   InMemoryProvider,
+  DEFAULT_FLAG_CONFIGURATION,
+  createDefaultFeatureFlagProvider,
 } from './feature-flags.js';
 export type {
   FlagConfiguration,

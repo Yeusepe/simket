@@ -1,15 +1,19 @@
 /**
  * Purpose: OpenFeature-based feature flag system for Simket.
  *
- * Uses the official InMemoryProvider from @openfeature/server-sdk
- * and provides thin convenience helpers for flag evaluation.
+ * Uses the official InMemoryProvider from @openfeature/server-sdk.
+ * The former @openfeature/in-memory-provider companion package has been removed,
+ * so the server SDK's built-in provider is the authoritative implementation,
+ * while this module adds thin convenience helpers for flag evaluation.
  *
  * Governing docs:
  *   - docs/architecture.md
+ *   - docs/service-architecture.md
  * External references:
  *   - https://openfeature.dev/docs/reference/concepts/evaluation-api
- *   - https://openfeature.dev/docs/reference/technologies/server/javascript/
+ *   - https://openfeature.dev/docs/reference/sdks/server/javascript/
  *   - https://openfeature.dev/specification/sections/flag-evaluation
+ *   - https://github.com/open-feature/js-sdk-contrib/blob/main/libs/providers/in-memory/README.md
  * Tests:
  *   - packages/vendure-server/src/features/feature-flags.test.ts
  */
@@ -35,18 +39,42 @@ export { InMemoryProvider };
  */
 export type FlagConfiguration = NonNullable<ConstructorParameters<typeof InMemoryProvider>[0]>;
 
+export const DEFAULT_FLAG_CONFIGURATION: FlagConfiguration = {
+  'recommendation-boost': {
+    variants: { on: true, off: false },
+    defaultVariant: 'off',
+    disabled: false,
+  },
+  'new-checkout-flow': {
+    variants: { on: true, off: false },
+    defaultVariant: 'off',
+    disabled: false,
+  },
+  'max-bundle-size': {
+    variants: { default: 10 },
+    defaultVariant: 'default',
+    disabled: false,
+  },
+};
+
+export function createDefaultFeatureFlagProvider(
+  flagConfiguration: FlagConfiguration = DEFAULT_FLAG_CONFIGURATION,
+): InMemoryProvider {
+  return new InMemoryProvider(flagConfiguration);
+}
+
 // ── Initialization ────────────────────────────────────────────────────────────
 
 /**
  * Initialize the OpenFeature SDK with a provider.
  * Falls back to an in-memory provider with empty config for local dev.
  *
- * Docs: https://openfeature.dev/docs/reference/technologies/server/javascript/#setting-a-provider
+ * Docs: https://openfeature.dev/docs/reference/sdks/server/javascript/#providers
  */
 export async function initFeatureFlags(
   provider?: Provider,
 ): Promise<void> {
-  const resolvedProvider = provider ?? new InMemoryProvider({});
+  const resolvedProvider = provider ?? createDefaultFeatureFlagProvider();
   await OpenFeature.setProviderAndWait(resolvedProvider);
 }
 

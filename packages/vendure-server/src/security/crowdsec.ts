@@ -6,14 +6,23 @@
  * and a rate-limit fallback when the LAPI is unreachable.
  *
  * Governing docs:
- *   - docs/architecture.md §9.5 (CrowdSec abuse defence)
+ *   - docs/architecture.md
+ *   - docs/service-architecture.md
+ *   - docs/regular-programming-practices/security-and-threat-modeling.md
  * External references:
  *   - https://docs.crowdsec.net/docs/bouncers/nodejs/
  *   - https://www.npmjs.com/package/@crowdsec/nodejs-bouncer
+ *   - https://github.com/crowdsecurity/nodejs-cs-bouncer/blob/main/README.md
  * Tests:
  *   - packages/vendure-server/src/security/crowdsec.test.ts
  */
+import { SpanStatusCode, trace } from '@opentelemetry/api';
 import { CrowdSecBouncer as CrowdSecBouncerSDK } from '@crowdsec/nodejs-bouncer';
+import {
+  BrokenCircuitError,
+  SERVICE_POLICIES,
+  type ResiliencePolicy,
+} from '../resilience/resilience.js';
 import { RateLimiter } from './rate-limiter.js';
 
 export type CrowdSecDecision = 'allow' | 'deny' | 'captcha';
@@ -23,6 +32,8 @@ export interface CrowdSecBouncerOptions {
   apiKey: string;
   /** Behaviour when LAPI is unreachable and SDK throws. Default: 'deny-all'. */
   fallbackMode?: 'rate-limit' | 'deny-all';
+  policy?: ResiliencePolicy;
+  rateLimiter?: RateLimiter;
 }
 
 /** Map SDK remediation strings to Simket decision types. */
@@ -40,6 +51,12 @@ function mapRemediation(remediation: string): CrowdSecDecision {
   }
 }
 
+function normalizeIp(ip: string): string {
+  return ip.startsWith('::ffff:') ? ip.slice(7) : ip;
+}
+
+const tracer = trace.getTracer('simket-crowdsec');
+
 /**
  * Simket CrowdSec bouncer — delegates to @crowdsec/nodejs-bouncer SDK.
  *
@@ -51,6 +68,7 @@ export class CrowdSecBouncer {
   private readonly client: CrowdSecBouncerSDK;
   private readonly fallbackMode: 'rate-limit' | 'deny-all';
   private readonly rateLimiter: RateLimiter;
+  private readonly policy: ResiliencePolicy;
 
   constructor(opts: CrowdSecBouncerOptions) {
     this.client = new CrowdSecBouncerSDK({
@@ -59,11 +77,12 @@ export class CrowdSecBouncer {
       fallbackRemediation: 'ban',
     });
     this.fallbackMode = opts.fallbackMode ?? 'deny-all';
-    this.rateLimiter = new RateLimiter({
+    this.rateLimiter = opts.rateLimiter ?? new RateLimiter({
       maxTokens: 20,
       refillRate: 5,
       refillInterval: 10_000,
     });
+    this.policy = opts.policy ?? SERVICE_POLICIES.crowdsec;
   }
 
   /**
@@ -72,24 +91,49 @@ export class CrowdSecBouncer {
    * SDK handles caching internally — no manual LRU cache needed.
    */
   async checkIp(ip: string): Promise<CrowdSecDecision> {
-    try {
-      const result = await this.client.getIpRemediation(ip);
-      return mapRemediation(result.remediation);
-    } catch {
-      // LAPI unreachable — fail-closed
-      if (this.fallbackMode === 'rate-limit') {
-        return this.rateLimiter.tryConsume(ip) ? 'allow' : 'deny';
+    return tracer.startActiveSpan('crowdsec.check-ip', async (span) => {
+      const normalizedIp = normalizeIp(ip);
+      span.setAttribute('crowdsec.ip', normalizedIp);
+
+      try {
+        const result = await this.policy.execute(() => this.client.getIpRemediation(normalizedIp));
+        const decision = mapRemediation(result.remediation);
+        span.setAttribute('crowdsec.decision', decision);
+        return decision;
+      } catch (error) {
+        span.setStatus({ code: SpanStatusCode.ERROR, message: String(error) });
+
+        if (error instanceof BrokenCircuitError) {
+          span.setAttribute('crowdsec.fallback', 'broken-circuit');
+          span.setAttribute('crowdsec.decision', 'deny');
+          return 'deny';
+        }
+
+        if (this.fallbackMode === 'rate-limit') {
+          const decision = this.rateLimiter.tryConsume(normalizedIp) ? 'allow' : 'deny';
+          span.setAttribute('crowdsec.fallback', 'rate-limit');
+          span.setAttribute('crowdsec.decision', decision);
+          return decision;
+        }
+
+        span.setAttribute('crowdsec.fallback', 'deny-all');
+        span.setAttribute('crowdsec.decision', 'deny');
+        return 'deny';
+      } finally {
+        span.end();
       }
-      return 'deny';
-    }
+    });
   }
 }
 
 /* ---------- Express middleware ---------- */
 
-interface MiddlewareRequest {
+export interface CrowdSecRequest {
   ip?: string;
   headers: Record<string, string | string[] | undefined>;
+  socket?: {
+    remoteAddress?: string;
+  };
 }
 
 interface MiddlewareResponse {
@@ -99,28 +143,28 @@ interface MiddlewareResponse {
 
 type NextFunction = () => void;
 
-function extractIp(req: MiddlewareRequest): string {
+export function extractClientIp(req: CrowdSecRequest): string {
   const xff = req.headers['x-forwarded-for'];
   if (xff) {
     const raw = Array.isArray(xff) ? xff[0] : xff;
     const first = raw?.split(',')[0]?.trim();
-    if (first) return first;
+    if (first) return normalizeIp(first);
   }
 
   const xri = req.headers['x-real-ip'];
   if (xri) {
     const val = Array.isArray(xri) ? xri[0] : xri;
-    if (val) return val.trim();
+    if (val) return normalizeIp(val.trim());
   }
 
-  return req.ip ?? '0.0.0.0';
+  return normalizeIp(req.ip ?? req.socket?.remoteAddress ?? '0.0.0.0');
 }
 
 export function crowdSecMiddleware(
   bouncer: CrowdSecBouncer,
-): (req: MiddlewareRequest, res: MiddlewareResponse, next: NextFunction) => Promise<void> {
+): (req: CrowdSecRequest, res: MiddlewareResponse, next: NextFunction) => Promise<void> {
   return async (req, res, next) => {
-    const ip = extractIp(req);
+    const ip = extractClientIp(req);
     const decision = await bouncer.checkIp(ip);
 
     res.setHeader('X-CrowdSec-Decision', decision);
