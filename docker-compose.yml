@@ -20,10 +20,11 @@ services:
       timeout: 3s
       retries: 5
 
-  # ─── PgBouncer (connection pooling) ───
+  # ─── PgBouncer (connection pooling — production only, skip in dev) ───
   pgbouncer:
-    image: bitnami/pgbouncer:1
+    image: bitnami/pgbouncer:latest
     container_name: simket-pgbouncer
+    profiles: ["production"]
     ports:
       - "6432:6432"
     environment:

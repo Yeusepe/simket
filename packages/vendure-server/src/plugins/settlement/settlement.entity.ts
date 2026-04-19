@@ -63,12 +63,12 @@ export class OrderSettlementEntity {
   @Column({ type: 'jsonb', nullable: true, default: null })
   payoutMetadata: Record<string, unknown> | null = null;
 
-  @Column({ type: 'datetime', nullable: true, default: null })
+  @Column({ type: 'timestamp', nullable: true, default: null })
   processedAt: Date | null = null;
 
-  @CreateDateColumn({ type: 'datetime' })
+  @CreateDateColumn({ type: 'timestamp' })
   createdAt!: Date;
 
-  @UpdateDateColumn({ type: 'datetime' })
+  @UpdateDateColumn({ type: 'timestamp' })
   updatedAt!: Date;
 }

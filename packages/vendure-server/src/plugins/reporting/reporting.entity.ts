@@ -58,12 +58,12 @@ export class ReportEntity {
   @Column({ type: 'varchar', nullable: true, default: null })
   resolvedBy: string | null = null;
 
-  @Column({ type: 'datetime', nullable: true, default: null })
+  @Column({ type: 'timestamp', nullable: true, default: null })
   resolvedAt: Date | null = null;
 
-  @CreateDateColumn({ type: 'datetime' })
+  @CreateDateColumn({ type: 'timestamp' })
   createdAt!: Date;
 
-  @UpdateDateColumn({ type: 'datetime' })
+  @UpdateDateColumn({ type: 'timestamp' })
   updatedAt!: Date;
 }

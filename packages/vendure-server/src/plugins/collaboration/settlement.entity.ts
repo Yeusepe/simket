@@ -92,15 +92,15 @@ export class SettlementEntity {
   @Column({ type: 'varchar', length: 2048, nullable: true, default: null })
   failureMessage: string | null = null;
 
-  @Column({ type: 'datetime', nullable: true, default: null })
+  @Column({ type: 'timestamp', nullable: true, default: null })
   processedAt: Date | null = null;
 
-  @Column({ type: 'datetime', nullable: true, default: null })
+  @Column({ type: 'timestamp', nullable: true, default: null })
   failedAt: Date | null = null;
 
-  @CreateDateColumn({ type: 'datetime' })
+  @CreateDateColumn({ type: 'timestamp' })
   createdAt!: Date;
 
-  @UpdateDateColumn({ type: 'datetime' })
+  @UpdateDateColumn({ type: 'timestamp' })
   updatedAt!: Date;
 }

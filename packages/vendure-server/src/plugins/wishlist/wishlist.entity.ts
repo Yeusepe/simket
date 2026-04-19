@@ -36,7 +36,7 @@ export class WishlistItem extends VendureEntity {
   @JoinColumn({ name: 'productId' })
   product!: Product;
 
-  @Column({ type: 'datetime' })
+  @Column({ type: 'timestamp' })
   addedAt!: Date;
 
   @Column({ type: 'boolean', default: false })

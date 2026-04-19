@@ -39,6 +39,6 @@ export class GiftEntity extends VendureEntity {
   @Column({ type: 'varchar' })
   status!: string;
 
-  @Column({ type: 'datetime', nullable: true, default: null })
+  @Column({ type: 'timestamp', nullable: true, default: null })
   claimedAt: Date | null = null;
 }

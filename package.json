@@ -11,7 +11,12 @@
   "packageManager": "pnpm@9.15.4",
   "scripts": {
     "build": "turbo run build",
-    "dev": "turbo run dev --parallel",
+    "dev": "turbo run dev --parallel --filter=@simket/vendure-server --filter=@simket/storefront",
+    "dev:infra": "docker compose up -d",
+    "dev:infra:down": "docker compose down",
+    "dev:all": "docker compose up -d && turbo run dev --parallel --filter=@simket/vendure-server --filter=@simket/storefront",
+    "dev:server": "turbo run dev --filter=@simket/vendure-server",
+    "dev:storefront": "turbo run dev --filter=@simket/storefront",
     "test": "turbo run test",
     "test:e2e": "turbo run test:e2e",
     "lint": "turbo run lint",

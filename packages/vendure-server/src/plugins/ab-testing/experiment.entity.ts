@@ -73,16 +73,16 @@ export class ExperimentEntity {
   @Column({ type: 'jsonb', nullable: true, default: () => "'{}'" })
   audienceRules: ExperimentAudienceRules = { mode: 'all-users' };
 
-  @Column({ type: 'datetime', nullable: true, default: null })
+  @Column({ type: 'timestamp', nullable: true, default: null })
   startDate: Date | null = null;
 
-  @Column({ type: 'datetime', nullable: true, default: null })
+  @Column({ type: 'timestamp', nullable: true, default: null })
   endDate: Date | null = null;
 
-  @CreateDateColumn({ type: 'datetime' })
+  @CreateDateColumn({ type: 'timestamp' })
   createdAt!: Date;
 
-  @UpdateDateColumn({ type: 'datetime' })
+  @UpdateDateColumn({ type: 'timestamp' })
   updatedAt!: Date;
 }
 
@@ -114,10 +114,10 @@ export class ExperimentResultEntity {
   @Column({ type: 'jsonb', nullable: true, default: null })
   metadata: Record<string, unknown> | null = null;
 
-  @CreateDateColumn({ type: 'datetime' })
+  @CreateDateColumn({ type: 'timestamp' })
   createdAt!: Date;
 
-  @UpdateDateColumn({ type: 'datetime' })
+  @UpdateDateColumn({ type: 'timestamp' })
   updatedAt!: Date;
 }
 
