@@ -13,6 +13,7 @@
 import { Button, Chip } from '@heroui/react';
 
 import { BentoHeroFrame, DEFAULT_BENTO_SHELL_COLOR } from './BentoHeroFrame';
+import { editorialBentoFields } from './editorial-bento-fields';
 import type { EditorialItem } from './today-types';
 
 interface HeroBannerProps {
@@ -55,21 +56,23 @@ export function HeroBanner({
   const isBento = variant === 'bento';
 
   if (isBento) {
-    const productName = item.productName ?? item.title;
-    const creatorName = item.creatorName ?? item.author;
+    const bento = editorialBentoFields(item, sectionName);
 
     return (
       <BentoHeroFrame
         shellColor={shellColor}
         heroImage={item.heroImage}
         heroImageAlt={item.title}
-        eyebrow={sectionName}
+        eyebrow={bento.eyebrow}
         title={item.title}
-        productName={productName}
-        creatorName={creatorName}
+        spotlightSubline={item.spotlightSubline}
+        productName={bento.productName}
+        creatorName={bento.creatorName}
         productThumbnailUrl={item.productThumbnailUrl}
         storyHref={getEditorialHref(item.slug)}
         onReadMore={onReadMore}
+        spotlightCtaLabel={bento.spotlightCtaLabel}
+        showSpotlightCta={bento.showSpotlightCta}
         testId="hero-banner"
         dataVariant="bento"
       />

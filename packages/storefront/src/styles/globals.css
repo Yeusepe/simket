@@ -1,2 +1,74 @@
-@import "tailwindcss";
-@import "@heroui/styles";
+@import 'tailwindcss';
+@import '@heroui/styles';
+
+@font-face {
+  font-family: 'CreatorFont';
+  src: url('/fonts/creatorfont/creatorfont-book.woff') format('woff');
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'CreatorFont';
+  src: url('/fonts/creatorfont/creatorfont-bookitalic.woff') format('woff');
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'CreatorFont';
+  src: url('/fonts/creatorfont/creatorfont-medium.woff') format('woff');
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'CreatorFont';
+  src: url('/fonts/creatorfont/creatorfont-mediumitalic.woff') format('woff');
+  font-style: italic;
+  font-weight: 500;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'CreatorFont';
+  src: url('/fonts/creatorfont/creatorfont-bold.woff') format('woff');
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'CreatorFont';
+  src: url('/fonts/creatorfont/creatorfont-bolditalic.woff') format('woff');
+  font-style: italic;
+  font-weight: 700;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'CreatorFont';
+  src: url('/fonts/creatorfont/creatorfont-black.woff') format('woff');
+  font-style: normal;
+  font-weight: 900;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'CreatorFont';
+  src: url('/fonts/creatorfont/creatorfont-blackitalic.woff') format('woff');
+  font-style: italic;
+  font-weight: 900;
+  font-display: swap;
+}
+
+:root {
+  font-family: 'CreatorFont', system-ui, sans-serif;
+}
+
+body {
+  font-family: inherit;
+}

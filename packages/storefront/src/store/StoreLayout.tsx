@@ -18,20 +18,15 @@ import { seededStoreService, type StoreService } from './store-service';
 import { StoreNotFoundPage } from './StoreNotFoundPage';
 import type { CreatorStore } from './types';
 import { createStoreHrefs, StoreProvider } from './use-store';
+import { useAdaptiveColors } from '../color';
 
 type StoreThemeStyle = CSSProperties & {
-  '--store-primary-color'?: string;
-  '--store-background-color'?: string;
-  '--store-foreground-color'?: string;
   '--store-font-family'?: string;
   '--store-border-radius'?: string;
 };
 
 function buildStoreThemeStyle(store: CreatorStore): StoreThemeStyle {
   return {
-    '--store-primary-color': store.theme.primaryColor,
-    '--store-background-color': store.theme.backgroundColor,
-    '--store-foreground-color': store.theme.foregroundColor,
     '--store-font-family': store.theme.fontFamily,
     '--store-border-radius': store.theme.borderRadius,
   };
@@ -111,6 +106,14 @@ export function StoreLayout({
     return store.products.find((product) => product.slug === resolution.productSlug) ?? null;
   }, [resolution.productSlug, resolution.routeKind, store]);
 
+  // Leonardo adaptive palette — must be called unconditionally (React hook rules)
+  useAdaptiveColors({
+    mode: document.documentElement.classList.contains('dark') ? 'dark' : 'light',
+    primaryColor: store?.theme.primaryColor ?? '#7C3AED',
+    backgroundColor: store?.theme.backgroundColor,
+    prefix: 'store',
+  });
+
   if (isLoading) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center text-muted-foreground">
@@ -142,7 +145,7 @@ export function StoreLayout({
       <div
         data-testid="store-layout"
         style={buildStoreThemeStyle(store)}
-        className="min-h-dvh bg-[var(--store-background-color,#09090b)] text-[var(--store-foreground-color,#f8fafc)] [font-family:var(--store-font-family,inherit)]"
+        className="min-h-dvh bg-[var(--store-background,#09090b)] text-[var(--store-neutral400,#f8fafc)] [font-family:var(--store-font-family,inherit)]"
       >
         <header className="border-b border-white/10 bg-black/10 backdrop-blur">
           <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-5">

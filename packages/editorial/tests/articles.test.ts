@@ -59,6 +59,19 @@ describe('articlesCollection', () => {
       type: 'relationship',
       relationTo: 'editorial-sections',
     });
+
+    expect(articlesCollection.fields.find((field) => field.name === 'spotlightEyebrow')).toMatchObject({
+      type: 'text',
+    });
+    expect(articlesCollection.fields.find((field) => field.name === 'spotlightSubline')).toMatchObject({
+      type: 'text',
+    });
+    expect(articlesCollection.fields.find((field) => field.name === 'spotlightPriceFormatted')).toMatchObject({
+      type: 'text',
+    });
+    expect(articlesCollection.fields.find((field) => field.name === 'hideSpotlightCta')).toMatchObject({
+      type: 'checkbox',
+    });
   });
 
   it('limits article status to the requested workflow states', () => {

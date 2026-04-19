@@ -2,6 +2,7 @@
   "name": "@simket/storefront",
   "version": "0.0.1",
   "private": true,
+  "license": "Apache-2.0",
   "type": "module",
   "scripts": {
     "build": "tsc --noEmit && vite build",
@@ -15,6 +16,7 @@
     "clean": "rimraf dist *.tsbuildinfo"
   },
   "dependencies": {
+    "@adobe/leonardo-contrast-colors": "^1.1.0",
     "@cloudflare/vite-plugin": "^1.32.3",
     "@heroui/react": "^3.0.3",
     "@heroui/styles": "^3.0.3",

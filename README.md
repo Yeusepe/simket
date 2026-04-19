@@ -198,3 +198,13 @@ graph TD
 | Threat models         | [`docs/threat-models/`](docs/threat-models/)                                 |
 | Runbooks              | [`docs/runbooks/`](docs/runbooks/)                                           |
 | Programming practices | [`docs/regular-programming-practices/`](docs/regular-programming-practices/) |
+
+---
+
+## License and IP
+
+- Code license: [Apache License 2.0](./LICENSE)
+- Distribution notice: [NOTICE](./NOTICE)
+- Trademark rules: [TRADEMARK_POLICY.md](./TRADEMARK_POLICY.md)
+- Contribution IP terms: [CONTRIBUTING_IP.md](./CONTRIBUTING_IP.md)
+- Source header examples: [SOURCE_HEADER_TEMPLATES.md](./SOURCE_HEADER_TEMPLATES.md)

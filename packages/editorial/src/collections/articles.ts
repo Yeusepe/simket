@@ -86,5 +86,63 @@ export const articlesCollection: CollectionConfig = {
       type: 'relationship',
       relationTo: 'editorial-sections',
     },
+    {
+      name: 'spotlightEyebrow',
+      type: 'text',
+      maxLength: 120,
+      admin: {
+        description:
+          'Homepage bento hero: eyebrow above the title (e.g. FEATURED). Overrides the section name when set.',
+      },
+    },
+    {
+      name: 'spotlightSubline',
+      type: 'text',
+      maxLength: 200,
+      admin: {
+        description:
+          'Homepage bento hero: optional small line below the article title (e.g. tagline). Leave empty to hide.',
+      },
+    },
+    {
+      name: 'spotlightPriceFormatted',
+      type: 'text',
+      maxLength: 64,
+      admin: {
+        description: 'Shown in the white pill (e.g. €35.00+). Leave empty to use “Read more” as the label.',
+      },
+    },
+    {
+      name: 'hideSpotlightPrice',
+      type: 'checkbox',
+      defaultValue: false,
+      admin: {
+        description: 'If enabled, the pill shows “Read more” instead of the price string.',
+      },
+    },
+    {
+      name: 'hideSpotlightCta',
+      type: 'checkbox',
+      defaultValue: false,
+      admin: { description: 'If enabled, the white CTA pill is hidden.' },
+    },
+    {
+      name: 'productName',
+      type: 'text',
+      maxLength: 200,
+      admin: { description: 'Bento footer: product / listing name (bold line).' },
+    },
+    {
+      name: 'creatorName',
+      type: 'text',
+      maxLength: 200,
+      admin: { description: 'Bento footer: creator name (underlined link).' },
+    },
+    {
+      name: 'productThumbnail',
+      type: 'upload',
+      relationTo: 'media',
+      admin: { description: 'Bento footer: square product image (rounded corners).' },
+    },
   ],
 };

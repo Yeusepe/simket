@@ -49,6 +49,10 @@ function isOptionalString(value: unknown): value is string | undefined {
   return value === undefined || isString(value);
 }
 
+function isOptionalBoolean(value: unknown): value is boolean | undefined {
+  return value === undefined || typeof value === 'boolean';
+}
+
 function isOptionalMediaAsset(value: unknown): value is MediaAsset | undefined {
   return value === undefined || isMediaAsset(value);
 }
@@ -134,7 +138,15 @@ export function isArticle(value: unknown): value is Article {
     isStringArray(value.tags) &&
     Array.isArray(value.featuredProducts) &&
     value.featuredProducts.every((entry) => isFeaturedProduct(entry)) &&
-    (value.section === undefined || isEditorialSection(value.section))
+    (value.section === undefined || isEditorialSection(value.section)) &&
+    (value.spotlightEyebrow === undefined || typeof value.spotlightEyebrow === 'string') &&
+    (value.spotlightSubline === undefined || typeof value.spotlightSubline === 'string') &&
+    (value.spotlightPriceFormatted === undefined || typeof value.spotlightPriceFormatted === 'string') &&
+    isOptionalBoolean(value.hideSpotlightPrice) &&
+    isOptionalBoolean(value.hideSpotlightCta) &&
+    (value.productName === undefined || typeof value.productName === 'string') &&
+    (value.creatorName === undefined || typeof value.creatorName === 'string') &&
+    isOptionalMediaAsset(value.productThumbnail)
   );
 }
 

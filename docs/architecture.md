@@ -68,6 +68,11 @@ The system must:
 13. **Checkout reads skip cache** Cart validation and payment flows
     always read prices and availability from Vendure SQL directly.
     Stale cached prices must never reach the payment step.
+14. **Leonardo owns color** All UI color palettes (marketplace and creator
+    stores) are generated through `@adobe/leonardo-contrast-colors` at
+    specified WCAG contrast ratios. Hard-coded hex values for semantic
+    colors are forbidden. Creators provide a single primary color;
+    Leonardo produces the full accessible palette. See AGENTS.md §4.4.
 
 ---
 
@@ -1228,6 +1233,8 @@ by implementing a `FlowStep` interface and rgistering a renderer.
 - [Vendure plugin system](https://docs.vendure.io/current/core/developer-guide/plugins/)
 - [Vendure worker & job queue](https://docs.vendure.io/current/core/developer-guide/worker-job-queue/)
 - [HeroUI React docs](https://heroui.com)
+- [Adobe Leonardo](https://github.com/adobe/leonardo) — WCAG-compliant adaptive color palettes
+- [@adobe/leonardo-contrast-colors](https://www.npmjs.com/package/@adobe/leonardo-contrast-colors)
 - [Framely](https://github.com/belastrittmatter/Framely)
 - [TipTap](https://tiptap.dev/)
 - [iFramely](https://iframely.com/)

@@ -239,6 +239,14 @@ function mapCuratedCollectionItem(article: Article): CuratedCollectionItem {
     publishedAt: article.publishedAt,
     slug: article.slug,
     tags: article.tags,
+    spotlightEyebrow: article.spotlightEyebrow,
+    spotlightSubline: article.spotlightSubline,
+    spotlightPriceFormatted: article.spotlightPriceFormatted,
+    hideSpotlightPrice: article.hideSpotlightPrice,
+    hideSpotlightCta: article.hideSpotlightCta,
+    productName: article.productName,
+    creatorName: article.creatorName,
+    productThumbnailUrl: article.productThumbnail?.url,
   };
 }
 

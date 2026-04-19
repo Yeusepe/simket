@@ -28,6 +28,11 @@ type RawItem = {
   readonly creatorName?: string;
   readonly productThumbnailUrl?: string;
   readonly productName?: string;
+  readonly spotlightEyebrow?: string;
+  readonly spotlightSubline?: string;
+  readonly spotlightPriceFormatted?: string;
+  readonly hideSpotlightPrice?: boolean;
+  readonly hideSpotlightCta?: boolean;
   readonly publishedAt: string;
   readonly slug: string;
   readonly tags: readonly string[];
@@ -86,6 +91,11 @@ function isRawItem(value: unknown): value is RawItem {
     (value.creatorName === undefined || isString(value.creatorName)) &&
     (value.productThumbnailUrl === undefined || isString(value.productThumbnailUrl)) &&
     (value.productName === undefined || isString(value.productName)) &&
+    (value.spotlightEyebrow === undefined || isString(value.spotlightEyebrow)) &&
+    (value.spotlightSubline === undefined || isString(value.spotlightSubline)) &&
+    (value.spotlightPriceFormatted === undefined || isString(value.spotlightPriceFormatted)) &&
+    (value.hideSpotlightPrice === undefined || typeof value.hideSpotlightPrice === 'boolean') &&
+    (value.hideSpotlightCta === undefined || typeof value.hideSpotlightCta === 'boolean') &&
     isString(value.publishedAt) &&
     isString(value.slug) &&
     isStringArray(value.tags)
@@ -171,6 +181,11 @@ function mapItem(item: RawItem): EditorialItem {
     creatorName: item.creatorName,
     productThumbnailUrl: item.productThumbnailUrl,
     productName: item.productName,
+    spotlightEyebrow: item.spotlightEyebrow,
+    spotlightSubline: item.spotlightSubline,
+    spotlightPriceFormatted: item.spotlightPriceFormatted,
+    hideSpotlightPrice: item.hideSpotlightPrice,
+    hideSpotlightCta: item.hideSpotlightCta,
     publishedAt: item.publishedAt,
     slug: item.slug,
     tags: item.tags,

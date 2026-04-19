@@ -41,6 +41,16 @@ export interface EditorialItem {
   readonly productThumbnailUrl?: string;
   /** Spotlight footer primary line — product / listing name (defaults to `title`). */
   readonly productName?: string;
+  /** Bento hero eyebrow; overrides the section name (Payload: `spotlightEyebrow`). */
+  readonly spotlightEyebrow?: string;
+  /** Optional line below the bento hero title (Payload: `spotlightSubline`). */
+  readonly spotlightSubline?: string;
+  /** Shown in CTA pill when price mode is on (Payload: `spotlightPriceFormatted`). */
+  readonly spotlightPriceFormatted?: string;
+  /** When true, CTA shows “Read more” instead of price (Payload: `hideSpotlightPrice`). */
+  readonly hideSpotlightPrice?: boolean;
+  /** When true, CTA pill is hidden (Payload: `hideSpotlightCta`). */
+  readonly hideSpotlightCta?: boolean;
   readonly publishedAt: string;
   readonly slug: string;
   readonly tags: readonly string[];

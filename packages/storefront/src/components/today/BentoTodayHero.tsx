@@ -7,9 +7,14 @@
  * External references:
  *   - https://heroui.com/react/llms.txt
  */
-import { EditorialCard } from './EditorialCard';
+import { BentoHeroFrame, DEFAULT_BENTO_SHELL_COLOR } from './BentoHeroFrame';
+import { editorialBentoFields } from './editorial-bento-fields';
 import { HeroBanner } from './HeroBanner';
 import type { EditorialSection } from './today-types';
+
+function editorialHref(slug: string): string {
+  return `/editorial/${slug}`;
+}
 
 interface BentoTodayHeroProps {
   readonly heroSection: EditorialSection;
@@ -22,6 +27,7 @@ interface BentoTodayHeroProps {
 export function BentoTodayHero({ heroSection, picksSection, shellColor, onHeroReadMore }: BentoTodayHeroProps) {
   const heroItem = heroSection.items[0]!;
   const picks = picksSection.items.slice(0, 4);
+  const pickShell = shellColor ?? DEFAULT_BENTO_SHELL_COLOR;
 
   return (
     <div data-testid="today-layout-bento" className="space-y-4">
@@ -41,11 +47,33 @@ export function BentoTodayHero({ heroSection, picksSection, shellColor, onHeroRe
           />
         </div>
 
-        {picks.map((item) => (
-          <div key={item.id} className="min-h-0 min-w-0 aspect-square lg:aspect-auto lg:h-full">
-            <EditorialCard item={item} size="small" />
-          </div>
-        ))}
+        {picks.map((item) => {
+          const bento = editorialBentoFields(
+            { ...item, spotlightEyebrow: item.spotlightEyebrow ?? 'PICK' },
+            picksSection.name,
+          );
+          return (
+            <div key={item.id} className="min-h-0 min-w-0 aspect-square lg:aspect-auto lg:h-full">
+              <BentoHeroFrame
+                shellColor={pickShell}
+                heroImage={item.heroImage}
+                heroImageAlt={item.title}
+                eyebrow={bento.eyebrow}
+                title={item.title}
+                spotlightSubline={item.spotlightSubline}
+                density="compact"
+                productName={bento.productName}
+                creatorName={bento.creatorName}
+                productThumbnailUrl={item.productThumbnailUrl}
+                storyHref={editorialHref(item.slug)}
+                spotlightCtaLabel={bento.spotlightCtaLabel}
+                showSpotlightCta={bento.showSpotlightCta}
+                testId={`bento-pick-${item.slug}`}
+                dataVariant="bento-pick"
+              />
+            </div>
+          );
+        })}
       </div>
     </div>
   );

@@ -97,7 +97,7 @@ export interface PropertyField {
 export const DEFAULT_THEME: EditorTheme = {
   primaryColor: '#006FEE',
   backgroundColor: '#FFFFFF',
-  fontFamily: 'Inter, system-ui, sans-serif',
+  fontFamily: '"CreatorFont", system-ui, sans-serif',
   borderRadius: '12px',
   mode: 'light',
 };

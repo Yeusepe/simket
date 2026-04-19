@@ -81,7 +81,8 @@ describe('TodaySection', () => {
       'today-layout-card-grid-2',
       'today-layout-horizontal-scroll',
     ]);
-    expect(screen.getByRole('button', { name: /read more/i })).toBeInTheDocument();
+    const readMoreButtons = screen.getAllByRole('button', { name: /read more/i });
+    expect(readMoreButtons.length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText('Grid Four')).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Grid Two' })).toBeInTheDocument();
     expect(screen.getByRole('region', { name: 'Scroll' })).toBeInTheDocument();

@@ -54,6 +54,16 @@ export interface CuratedCollectionItem {
   readonly publishedAt: string;
   readonly slug: string;
   readonly tags: readonly string[];
+  /** Mirrors Payload `spotlightEyebrow` — overrides section label in bento hero. */
+  readonly spotlightEyebrow?: string;
+  /** Optional line below the bento title (Payload `spotlightSubline`). */
+  readonly spotlightSubline?: string;
+  readonly spotlightPriceFormatted?: string;
+  readonly hideSpotlightPrice?: boolean;
+  readonly hideSpotlightCta?: boolean;
+  readonly productName?: string;
+  readonly creatorName?: string;
+  readonly productThumbnailUrl?: string;
 }
 
 export interface CuratedCollection {

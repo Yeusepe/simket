@@ -82,7 +82,7 @@ const alexArtistStore: CreatorStore = {
     primaryColor: '#7c3aed',
     backgroundColor: '#0f1020',
     foregroundColor: '#f8fafc',
-    fontFamily: 'Inter, sans-serif',
+    fontFamily: '"CreatorFont", system-ui, sans-serif',
     borderRadius: '1.5rem',
   },
   pages: [
@@ -178,7 +178,7 @@ const pixelLabStore: CreatorStore = {
     primaryColor: '#0ea5e9',
     backgroundColor: '#08111a',
     foregroundColor: '#ecfeff',
-    fontFamily: 'Inter, sans-serif',
+    fontFamily: '"CreatorFont", system-ui, sans-serif',
     borderRadius: '1.25rem',
   },
   pages: [],

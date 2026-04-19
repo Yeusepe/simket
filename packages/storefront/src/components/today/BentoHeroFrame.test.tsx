@@ -49,4 +49,55 @@ describe('BentoHeroFrame', () => {
     expect(container.querySelector('img[src="https://cdn.example.com/thumb.png"]')).toBeTruthy();
     expect(screen.getByRole('button', { name: /read more/i })).toBeInTheDocument();
   });
+
+  it('can show a price label and hide the CTA', () => {
+    const { rerender } = render(
+      <BentoHeroFrame
+        heroImage="https://cdn.example.com/hero.jpg"
+        heroImageAlt="Spotlight"
+        eyebrow="FEATURED"
+        title="T"
+        productName="P"
+        creatorName="C"
+        storyHref="/x"
+        spotlightCtaLabel="€35.00+"
+      />,
+    );
+
+    expect(screen.getByRole('button', { name: '€35.00+' })).toBeInTheDocument();
+
+    rerender(
+      <BentoHeroFrame
+        heroImage="https://cdn.example.com/hero.jpg"
+        heroImageAlt="Spotlight"
+        eyebrow="FEATURED"
+        title="T"
+        productName="P"
+        creatorName="C"
+        storyHref="/x"
+        showSpotlightCta={false}
+      />,
+    );
+
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
+  });
+
+  it('renders optional subline and compact density', () => {
+    render(
+      <BentoHeroFrame
+        heroImage="https://cdn.example.com/hero.jpg"
+        heroImageAlt="Spotlight"
+        eyebrow="PICK"
+        title="Short"
+        spotlightSubline="Extra context"
+        density="compact"
+        productName="P"
+        creatorName="C"
+        storyHref="/x"
+      />,
+    );
+
+    expect(screen.getByText('Extra context')).toBeInTheDocument();
+    expect(screen.getByTestId('bento-hero-frame')).toHaveAttribute('data-bento-density', 'compact');
+  });
 });

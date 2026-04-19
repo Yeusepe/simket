@@ -37,3 +37,4 @@ docker-compose.override.yml
 *.log
 npm-debug.log*
 pnpm-debug.log*
+/.cursor

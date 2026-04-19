@@ -68,6 +68,22 @@ export interface Article {
   readonly tags: readonly string[];
   readonly featuredProducts: readonly FeaturedProduct[];
   readonly section?: EditorialSection;
+  /** Bento hero eyebrow; overrides section name when set (Payload: `spotlightEyebrow`). */
+  readonly spotlightEyebrow?: string;
+  /** Optional line below the bento hero title (Payload: `spotlightSubline`). */
+  readonly spotlightSubline?: string;
+  /** Formatted price for CTA pill, e.g. `€35.00+` (Payload: `spotlightPriceFormatted`). */
+  readonly spotlightPriceFormatted?: string;
+  /** When true, CTA shows “Read more” instead of `spotlightPriceFormatted`. */
+  readonly hideSpotlightPrice?: boolean;
+  /** When true, the CTA pill is hidden. */
+  readonly hideSpotlightCta?: boolean;
+  /** Product line in bento footer (Payload: `productName`). */
+  readonly productName?: string;
+  /** Creator line in bento footer (Payload: `creatorName`). */
+  readonly creatorName?: string;
+  /** Square product thumb in bento footer. */
+  readonly productThumbnail?: MediaAsset;
 }
 
 export interface PaginatedCollectionResponse<T> {

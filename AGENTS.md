@@ -122,6 +122,7 @@ Then read domain-specific docs for the change area.
 | Observability, tracing, metrics                      | `docs/service-architecture.md`, [OpenTelemetry docs](https://opentelemetry.io/docs/)                                                                                     |
 | Feature flags                                        | `docs/architecture.md`, [OpenFeature docs](https://openfeature.dev/docs)                                                                                                 |
 | CI/CD, deployment                                    | `docs/architecture.md` §11, `docs/regular-programming-practices/secure-development-lifecycle.md`                                                                         |
+| Colors, theming, palettes, WCAG contrast             | AGENTS.md §4.4, `packages/storefront/src/color/`, [Leonardo GitHub](https://github.com/adobe/leonardo), [Leonardo npm](https://www.npmjs.com/package/@adobe/leonardo-contrast-colors) |
 
 ---
 
@@ -241,6 +242,32 @@ Before writing any new integration module, answer these questions:
 3. Does the SDK provide framework middleware (Express, Fastify, etc.)? → **Check the SDK docs.**
 4. Does the SDK handle caching, retries, or error handling internally? → **Read the SDK source/docs before adding your own.**
 5. Can I achieve my goal with ≤ 20 lines of adapter code on top of the SDK? → **If yes, do that. If no, justify in a code comment why a larger wrapper is needed.**
+
+### 4.4 Adobe Leonardo adaptive color system rule
+
+**All color palettes in Simket — marketplace UI and creator stores — MUST be generated through `@adobe/leonardo-contrast-colors`.** Do not hard-code hex values for semantic colors, do not pick colors manually, and do not use raw CSS color values for UI surfaces/text/borders.
+
+Leonardo generates WCAG-compliant palettes from a single key color at specified contrast ratios against a background. This guarantees accessibility across light/dark modes without manual auditing.
+
+#### How to use Leonardo in Simket
+
+1. **Marketplace UI**: Call `createSimketPalette({ mode: 'light' | 'dark' })` from `packages/storefront/src/color/leonardo-theme.ts`. This produces the full palette keyed by semantic names (`accent100`–`accent600`, `neutral100`–`neutral600`, `success100`–`success600`, `warning100`–`warning600`, `danger100`–`danger600`, plus `background`).
+2. **Creator stores**: Call `createCreatorStorePalette({ primaryColor, mode })` with the creator's chosen primary color. Leonardo builds a full accessible palette from it.
+3. **CSS variables**: Call `applyPaletteAsCSSVariables(palette, prefix)` to get `--{prefix}-{key}: #hex` pairs. The `useAdaptiveColors` hook handles this automatically.
+4. **React hook**: Use `useAdaptiveColors({ mode, primaryColor?, prefix? })` in layout components. It generates the palette, applies CSS variables, and cleans up on unmount.
+
+#### The rules
+
+- **Never hard-code semantic colors.** Use `var(--simket-accent400)` or `var(--store-accent400)`, not `#7C3AED`.
+- **Never bypass Leonardo for palette generation.** If you need a new color, add it as a Leonardo `Color` with contrast ratios.
+- **Always generate from contrast ratios.** The 6 standard contrast ratios (1.25, 2, 3, 4.5, 7, 10) map to WCAG levels — decorative, large-text AA, normal-text AA, enhanced AAA, high-contrast.
+- **Creator stores must use `createCreatorStorePalette`.** A single `primaryColor` input produces the full accessible palette. Never apply a raw hex as `--store-primary-color`.
+
+#### External references
+
+- GitHub: https://github.com/adobe/leonardo
+- Package: https://www.npmjs.com/package/@adobe/leonardo-contrast-colors
+- API: `BackgroundColor`, `Color`, `Theme` classes — see `node_modules/@adobe/leonardo-contrast-colors/index.d.ts`
 
 ---
 
@@ -467,6 +494,7 @@ Do NOT:
 - **Assume library method signatures, type shapes, or config objects without reading the `.d.ts`.**
 - Remove or bypass analytics coverage.
 - Commit developer-local paths, usernames, or machine-specific details.
+- **Hard-code hex colors for UI surfaces, text, or borders.** Use Leonardo-generated CSS variables (`var(--simket-accent400)`, `var(--store-accent400)`) instead. See §4.4.
 
 ---
 
@@ -487,6 +515,7 @@ Every sub-agent prompt **MUST** include:
 6. A reminder to **add OpenTelemetry spans** for all outbound service calls.
 7. A reminder to **write tests first** (TDD), then implement.
 8. A reminder to **add proper doc headers** per §9 of this document.
+9. A reminder to **use Leonardo (`@adobe/leonardo-contrast-colors`) for all color generation** — never hard-code hex values for semantic colors. See §4.4.
 
 Sub-agents that do not follow these rules produce code that fails audit and must be rewritten. Front-load the rules to avoid rework.
 
@@ -502,3 +531,18 @@ Every meaningful implementation artefact must be linked to:
 - **which docs govern it** (local architecture and practices docs)
 - **which upstream behaviour it relies on** (external API docs, library docs)
 - **which tests prove it** (test file location and coverage)
+
+---
+
+## Learned User Preferences
+
+- For hero tiles with a colored outer frame, the image overlay should fade from transparent at the top to the same color as the shell at the bottom so the art stays clear above and blends into the frame below.
+- Storefront home “Today” prefers a two-tier bento: one large featured square plus a 2×2 grid of small square editor picks, with discovery rows using a larger “medium” tile—three visual tiers (big, medium, small).
+- Bento spotlight footers should keep long product titles and creator lines readable on narrow viewports (wrapping, truncation or line clamps, responsive stacking) without breaking the layout.
+
+## Learned Workspace Facts
+
+- When a `hero-banner` editorial section is immediately followed by a `card-grid-4` section (after sort order), the storefront merges them into one bento block (`BentoTodayHero` / `today-layout-bento`).
+- Reusable bento spotlight UI lives under `packages/storefront/src/components/today/` (`BentoHeroFrame`, `SpotlightHeroFooter`; `HeroBanner` with `variant="bento"` supports a configurable `shellColor`).
+- In `docs/architecture.md` Mermaid diagrams: use `direction LR` inside subgraphs (not misspellings); avoid duplicate node IDs in one graph; close parentheses in quoted node labels.
+- GitHub-flavored Markdown tables only render when the header row has the same number of columns as every body row.

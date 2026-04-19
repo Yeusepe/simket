@@ -14,8 +14,11 @@ export { HeroBanner } from './HeroBanner';
 export {
   BentoHeroFrame,
   DEFAULT_BENTO_SHELL_COLOR,
+  spotlightHeadlineClass,
 } from './BentoHeroFrame';
 export type { BentoHeroFrameProps } from './BentoHeroFrame';
+export { SpotlightHeroFooter } from './SpotlightHeroFooter';
+export type { SpotlightHeroFooterProps } from './SpotlightHeroFooter';
 export { BentoTodayHero } from './BentoTodayHero';
 export { EditorialCardGrid } from './EditorialCardGrid';
 export { EditorialCard } from './EditorialCard';
