@@ -22,6 +22,10 @@ test-results/
 *.swp
 *.swo
 
+# Cloudflare Workers
+.wrangler/
+.dev.vars
+
 # OS
 .DS_Store
 Thumbs.db

@@ -1,4 +1,5 @@
 import { VendureConfig } from '@vendure/core';
+import { BullMQJobQueuePlugin } from '@vendure/job-queue-plugin/package/bullmq/index.js';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { FeatureFlagsPlugin } from '../feature-flags/feature-flags.plugin.js';
@@ -75,15 +76,23 @@ export const config: VendureConfig = {
     },
   },
 
-  jobQueueOptions: {
-    activeQueues: ['default'],
-  },
-
   paymentOptions: {
     paymentMethodHandlers: [],
   },
 
   plugins: [
+    // Job queue: BullMQ (Redis-backed, push-based — no DB polling)
+    // https://docs.vendure.io/reference/core-plugins/job-queue-plugin/bull-mqjob-queue-plugin/
+    BullMQJobQueuePlugin.init({
+      connection: {
+        host: process.env['REDIS_QUEUE_HOST'] ?? 'localhost',
+        port: Number(process.env['REDIS_QUEUE_PORT'] ?? 6380),
+        maxRetriesPerRequest: null,
+      },
+      workerOptions: {
+        concurrency: isDev ? 2 : 5,
+      },
+    }),
     CrowdSecPlugin,
     FeatureFlagsPlugin,
     CatalogPlugin,

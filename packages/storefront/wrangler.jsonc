@@ -1,0 +1,42 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  /**
+   * Simket Storefront — Cloudflare Workers configuration.
+   *
+   * The storefront runs as a Cloudflare Worker at the edge.
+   * Static assets (the built React SPA) are served directly from the CDN.
+   * The Worker handles:
+   *   - API proxying to the Vendure backend
+   *   - Subdomain-based store routing (creatorname.simket.com)
+   *   - Edge caching and geo-routing
+   *   - A/B test assignment at the edge
+   *
+   * Docs: https://developers.cloudflare.com/workers/
+   * Vite plugin: https://developers.cloudflare.com/workers/vite-plugin/
+   */
+  "name": "simket-storefront",
+  "main": "worker/index.ts",
+  "compatibility_date": "2025-04-01",
+
+  // SPA mode: unmatched routes serve index.html (client-side routing)
+  "assets": {
+    "not_found_handling": "single-page-application"
+  },
+
+  // Environment variables (dev defaults — production uses secrets)
+  "vars": {
+    "VENDURE_API_URL": "http://localhost:3100",
+    "ENVIRONMENT": "development"
+  }
+
+  // Production bindings (uncomment when deploying):
+  // "kv_namespaces": [
+  //   { "binding": "STORE_CACHE", "id": "..." }
+  // ],
+  // "r2_buckets": [
+  //   { "binding": "ASSETS_BUCKET", "bucket_name": "simket-assets" }
+  // ],
+  // "hyperdrive": [
+  //   { "binding": "DB", "id": "..." }
+  // ]
+}

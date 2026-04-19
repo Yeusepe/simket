@@ -5,7 +5,10 @@
     "rootDir": "./src",
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
-    "useDefineForClassFields": false
+    "useDefineForClassFields": false,
+    "paths": {
+      "@vendure/job-queue-plugin/package/bullmq/index.js": ["./node_modules/@vendure/job-queue-plugin/package/bullmq/index.d.ts"]
+    }
   },
   "include": ["src"],
   "exclude": ["node_modules", "dist", "**/*.test.ts"],

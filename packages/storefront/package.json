@@ -15,6 +15,7 @@
     "clean": "rimraf dist *.tsbuildinfo"
   },
   "dependencies": {
+    "@cloudflare/vite-plugin": "^1.32.3",
     "@heroui/react": "^3.0.3",
     "@heroui/styles": "^3.0.3",
     "@simket/shared": "workspace:*",
@@ -37,9 +38,11 @@
     "react-dom": "^19.2.5",
     "react-router-dom": "^7.14.1",
     "recharts": "^3.8.1",
+    "wrangler": "^4.83.0",
     "zustand": "^5.0.12"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260418.1",
     "@tailwindcss/vite": "^4.2.2",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
