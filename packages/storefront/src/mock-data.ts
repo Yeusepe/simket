@@ -1,5 +1,5 @@
 /**
- * Purpose: Mock data for the dev environment using picsum.photos for hero images.
+ * Purpose: Mock data for the dev environment using picsum.photos (seed URLs for consistent color imagery).
  * Provides realistic sample products, editorial sections, discovery items, and dashboard data.
  * Governing docs:
  *   - docs/architecture.md
@@ -15,9 +15,29 @@ import type { DiscoveryFeedItem } from '../components/discovery/discovery-types'
 import type { DashboardStats, ActivityItem, QuickAction } from '../components/dashboard/dashboard-types';
 import type { AppNotification } from '../types/notifications';
 
-function picsumUrl(id: number, w = 800, h = 450): string {
-  return `https://picsum.photos/id/${id}/${w}/${h}`;
+/** Deterministic, typically full-color photos (avoids grayscale-heavy IDs in local dev). */
+function picsumSeed(path: string, w: number, h: number): string {
+  return `https://picsum.photos/seed/${encodeURIComponent(path)}/${w}/${h}`;
 }
+
+/**
+ * Distinct CSS hex accents for mock rows — each product/editorial/discovery line has its own
+ * `previewColor` so shells and card stripes read differently in dev.
+ */
+export const MOCK_PREVIEW = {
+  violet: '#8b5cf6',
+  sky: '#0ea5e9',
+  emerald: '#10b981',
+  pink: '#ec4899',
+  amber: '#f59e0b',
+  indigo: '#6366f1',
+  teal: '#14b8a6',
+  orange: '#f97316',
+  rose: '#f43f5e',
+  cyan: '#06b6d4',
+  lime: '#84cc16',
+  fuchsia: '#d946ef',
+} as const;
 
 // ---- Products ----
 
@@ -30,11 +50,16 @@ export const MOCK_PRODUCTS: readonly ProductListItem[] = [
     priceMin: 2999,
     priceMax: 2999,
     currencyCode: 'USD',
-    heroImageUrl: picsumUrl(1025, 800, 450),
+    heroImageUrl: picsumSeed('simket-prod-001-hero', 800, 800),
     heroTransparentUrl: null,
     creatorName: 'Nova Studio',
+    creatorAvatarUrl: picsumSeed('simket-prod-001-creator', 64, 64),
+    collaborators: [{ name: 'Alex Kim', avatarUrl: picsumSeed('simket-prod-001-collab', 64, 64) }],
     tags: ['avatar', 'vrchat', 'unity'],
     categorySlug: 'avatars',
+    averageRating: 4.8,
+    reviewCount: 214,
+    previewColor: MOCK_PREVIEW.violet,
   },
   {
     id: 'prod-002',
@@ -44,11 +69,19 @@ export const MOCK_PRODUCTS: readonly ProductListItem[] = [
     priceMin: 1499,
     priceMax: 1499,
     currencyCode: 'USD',
-    heroImageUrl: picsumUrl(1035, 800, 450),
+    heroImageUrl: picsumSeed('simket-prod-002-hero', 800, 800),
     heroTransparentUrl: null,
     creatorName: 'ShaderLab',
+    creatorAvatarUrl: picsumSeed('simket-prod-002-creator', 64, 64),
+    collaborators: [
+      { name: 'Mina Park', avatarUrl: picsumSeed('simket-prod-002-collab-a', 64, 64) },
+      { name: 'Jordan Lee', avatarUrl: picsumSeed('simket-prod-002-collab-b', 64, 64) },
+    ],
     tags: ['shader', 'unity', 'urp'],
     categorySlug: 'tools',
+    averageRating: 4.5,
+    reviewCount: 89,
+    previewColor: MOCK_PREVIEW.sky,
   },
   {
     id: 'prod-003',
@@ -58,11 +91,15 @@ export const MOCK_PRODUCTS: readonly ProductListItem[] = [
     priceMin: 999,
     priceMax: 999,
     currencyCode: 'USD',
-    heroImageUrl: picsumUrl(1040, 800, 450),
+    heroImageUrl: picsumSeed('simket-prod-003-hero', 800, 800),
     heroTransparentUrl: null,
     creatorName: 'WorldCraft',
+    creatorAvatarUrl: picsumSeed('simket-prod-003-creator', 64, 64),
     tags: ['world', 'vrchat', 'environment'],
     categorySlug: 'worlds',
+    averageRating: 4.9,
+    reviewCount: 1204,
+    previewColor: MOCK_PREVIEW.emerald,
   },
   {
     id: 'prod-004',
@@ -72,11 +109,15 @@ export const MOCK_PRODUCTS: readonly ProductListItem[] = [
     priceMin: 799,
     priceMax: 1299,
     currencyCode: 'USD',
-    heroImageUrl: picsumUrl(1062, 800, 450),
+    heroImageUrl: picsumSeed('simket-prod-004-hero', 800, 450),
     heroTransparentUrl: null,
     creatorName: 'VoxelWear',
+    creatorAvatarUrl: picsumSeed('simket-prod-004-creator', 64, 64),
     tags: ['clothing', 'avatar', 'cyberpunk'],
     categorySlug: 'accessories',
+    averageRating: 4.2,
+    reviewCount: 56,
+    previewColor: MOCK_PREVIEW.pink,
   },
   {
     id: 'prod-005',
@@ -86,11 +127,15 @@ export const MOCK_PRODUCTS: readonly ProductListItem[] = [
     priceMin: 499,
     priceMax: 499,
     currencyCode: 'USD',
-    heroImageUrl: picsumUrl(1076, 800, 450),
+    heroImageUrl: picsumSeed('simket-prod-005-hero', 800, 450),
     heroTransparentUrl: null,
     creatorName: 'SoundSphere',
+    creatorAvatarUrl: picsumSeed('simket-prod-005-creator', 64, 64),
     tags: ['audio', 'ambient', 'sfx'],
     categorySlug: 'audio',
+    averageRating: 4.7,
+    reviewCount: 33,
+    previewColor: MOCK_PREVIEW.amber,
   },
   {
     id: 'prod-006',
@@ -100,11 +145,15 @@ export const MOCK_PRODUCTS: readonly ProductListItem[] = [
     priceMin: 1999,
     priceMax: 1999,
     currencyCode: 'USD',
-    heroImageUrl: picsumUrl(1084, 800, 450),
+    heroImageUrl: picsumSeed('simket-prod-006-hero', 800, 450),
     heroTransparentUrl: null,
     creatorName: 'FXForge',
+    creatorAvatarUrl: picsumSeed('simket-prod-006-creator', 64, 64),
     tags: ['particles', 'unity', 'vfx'],
     categorySlug: 'tools',
+    averageRating: 4.6,
+    reviewCount: 412,
+    previewColor: MOCK_PREVIEW.indigo,
   },
   {
     id: 'prod-007',
@@ -114,11 +163,15 @@ export const MOCK_PRODUCTS: readonly ProductListItem[] = [
     priceMin: 599,
     priceMax: 599,
     currencyCode: 'USD',
-    heroImageUrl: picsumUrl(160, 800, 450),
+    heroImageUrl: picsumSeed('simket-prod-007-hero', 800, 450),
     heroTransparentUrl: null,
     creatorName: 'PolyProps',
+    creatorAvatarUrl: picsumSeed('simket-prod-007-creator', 64, 64),
     tags: ['props', '3d', 'retro'],
     categorySlug: 'assets',
+    averageRating: 4.0,
+    reviewCount: 7,
+    previewColor: MOCK_PREVIEW.teal,
   },
   {
     id: 'prod-008',
@@ -128,11 +181,15 @@ export const MOCK_PRODUCTS: readonly ProductListItem[] = [
     priceMin: 399,
     priceMax: 399,
     currencyCode: 'USD',
-    heroImageUrl: picsumUrl(237, 800, 450),
+    heroImageUrl: picsumSeed('simket-prod-008-hero', 800, 450),
     heroTransparentUrl: null,
     creatorName: 'PhysicsWorks',
+    creatorAvatarUrl: picsumSeed('simket-prod-008-creator', 64, 64),
     tags: ['physbones', 'avatar', 'vrchat'],
     categorySlug: 'accessories',
+    averageRating: 4.4,
+    reviewCount: 156,
+    previewColor: MOCK_PREVIEW.orange,
   },
 ];
 
@@ -143,12 +200,12 @@ const MOCK_EDITORIAL_ITEMS: readonly EditorialItem[] = [
     id: 'ed-001',
     title: 'The Rise of Community-Built Avatars',
     excerpt: 'How independent creators are reshaping virtual identity with open-source avatar bases and collaborative workflows.',
-    heroImage: picsumUrl(1043, 1200, 600),
+    heroImage: picsumSeed('simket-editorial-ed-001-hero', 1200, 600),
     heroTransparent: undefined,
     author: 'Simket Editorial',
     productName: 'Community Avatar Kit — Open Base',
     creatorName: 'Nova Studio',
-    productThumbnailUrl: picsumUrl(1060, 256, 256),
+    productThumbnailUrl: picsumSeed('simket-editorial-ed-001-thumb', 256, 256),
     spotlightEyebrow: 'FEATURED',
     spotlightSubline: 'Open tools, shared bases, and a new wave of collaboration.',
     spotlightPriceFormatted: '$29.99+',
@@ -157,49 +214,64 @@ const MOCK_EDITORIAL_ITEMS: readonly EditorialItem[] = [
     publishedAt: '2026-04-15T09:00:00Z',
     slug: 'rise-of-community-avatars',
     tags: ['avatars', 'community', 'featured'],
+    previewColor: MOCK_PREVIEW.violet,
   },
   {
     id: 'ed-002',
     title: 'Shader Artists to Watch in 2026',
     excerpt: 'Five shader creators pushing the boundaries of real-time rendering in VR.',
-    heroImage: picsumUrl(1044, 800, 600),
+    heroImage: picsumSeed('simket-editorial-ed-002-hero', 800, 600),
     spotlightSubline: 'Stylized lighting, URP, and beyond.',
     author: 'Simket Editorial',
     publishedAt: '2026-04-14T12:00:00Z',
     slug: 'shader-artists-2026',
     tags: ['shaders', 'artists'],
+    previewColor: MOCK_PREVIEW.sky,
   },
   {
     id: 'ed-003',
     title: 'Building Worlds That Feel Like Home',
     excerpt: 'What makes a virtual world truly cozy? We asked the top world builders.',
-    heroImage: picsumUrl(1047, 800, 600),
+    heroImage: picsumSeed('simket-editorial-ed-003-hero', 800, 600),
     author: 'Simket Editorial',
     publishedAt: '2026-04-13T15:00:00Z',
     slug: 'cozy-worlds-guide',
     tags: ['worlds', 'design'],
+    previewColor: MOCK_PREVIEW.emerald,
   },
   {
     id: 'ed-004',
     title: 'The Audio Revolution in VR',
     excerpt: 'Spatial audio and soundscapes are transforming immersion.',
-    heroImage: picsumUrl(1055, 800, 600),
+    heroImage: picsumSeed('simket-editorial-ed-004-hero', 800, 600),
     author: 'Simket Editorial',
     publishedAt: '2026-04-12T10:00:00Z',
     slug: 'audio-revolution-vr',
     tags: ['audio', 'vr'],
+    previewColor: MOCK_PREVIEW.amber,
   },
   {
     id: 'ed-005',
     title: 'Creator Spotlights: April 2026',
     excerpt: 'Meet this month\'s standout creators from across the Simket marketplace.',
-    heroImage: picsumUrl(1059, 800, 600),
+    heroImage: picsumSeed('simket-editorial-ed-005-hero', 800, 600),
     author: 'Simket Editorial',
     publishedAt: '2026-04-11T08:00:00Z',
     slug: 'creator-spotlights-april',
     tags: ['creators', 'spotlight'],
+    previewColor: MOCK_PREVIEW.fuchsia,
   },
 ];
+
+/** Resolve dev preview shell color when API payloads omit `previewColor`. */
+export function mockPreviewColorForProductSlug(slug: string): string | undefined {
+  return MOCK_PRODUCTS.find((p) => p.slug === slug)?.previewColor ?? undefined;
+}
+
+/** Resolve dev preview shell color for editorial rows when API payloads omit `previewColor`. */
+export function mockPreviewColorForEditorialSlug(slug: string): string | undefined {
+  return MOCK_EDITORIAL_ITEMS.find((e) => e.slug === slug)?.previewColor ?? undefined;
+}
 
 export const MOCK_EDITORIAL_SECTIONS: readonly EditorialSection[] = [
   {
@@ -224,7 +296,7 @@ export const MOCK_EDITORIAL_SECTIONS: readonly EditorialSection[] = [
     slug: 'trending',
     layout: 'horizontal-scroll',
     sortOrder: 2,
-    items: MOCK_EDITORIAL_ITEMS,
+    items: [],
   },
 ];
 
@@ -235,7 +307,7 @@ export const MOCK_DISCOVERY_ITEMS: readonly DiscoveryFeedItem[] = [
     productId: 'prod-001',
     slug: 'ethereal-avatar-base',
     name: 'Ethereal Avatar Base',
-    imageUrl: picsumUrl(1025, 600, 340),
+    imageUrl: picsumSeed('simket-prod-001-discovery', 600, 340),
     price: 2999,
     currencyCode: 'USD',
     creatorName: 'Nova Studio',
@@ -243,12 +315,13 @@ export const MOCK_DISCOVERY_ITEMS: readonly DiscoveryFeedItem[] = [
     score: 0.95,
     source: 'collaborative-filtering',
     variantId: 'var-001',
+    previewColor: MOCK_PREVIEW.violet,
   },
   {
     productId: 'prod-002',
     slug: 'pixel-dust-shader-pack',
     name: 'Pixel Dust Shader Pack',
-    imageUrl: picsumUrl(1035, 600, 340),
+    imageUrl: picsumSeed('simket-prod-002-discovery', 600, 340),
     price: 1499,
     currencyCode: 'USD',
     creatorName: 'ShaderLab',
@@ -256,12 +329,13 @@ export const MOCK_DISCOVERY_ITEMS: readonly DiscoveryFeedItem[] = [
     score: 0.88,
     source: 'content-based',
     variantId: 'var-002',
+    previewColor: MOCK_PREVIEW.sky,
   },
   {
     productId: 'prod-003',
     slug: 'cozy-cabin-world',
     name: 'Cozy Cabin World',
-    imageUrl: picsumUrl(1040, 600, 340),
+    imageUrl: picsumSeed('simket-prod-003-discovery', 600, 340),
     price: 999,
     currencyCode: 'USD',
     creatorName: 'WorldCraft',
@@ -269,12 +343,13 @@ export const MOCK_DISCOVERY_ITEMS: readonly DiscoveryFeedItem[] = [
     score: 0.82,
     source: 'popularity',
     variantId: 'var-003',
+    previewColor: MOCK_PREVIEW.emerald,
   },
   {
     productId: 'prod-004',
     slug: 'neon-clothing-set',
     name: 'Neon Clothing Set',
-    imageUrl: picsumUrl(1062, 600, 340),
+    imageUrl: picsumSeed('simket-prod-004-discovery', 600, 340),
     price: 799,
     currencyCode: 'USD',
     creatorName: 'VoxelWear',
@@ -282,12 +357,13 @@ export const MOCK_DISCOVERY_ITEMS: readonly DiscoveryFeedItem[] = [
     score: 0.79,
     source: 'collaborative-filtering',
     variantId: 'var-004',
+    previewColor: MOCK_PREVIEW.pink,
   },
   {
     productId: 'prod-005',
     slug: 'ambient-soundscape-vol-1',
     name: 'Ambient Soundscape Vol. 1',
-    imageUrl: picsumUrl(1076, 600, 340),
+    imageUrl: picsumSeed('simket-prod-005-discovery', 600, 340),
     price: 499,
     currencyCode: 'USD',
     creatorName: 'SoundSphere',
@@ -295,12 +371,13 @@ export const MOCK_DISCOVERY_ITEMS: readonly DiscoveryFeedItem[] = [
     score: 0.74,
     source: 'collaborative-filtering',
     variantId: 'var-005',
+    previewColor: MOCK_PREVIEW.amber,
   },
   {
     productId: 'prod-006',
     slug: 'particle-fx-toolkit',
     name: 'Particle FX Toolkit',
-    imageUrl: picsumUrl(1084, 600, 340),
+    imageUrl: picsumSeed('simket-prod-006-discovery', 600, 340),
     price: 1999,
     currencyCode: 'USD',
     creatorName: 'FXForge',
@@ -308,12 +385,13 @@ export const MOCK_DISCOVERY_ITEMS: readonly DiscoveryFeedItem[] = [
     score: 0.71,
     source: 'content-based',
     variantId: 'var-006',
+    previewColor: MOCK_PREVIEW.indigo,
   },
   {
     productId: 'prod-007',
     slug: 'retro-prop-collection',
     name: 'Retro Prop Collection',
-    imageUrl: picsumUrl(160, 600, 340),
+    imageUrl: picsumSeed('simket-prod-007-discovery', 600, 340),
     price: 599,
     currencyCode: 'USD',
     creatorName: 'PolyProps',
@@ -321,12 +399,13 @@ export const MOCK_DISCOVERY_ITEMS: readonly DiscoveryFeedItem[] = [
     score: 0.68,
     source: 'recency',
     variantId: 'var-007',
+    previewColor: MOCK_PREVIEW.teal,
   },
   {
     productId: 'prod-008',
     slug: 'dynamic-tail-physics',
     name: 'Dynamic Tail Physics',
-    imageUrl: picsumUrl(237, 600, 340),
+    imageUrl: picsumSeed('simket-prod-008-discovery', 600, 340),
     price: 399,
     currencyCode: 'USD',
     creatorName: 'PhysicsWorks',
@@ -334,6 +413,7 @@ export const MOCK_DISCOVERY_ITEMS: readonly DiscoveryFeedItem[] = [
     score: 0.65,
     source: 'collaborative-filtering',
     variantId: 'var-008',
+    previewColor: MOCK_PREVIEW.orange,
   },
 ];
 

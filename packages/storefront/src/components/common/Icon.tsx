@@ -1,10 +1,11 @@
 /**
- * Purpose: Centralised icon component wrapping @iconify/react with Streamline Plump Flat icons.
+ * Purpose: Centralised icon component wrapping @iconify/react with Streamline Flex Flat icons.
  * All icons across the storefront must use this component instead of emojis or raw glyphs.
  * Governing docs:
  *   - docs/architecture.md (§7 HeroUI everywhere)
  * External references:
- *   - https://www.streamlinehq.com/icons/plump-flat-style
+ *   - https://www.streamlinehq.com/icons/flex-flat-style
+ *   - https://icon-sets.iconify.design/streamline-flex/
  *   - https://iconify.design/docs/icon-components/react/
  * Tests:
  *   - packages/storefront/src/components/common/Icon.test.tsx
@@ -12,65 +13,69 @@
 import { Icon as IconifyIcon } from '@iconify/react';
 
 /**
- * Icon name mapping from semantic names to Streamline Plump Flat icon identifiers.
- * Browse: https://icon-sets.iconify.design/streamline-plump/
+ * Icon name mapping from semantic names to Streamline Flex identifiers.
+ * Prefer solid variants to keep the storefront on the requested flat style.
+ * Browse: https://icon-sets.iconify.design/streamline-flex/
  */
 const ICON_MAP = {
   // Navigation
-  home: 'streamline-plump:home-1',
-  search: 'streamline-plump:search-visual',
-  cart: 'streamline-plump:shopping-cart-add',
-  library: 'streamline-plump:book-1',
-  notifications: 'streamline-plump:ringing-bell-notification',
-  profile: 'streamline-plump:user-single-neutral-male',
-  settings: 'streamline-plump:cog',
-  menu: 'streamline-plump:horizontal-menu-circle',
-  close: 'streamline-plump:delete-keyboard',
+  home: 'streamline-flex:home-2-solid',
+  search: 'streamline-flex:magnifying-glass-solid',
+  cart: 'streamline-flex:shopping-cart-2-solid',
+  library: 'streamline-flex:book-reading-solid',
+  notifications: 'streamline-flex:bell-notification-solid',
+  profile: 'streamline-flex:user-circle-single-solid',
+  settings: 'streamline-flex:cog-solid',
+  menu: 'streamline-flex:watch-square-menu-solid',
+  close: 'streamline-flex:shield-cross-solid',
 
   // Theme
-  sun: 'streamline-plump:sun',
-  moon: 'streamline-plump:moon-stars',
+  sun: 'streamline-flex:sun-solid',
+  moon: 'streamline-flex:dark-dislay-mode-solid',
 
   // Actions
-  plus: 'streamline-plump:shopping-cart-add',
-  edit: 'streamline-plump:pencil-square',
-  check: 'streamline-plump:check-thick',
-  'arrow-up': 'streamline-plump:arrow-transfer-horizontal-square',
-  'arrow-down': 'streamline-plump:arrow-transfer-horizontal-square',
+  plus: 'streamline-flex:application-add-solid',
+  edit: 'streamline-flex:pencil-square-solid',
+  check: 'streamline-flex:check-square-solid',
+  'arrow-up': 'streamline-flex:arrow-move-solid',
+  'arrow-down': 'streamline-flex:arrow-move-solid',
 
   // Wishlist
-  'heart-filled': 'streamline-plump:user-feedback-heart',
-  'heart-outline': 'streamline-plump:user-feedback-heart',
+  'heart-filled': 'streamline-flex:heart-solid',
+  'heart-outline': 'streamline-flex:heart',
 
   // Dashboard stats
-  revenue: 'streamline-plump:wallet',
-  sales: 'streamline-plump:shopping-basket-1',
-  views: 'streamline-plump:eye-optic',
-  conversion: 'streamline-plump:flash-1',
+  revenue: 'streamline-flex:wallet-solid',
+  sales: 'streamline-flex:shopping-basket-2-solid',
+  views: 'streamline-flex:binoculars-solid',
+  conversion: 'streamline-flex:flash-3-solid',
 
   // Dashboard nav
-  products: 'streamline-plump:shipping-box-1',
-  licenses: 'streamline-plump:keyhole-lock-circle',
-  templates: 'streamline-plump:graphic-template-website-ui',
-  collaborations: 'streamline-plump:user-multiple-accounts',
-  flows: 'streamline-plump:arrow-transfer-horizontal-square',
-  chart: 'streamline-plump:graph-bar-increase',
+  products: 'streamline-flex:shipping-box-2-solid',
+  licenses: 'streamline-flex:key-frame-solid',
+  templates: 'streamline-flex:layout-window-1-solid',
+  collaborations: 'streamline-flex:user-collaborate-group-solid',
+  flows: 'streamline-flex:merge-vertical-solid',
+  chart: 'streamline-flex:graph-bar-increase-square-solid',
 
   // Notification types
-  purchase: 'streamline-plump:shopping-basket-1',
-  'collaboration-invite': 'streamline-plump:user-multiple-accounts',
-  'collaboration-accepted': 'streamline-plump:check-thick',
-  'product-update': 'streamline-plump:shipping-box-1',
-  'price-drop': 'streamline-plump:wallet',
-  system: 'streamline-plump:ringing-bell-notification',
-  'gift-received': 'streamline-plump:gift',
-  review: 'streamline-plump:star-circle',
-  settlement: 'streamline-plump:wallet',
+  purchase: 'streamline-flex:shopping-basket-2-solid',
+  'collaboration-invite': 'streamline-flex:user-collaborate-group-solid',
+  'collaboration-accepted': 'streamline-flex:check-square-solid',
+  'product-update': 'streamline-flex:shipping-box-2-solid',
+  'price-drop': 'streamline-flex:wallet-solid',
+  system: 'streamline-flex:bell-notification-solid',
+  'gift-received': 'streamline-flex:gift-2-solid',
+  review: 'streamline-flex:star-circle-solid',
+  /** 5-star row (filled vs muted empty). */
+  'star-filled': 'streamline-flex:star-1-solid',
+  'star-empty': 'streamline-flex:star-1',
+  settlement: 'streamline-flex:wallet-solid',
 
   // Activity types
-  sale: 'streamline-plump:wallet',
-  collaboration: 'streamline-plump:user-multiple-accounts',
-  'product-edit': 'streamline-plump:pencil-square',
+  sale: 'streamline-flex:wallet-solid',
+  collaboration: 'streamline-flex:user-collaborate-group-solid',
+  'product-edit': 'streamline-flex:pencil-square-solid',
 } as const;
 
 export type IconName = keyof typeof ICON_MAP;

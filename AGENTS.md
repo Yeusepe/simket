@@ -536,9 +536,10 @@ Every meaningful implementation artefact must be linked to:
 
 ## Learned User Preferences
 
-- For hero tiles with a colored outer frame, the image overlay should fade from transparent at the top to the same color as the shell at the bottom so the art stays clear above and blends into the frame below.
+- For hero tiles with a colored outer frame, the image overlay should fade from transparent at the top to the same color as the shell at the bottom so the art stays clear above and blends into the frame below; on smaller or compact layouts, the shell-colored region should read in roughly the lower third of the image (not only as a thin band along the bottom edge).
 - Storefront home “Today” prefers a two-tier bento: one large featured square plus a 2×2 grid of small square editor picks, with discovery rows using a larger “medium” tile—three visual tiers (big, medium, small).
 - Bento spotlight footers should keep long product titles and creator lines readable on narrow viewports (wrapping, truncation or line clamps, responsive stacking) without breaking the layout.
+- Small bento/editor tiles should use the most compact responsive configuration (spacing, type scale, and overlay/gradient treatment) so the UI matches their small footprint.
 
 ## Learned Workspace Facts
 
@@ -546,3 +547,4 @@ Every meaningful implementation artefact must be linked to:
 - Reusable bento spotlight UI lives under `packages/storefront/src/components/today/` (`BentoHeroFrame`, `SpotlightHeroFooter`; `HeroBanner` with `variant="bento"` supports a configurable `shellColor`).
 - In `docs/architecture.md` Mermaid diagrams: use `direction LR` inside subgraphs (not misspellings); avoid duplicate node IDs in one graph; close parentheses in quoted node labels.
 - GitHub-flavored Markdown tables only render when the header row has the same number of columns as every body row.
+- Mock/demo product surfaces in the storefront favor stable seeded full-color placeholder imagery, star glyphs for ratings, and a dedicated left-aligned price line with color on the price text rather than tinting a full-width price strip.

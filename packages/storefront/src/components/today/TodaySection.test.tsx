@@ -11,8 +11,12 @@
  * Tests:
  *   - packages/storefront/src/components/today/TodaySection.test.tsx
  */
-import { fireEvent, render, screen } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+import { MOCK_PRODUCTS } from '../../mock-data';
 
 const useEditorialMock = vi.fn();
 
@@ -86,6 +90,43 @@ describe('TodaySection', () => {
     expect(screen.getByText('Grid Four')).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Grid Two' })).toBeInTheDocument();
     expect(screen.getByRole('region', { name: 'Scroll' })).toBeInTheDocument();
+  });
+
+  it('renders catalog products for the trending horizontal section', async () => {
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    useEditorialMock.mockReturnValue({
+      sections: [
+        {
+          ...makeSection({
+            id: 'trending',
+            name: 'Trending This Week',
+            slug: 'trending',
+            layout: 'horizontal-scroll',
+            sortOrder: 1,
+          }),
+          items: [],
+        },
+      ],
+      isLoading: false,
+      error: undefined,
+      version: 1,
+      hasFreshContent: false,
+      dismissFreshContent: vi.fn(),
+      refetch: vi.fn(),
+    });
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter>
+          <TodaySection />
+        </MemoryRouter>
+      </QueryClientProvider>,
+    );
+
+    expect(screen.getByTestId('today-layout-trending-products')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText(MOCK_PRODUCTS[0]!.name)).toBeInTheDocument();
+    });
   });
 
   it('renders a loading skeleton state', () => {

@@ -228,6 +228,7 @@ export function toProductListItem(product: ProductDetail): ProductListItem {
     heroImageUrl: product.heroMediaType === 'image' ? product.heroMediaUrl : null,
     heroTransparentUrl: product.heroTransparentUrl,
     creatorName: product.creator.name,
+    creatorAvatarUrl: product.creator.avatarUrl,
     tags: product.tags,
     categorySlug: product.categorySlug,
   };

@@ -22,6 +22,8 @@ export function EditorialCardCompact({ item, size }: EditorialCardCompactProps) 
     size === 'small' ? 'text-sm font-semibold leading-snug' : 'text-base';
   const descClass = size === 'small' ? 'text-xs' : 'text-sm';
   const excerptSize = size === 'small' ? 'text-xs' : 'text-sm';
+  const accent = item.previewColor ?? null;
+  const accentBorder = accent ? 'border-l-4 border-solid' : '';
 
   return (
     <a
@@ -33,7 +35,8 @@ export function EditorialCardCompact({ item, size }: EditorialCardCompactProps) 
         role="article"
         data-testid="editorial-card"
         data-editorial-size={size}
-        className={`flex aspect-square flex-col ${EDITORIAL_CARD_SHELL_CLASSNAME}`}
+        className={`flex aspect-square flex-col ${EDITORIAL_CARD_SHELL_CLASSNAME} ${accentBorder}`}
+        style={accent ? { borderLeftColor: accent } : undefined}
       >
         <div className="relative min-h-0 flex-1 overflow-hidden">
           <EditorialCardHeroImage

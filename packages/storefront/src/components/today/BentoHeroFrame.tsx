@@ -6,7 +6,7 @@
  *   - docs/architecture.md
  * External references:
  *   - https://www.heroui.com/docs/react/components/card
- *   - https://github.com/adobe/leonardo (footer contrasts via `createBentoSpotlightFooterColors`)
+ *   - https://github.com/adobe/leonardo (hero copy + footer via `createBentoSpotlightFooterColors`)
  */
 import { useMemo } from 'react';
 
@@ -17,7 +17,7 @@ import { SpotlightHeroFooter } from './SpotlightHeroFooter';
 export const DEFAULT_BENTO_SHELL_COLOR = '#ddd6fe';
 
 /** Matches the article padding edge when `rounded-[2rem]` + `border-[10px]` — keeps image/gradient clip aligned and avoids corner bleed. */
-const INNER_MEDIA_RADIUS = 'calc(2rem - 10px)';
+export const BENTO_INNER_MEDIA_RADIUS = 'calc(2rem - 10px)';
 
 /** Fluid type scale from headline length (title stays readable in the bento tile). */
 export function spotlightHeadlineClass(
@@ -38,15 +38,15 @@ export function spotlightHeadlineClass(
     return 'text-xs leading-[1.08] line-clamp-4';
   }
   if (n <= 22) {
-    return 'text-3xl sm:text-[2rem] leading-[1.05] max-sm:line-clamp-2 sm:line-clamp-none';
+    return 'text-2xl sm:text-[1.75rem] leading-[1.05] max-sm:line-clamp-2 sm:line-clamp-none';
   }
   if (n <= 42) {
-    return 'text-2xl sm:text-3xl leading-[1.08] max-sm:line-clamp-3 sm:line-clamp-none';
-  }
-  if (n <= 68) {
     return 'text-xl sm:text-2xl leading-[1.08] max-sm:line-clamp-3 sm:line-clamp-none';
   }
-  return 'text-lg sm:text-xl leading-[1.08] max-sm:line-clamp-3 sm:line-clamp-4';
+  if (n <= 68) {
+    return 'text-lg sm:text-xl leading-[1.08] max-sm:line-clamp-3 sm:line-clamp-none';
+  }
+  return 'text-base sm:text-lg leading-[1.08] max-sm:line-clamp-3 sm:line-clamp-4';
 }
 
 export interface BentoHeroFrameProps {
@@ -116,6 +116,9 @@ export function BentoHeroFrame({
     [shellColor],
   );
 
+  /** Single lower-third fade: shell at bottom → transparent (no multi-stop color-mix chain). */
+  const imageFadeGradient = `linear-gradient(to top, ${shellColor} 0%, ${shellColor} 22%, transparent 100%)`;
+
   return (
     <article
       data-testid={testId}
@@ -130,73 +133,68 @@ export function BentoHeroFrame({
     >
       <div
         className="relative min-h-0 flex-1 overflow-hidden"
-        style={{ borderRadius: INNER_MEDIA_RADIUS }}
+        style={{ borderRadius: BENTO_INNER_MEDIA_RADIUS }}
       >
         <img
           src={heroImage}
           alt={heroImageAlt}
           className="absolute inset-0 h-full w-full object-cover"
-          style={{ borderRadius: INNER_MEDIA_RADIUS }}
+          style={{ borderRadius: BENTO_INNER_MEDIA_RADIUS }}
         />
         {/* Compact picks: always use the strong lower-third fade (same as narrow-stack featured). */}
         {isCompact ? (
           <div
             className="pointer-events-none absolute inset-0"
             style={{
-              borderRadius: INNER_MEDIA_RADIUS,
-              background: `linear-gradient(to top, ${shellColor} 0%, ${shellColor} 18%, color-mix(in oklab, ${shellColor} 62%, transparent) 33%, color-mix(in oklab, ${shellColor} 22%, transparent) 54%, transparent 84%)`,
+              borderRadius: BENTO_INNER_MEDIA_RADIUS,
+              background: imageFadeGradient,
             }}
             aria-hidden
           />
         ) : (
-          <>
-            <div
-              className="pointer-events-none absolute inset-0 lg:hidden"
-              style={{
-                borderRadius: INNER_MEDIA_RADIUS,
-                background: `linear-gradient(to top, ${shellColor} 0%, ${shellColor} 18%, color-mix(in oklab, ${shellColor} 62%, transparent) 33%, color-mix(in oklab, ${shellColor} 22%, transparent) 54%, transparent 84%)`,
-              }}
-              aria-hidden
-            />
-            <div
-              className="pointer-events-none absolute inset-0 hidden lg:block"
-              style={{
-                borderRadius: INNER_MEDIA_RADIUS,
-                // Taller fully-opaque bottom band so curved corners stay covered (linear fade alone can show image at L/R bottom).
-                background: `linear-gradient(to top, ${shellColor} 0%, ${shellColor} 24%, color-mix(in oklab, ${shellColor} 38%, transparent) 48%, transparent 74%)`,
-              }}
-              aria-hidden
-            />
-          </>
+          <div
+            className="pointer-events-none absolute inset-0"
+            style={{
+              borderRadius: BENTO_INNER_MEDIA_RADIUS,
+              background: imageFadeGradient,
+            }}
+            aria-hidden
+          />
         )}
 
         <div
           className={
             isCompact
-              ? 'relative z-10 flex h-full min-h-0 flex-col justify-end gap-1.5 p-2.5 text-white sm:gap-2 sm:p-3'
-              : 'relative z-10 flex h-full min-h-0 flex-col justify-end gap-4 p-5 text-white sm:p-7'
+              ? 'relative z-10 flex h-full min-h-0 flex-col justify-end gap-1.5 p-2.5 sm:gap-2 sm:p-3'
+              : 'relative z-10 flex h-full min-h-0 flex-col justify-end gap-3 p-4 sm:gap-3 sm:p-5'
           }
+          data-bento-text-themed="leonardo"
         >
-          <div className={isCompact ? 'space-y-0.5' : 'space-y-1'}>
+          <div className={isCompact ? 'space-y-0.5' : 'space-y-0.5'}>
             <p
               className={
                 isCompact
-                  ? 'text-[0.6rem] font-semibold uppercase tracking-[0.18em] text-white/90'
-                  : 'text-xs font-semibold uppercase tracking-[0.25em] text-white/90'
+                  ? 'text-[0.6rem] font-semibold uppercase tracking-[0.18em]'
+                  : 'text-[0.65rem] font-semibold uppercase tracking-[0.2em] sm:text-[0.7rem]'
               }
+              style={{ color: footerColors.creator }}
             >
               {eyebrow}
             </p>
-            <h2 className={`w-full min-w-0 text-balance font-bold tracking-tight ${headlineClass}`}>
+            <h2
+              className={`w-full min-w-0 text-balance font-bold tracking-tight ${headlineClass}`}
+              style={{ color: footerColors.product }}
+            >
               {title}
             </h2>
             {subline ? (
               <p
                 className={
                   isCompact
-                    ? 'w-full min-w-0 text-pretty text-[0.65rem] font-medium leading-snug text-white/85 line-clamp-2 [overflow-wrap:anywhere]'
-                    : 'w-full min-w-0 text-pretty text-xs font-medium leading-snug text-white/85 sm:text-sm max-sm:line-clamp-2 [overflow-wrap:anywhere]'
+                    ? 'w-full min-w-0 text-pretty text-[0.65rem] font-medium leading-snug opacity-90 line-clamp-2 [overflow-wrap:anywhere]'
+                    : 'w-full min-w-0 text-pretty text-[0.7rem] font-medium leading-snug opacity-90 sm:text-xs max-sm:line-clamp-2 [overflow-wrap:anywhere]'
                 }
+                style={{ color: footerColors.creator }}
               >
                 {subline}
               </p>

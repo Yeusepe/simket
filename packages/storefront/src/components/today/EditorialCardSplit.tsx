@@ -17,6 +17,9 @@ export interface EditorialCardSplitProps {
 }
 
 export function EditorialCardSplit({ item }: EditorialCardSplitProps) {
+  const accent = item.previewColor ?? null;
+  const accentBorder = accent ? 'border-l-4 border-solid' : '';
+
   return (
     <a
       href={getEditorialStoryHref(item.slug)}
@@ -27,7 +30,8 @@ export function EditorialCardSplit({ item }: EditorialCardSplitProps) {
         role="article"
         data-testid="editorial-card"
         data-editorial-size="default"
-        className={`flex flex-col ${EDITORIAL_CARD_SHELL_CLASSNAME}`}
+        className={`flex flex-col ${EDITORIAL_CARD_SHELL_CLASSNAME} ${accentBorder}`}
+        style={accent ? { borderLeftColor: accent } : undefined}
       >
         <SplitMediaCard
           className="min-h-0 flex-1"

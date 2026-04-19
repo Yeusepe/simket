@@ -253,10 +253,39 @@ function isLightSurface(hex: string): boolean {
   return relativeLuminance(hex) >= 0.45;
 }
 
+/** Linear RGB lerp between two #RRGGBB colors (shell is normalized before call). */
+function mixHexRgb(a: string, b: string, t: number): string {
+  const parse = (hex: string): [number, number, number] | null => {
+    const h = hex.replace('#', '');
+    if (h.length !== 6) {
+      return null;
+    }
+    return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)];
+  };
+  const A = parse(a);
+  const B = parse(b);
+  if (!A || !B) {
+    return a;
+  }
+  const o = A.map((c, i) => Math.round(c + (B[i]! - c) * t)) as [number, number, number];
+  return `#${o.map((c) => Math.min(255, Math.max(0, c)).toString(16).padStart(2, '0')).join('')}`;
+}
+
+/**
+ * Effective background for contrast math: copy sits on a **gradient over a photo**, not on flat shell.
+ * Blend shell toward a dark anchor on light frames (busy imagery reads darker) and toward light on dark frames.
+ */
+function effectiveSpotlightReadingBackground(shell: string): string {
+  if (isLightSurface(shell)) {
+    return mixHexRgb(shell, '#0f172a', 0.48);
+  }
+  return mixHexRgb(shell, '#e2e8f0', 0.36);
+}
+
 /**
  * Generate WCAG-aware foreground and CTA colors for the bento spotlight footer
  * using [@adobe/leonardo-contrast-colors](https://github.com/adobe/leonardo) —
- * contrast vs the shell color, then a second pass for the pill label vs the chip.
+ * contrast vs a **reading surface** (shell blended for photo + gradient), then a second pass for the pill label vs the chip.
  *
  * External references:
  * - https://github.com/adobe/leonardo/blob/main/packages/contrast-colors/README.md
@@ -272,10 +301,11 @@ export function createBentoSpotlightFooterColors(shellColor: string): BentoSpotl
   try {
     const shell = normalizeShellHex(shellColor);
     const shellLight = isLightSurface(shell);
+    const readingBg = effectiveSpotlightReadingBackground(shell) as CssColor;
 
     const shellBg = new BackgroundColor({
       name: 'shell',
-      colorKeys: [shell],
+      colorKeys: [readingBg],
       ratios: [1],
       colorSpace: 'LAB',
     });
@@ -283,7 +313,8 @@ export function createBentoSpotlightFooterColors(shellColor: string): BentoSpotl
     const ink = new Color({
       name: 'ink',
       colorKeys: ['#0f172a', '#f8fafc', '#64748b'] as CssColor[],
-      ratios: { product: 4.5, creator: 3 },
+      // Slightly higher targets — real backdrop is noisier than flat hex.
+      ratios: { product: 5.5, creator: 4 },
       colorSpace: 'LAB',
     });
 

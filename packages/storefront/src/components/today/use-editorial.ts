@@ -13,6 +13,7 @@
  *   - packages/storefront/src/components/today/use-editorial.test.ts
  */
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { mockPreviewColorForEditorialSlug } from '../../mock-data';
 import type { EditorialItem, EditorialSection, UseEditorialResult } from './today-types';
 import { TODAY_LAYOUTS } from './today-types';
 
@@ -36,6 +37,8 @@ type RawItem = {
   readonly publishedAt: string;
   readonly slug: string;
   readonly tags: readonly string[];
+  /** Optional dev / CMS accent (hex). Falls back to mock lookup by slug when absent. */
+  readonly previewColor?: string;
 };
 
 type RawSection = {
@@ -98,7 +101,8 @@ function isRawItem(value: unknown): value is RawItem {
     (value.hideSpotlightCta === undefined || typeof value.hideSpotlightCta === 'boolean') &&
     isString(value.publishedAt) &&
     isString(value.slug) &&
-    isStringArray(value.tags)
+    isStringArray(value.tags) &&
+    (value.previewColor === undefined || isString(value.previewColor))
   );
 }
 
@@ -171,6 +175,8 @@ async function fetchJson<T>(
 }
 
 function mapItem(item: RawItem): EditorialItem {
+  const previewColor =
+    item.previewColor ?? mockPreviewColorForEditorialSlug(item.slug) ?? undefined;
   return {
     id: item.id,
     title: item.title,
@@ -189,6 +195,7 @@ function mapItem(item: RawItem): EditorialItem {
     publishedAt: item.publishedAt,
     slug: item.slug,
     tags: item.tags,
+    ...(previewColor ? { previewColor } : {}),
   };
 }
 

@@ -25,6 +25,7 @@ export function BentoTodayHero({ heroSection, picksSection, shellColor, onHeroRe
   const heroItem = heroSection.items[0]!;
   const picks = picksSection.items.slice(0, 4);
   const pickShell = shellColor ?? DEFAULT_BENTO_SHELL_COLOR;
+  const heroShell = heroItem.previewColor ?? shellColor ?? DEFAULT_BENTO_SHELL_COLOR;
 
   return (
     <div data-testid="today-layout-bento" className="space-y-4">
@@ -33,13 +34,16 @@ export function BentoTodayHero({ heroSection, picksSection, shellColor, onHeroRe
         <p className="text-sm text-default-500">{picksSection.name}</p>
       </header>
 
-      <div className="flex flex-col gap-4 lg:aspect-[2/1] lg:w-full lg:min-h-0 lg:max-h-[min(85vh,920px)] lg:grid lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)] lg:grid-rows-2 lg:gap-3">
-        <div className="min-h-0 w-full aspect-square lg:row-span-2 lg:aspect-auto lg:h-full">
+      {/*
+        4×2 grid on lg: featured spans 2×2, picks are four equal squares. Container is 2:1 so every cell stays square.
+      */}
+      <div className="flex w-full max-w-4xl flex-col gap-4 lg:grid lg:aspect-[2/1] lg:min-h-0 lg:grid-cols-4 lg:grid-rows-2 lg:gap-3">
+        <div className="aspect-square min-h-0 min-w-0 w-full lg:col-span-2 lg:row-span-2 lg:aspect-auto lg:h-full">
           <HeroBanner
             item={heroItem}
             sectionName={heroSection.name}
             variant="bento"
-            shellColor={shellColor}
+            shellColor={heroShell}
             onReadMore={onHeroReadMore}
           />
         </div>
@@ -50,9 +54,12 @@ export function BentoTodayHero({ heroSection, picksSection, shellColor, onHeroRe
             picksSection.name,
           );
           return (
-            <div key={item.id} className="min-h-0 min-w-0 aspect-square lg:aspect-auto lg:h-full">
+            <div
+              key={item.id}
+              className="aspect-square min-h-0 min-w-0 w-full lg:aspect-auto lg:h-full"
+            >
               <BentoHeroFrame
-                shellColor={pickShell}
+                shellColor={item.previewColor ?? pickShell}
                 heroImage={item.heroImage}
                 heroImageAlt={item.title}
                 eyebrow={bento.eyebrow}

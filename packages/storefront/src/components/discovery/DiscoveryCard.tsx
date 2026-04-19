@@ -25,13 +25,22 @@ export interface DiscoveryCardProps {
 
 export function DiscoveryCard({ item }: DiscoveryCardProps) {
   const addItem = useCartState((state) => state.addItem);
+  const accent = item.previewColor ?? null;
 
   return (
     <Card
       data-discovery-size="medium"
-      className="flex h-full min-h-0 flex-col overflow-hidden"
+      className={`flex h-full min-h-0 flex-col overflow-hidden ${accent ? 'border-l-4 border-solid' : ''}`}
+      style={accent ? { borderLeftColor: accent } : undefined}
     >
-      <div className="aspect-square shrink-0 overflow-hidden bg-muted">
+      <div
+        className="aspect-square shrink-0 overflow-hidden bg-muted"
+        style={
+          !item.imageUrl && accent
+            ? { background: `linear-gradient(145deg, color-mix(in srgb, ${accent} 42%, transparent), color-mix(in srgb, ${accent} 12%, transparent))` }
+            : undefined
+        }
+      >
         {item.imageUrl ? (
           <img
             src={item.imageUrl}

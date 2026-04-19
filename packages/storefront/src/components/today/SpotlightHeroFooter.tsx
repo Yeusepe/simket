@@ -64,9 +64,9 @@ export function SpotlightHeroFooter({
       data-spotlight-density={compact ? 'compact' : 'default'}
       data-spotlight-themed={footerColors ? 'leonardo' : 'default'}
     >
-      <div className={`flex min-w-0 items-center ${compact ? 'gap-1.5' : 'gap-3'}`}>
+      <div className={`flex min-w-0 items-center ${compact ? 'gap-1.5' : 'gap-2'}`}>
         <div
-          className={`shrink-0 overflow-hidden rounded-md ${compact ? 'size-8' : 'size-11'}`}
+          className={`shrink-0 overflow-hidden rounded-md ${compact ? 'size-8' : 'size-9'}`}
         >
           <img
             src={thumbnailSrc}
@@ -78,18 +78,18 @@ export function SpotlightHeroFooter({
         </div>
 
         <div
-          className={`flex min-h-0 min-w-0 flex-1 items-center ${compact ? 'gap-2' : 'max-sm:gap-4 gap-2'}`}
+          className={`flex min-h-0 min-w-0 flex-1 items-center ${compact ? 'gap-2' : 'max-sm:gap-3 gap-2'}`}
         >
           <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-0.5">
             <p
-              className={`min-w-0 text-pretty font-medium leading-tight [overflow-wrap:anywhere] ${footerColors ? '' : 'text-white'} ${compact ? 'truncate whitespace-nowrap text-[0.7rem]' : 'max-sm:truncate max-sm:whitespace-nowrap sm:whitespace-normal sm:line-clamp-2 sm:break-words text-sm'}`}
+              className={`min-w-0 text-pretty font-medium leading-tight [overflow-wrap:anywhere] ${footerColors ? '' : 'text-white'} ${compact ? 'truncate whitespace-nowrap text-[0.7rem]' : 'max-sm:truncate max-sm:whitespace-nowrap sm:whitespace-normal sm:line-clamp-2 sm:break-words text-xs'}`}
               style={footerColors ? { color: footerColors.product } : undefined}
             >
               {productName}
             </p>
             <Link
               href={storyHref}
-              className={`min-w-0 max-w-full text-pretty leading-snug underline underline-offset-2 [overflow-wrap:anywhere] ${footerColors ? 'decoration-[color-mix(in_srgb,currentColor_55%,transparent)]' : 'text-white/95 decoration-white/60'} ${compact ? 'line-clamp-1 text-[0.6rem]' : 'line-clamp-2 break-words text-xs'}`}
+              className={`min-w-0 max-w-full text-pretty leading-snug underline underline-offset-2 [overflow-wrap:anywhere] ${footerColors ? 'decoration-[color-mix(in_srgb,currentColor_55%,transparent)]' : 'text-white/95 decoration-white/60'} ${compact ? 'line-clamp-1 text-[0.6rem]' : 'line-clamp-2 break-words text-[0.65rem] sm:text-[0.7rem]'}`}
               style={footerColors ? { color: footerColors.creator } : undefined}
             >
               {creatorName}
@@ -103,10 +103,10 @@ export function SpotlightHeroFooter({
                 footerColors
                   ? compact
                     ? 'h-6 min-h-6 shrink-0 rounded-full border-0 px-2 text-[0.6rem] leading-none shadow-none'
-                    : 'h-8 shrink-0 rounded-full border-0 px-4 shadow-none max-sm:h-7 max-sm:min-h-7 max-sm:px-2.5 max-sm:text-[0.6875rem] max-sm:leading-none sm:min-h-8'
+                    : 'h-7 min-h-7 shrink-0 rounded-full border-0 px-3 text-[0.7rem] leading-none shadow-none max-sm:h-6 max-sm:min-h-6 max-sm:px-2 max-sm:text-[0.65rem] sm:text-xs'
                   : compact
                     ? 'h-6 min-h-6 shrink-0 rounded-full bg-white px-2 text-[0.6rem] leading-none text-default-foreground shadow-none'
-                    : 'h-8 shrink-0 rounded-full bg-white px-4 text-default-foreground shadow-none max-sm:h-7 max-sm:min-h-7 max-sm:px-2.5 max-sm:text-[0.6875rem] max-sm:leading-none sm:min-h-8'
+                    : 'h-7 min-h-7 shrink-0 rounded-full bg-white px-3 text-[0.7rem] leading-none text-default-foreground shadow-none max-sm:h-6 max-sm:min-h-6 max-sm:px-2 max-sm:text-[0.65rem] sm:text-xs'
               }
               style={
                 footerColors

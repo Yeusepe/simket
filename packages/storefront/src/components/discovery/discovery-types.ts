@@ -31,6 +31,10 @@ export interface DiscoveryFeedItem {
   readonly score: number;
   readonly source: string;
   readonly variantId: string;
+  /**
+   * Dev / mock only: CSS hex for card accent (e.g. left stripe). Production may omit.
+   */
+  readonly previewColor?: string | null;
 }
 
 export interface DiscoveryPage {

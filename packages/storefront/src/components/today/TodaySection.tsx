@@ -17,6 +17,7 @@ import { BentoTodayHero } from './BentoTodayHero';
 import { EditorialCardGrid } from './EditorialCardGrid';
 import { HeroBanner } from './HeroBanner';
 import { HorizontalScroll } from './HorizontalScroll';
+import { TrendingProductsSection } from './TrendingProductsSection';
 import { useEditorial } from './use-editorial';
 import type { EditorialSection as TodayEditorialSection } from './today-types';
 
@@ -52,6 +53,15 @@ function planEditorialSections(sections: readonly TodayEditorialSection[]): read
 }
 
 function renderSection(section: TodayEditorialSection) {
+  /** Catalog products — editorial `items` are ignored (Payload may still send a placeholder list). */
+  if (section.layout === 'horizontal-scroll' && section.slug === 'trending') {
+    return (
+      <div data-testid="today-layout-trending-products" key={section.id}>
+        <TrendingProductsSection title={section.name} />
+      </div>
+    );
+  }
+
   if (section.items.length === 0) {
     return null;
   }
@@ -88,9 +98,8 @@ function LoadingSkeleton() {
   return (
     <div className="space-y-6">
       <div data-testid="today-loading-skeleton">
-        <Skeleton className="mb-4 h-8 w-48 rounded-xl" />
-        <div className="flex flex-col gap-4 lg:aspect-[2/1] lg:max-h-[min(85vh,920px)] lg:grid lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)] lg:grid-rows-2 lg:gap-3">
-          <Skeleton className="aspect-square w-full rounded-[2rem] lg:row-span-2 lg:aspect-auto lg:h-full" />
+        <div className="flex w-full max-w-4xl flex-col gap-4 lg:grid lg:aspect-[2/1] lg:grid-cols-4 lg:grid-rows-2 lg:gap-3">
+          <Skeleton className="aspect-square w-full rounded-[2rem] lg:col-span-2 lg:row-span-2 lg:aspect-auto lg:h-full" />
           {Array.from({ length: 4 }, (_, index) => (
             <Skeleton key={index} className="aspect-square w-full rounded-3xl lg:aspect-auto lg:h-full" />
           ))}
@@ -127,20 +136,15 @@ export function TodaySection({ bentoShellColor }: TodaySectionProps = {}) {
   } = useEditorial();
   const visibleSections = [...sections]
     .sort((left, right) => left.sortOrder - right.sortOrder || left.name.localeCompare(right.name))
-    .filter((section) => section.items.length > 0);
+    .filter(
+      (section) =>
+        section.items.length > 0 ||
+        (section.layout === 'horizontal-scroll' && section.slug === 'trending'),
+    );
   const renderPlan = planEditorialSections(visibleSections);
 
   return (
-    <section aria-labelledby="today-heading" className="space-y-8">
-      <div className="space-y-2">
-        <h2 id="today-heading" className="text-3xl font-bold tracking-tight">
-          Today
-        </h2>
-        <p className="text-sm text-default-500">
-          Editorial picks curated by the Simket content team.
-        </p>
-      </div>
-
+    <section aria-label="Today" className="space-y-8">
       {hasFreshContent && (
         <div className="flex items-center justify-between gap-4 rounded-2xl border border-primary/20 bg-primary-50 px-4 py-3 text-primary-700">
           <p className="text-sm font-medium">New content available.</p>

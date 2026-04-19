@@ -19,11 +19,12 @@ import { CrowdSecGuard } from './crowdsec.guard.js';
 const crowdSecBouncerProvider: Provider = {
   provide: CrowdSecBouncer,
   useFactory: () => {
+    const enabled = process.env['CROWDSEC_ENABLED'];
     const lapiUrl = process.env['CROWDSEC_LAPI_URL'];
     const apiKey = process.env['CROWDSEC_API_KEY'];
 
-    if (!lapiUrl || !apiKey) {
-      // In dev, CrowdSec is optional — return a pass-through bouncer
+    if (enabled === 'false' || !lapiUrl || !apiKey) {
+      // CrowdSec disabled or unconfigured — pass-through bouncer
       return {
         checkIp: async () => 'allow' as const,
         shutdown: async () => {},

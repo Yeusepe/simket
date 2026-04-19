@@ -10,6 +10,12 @@
  *   - Type-only module; validated through component tests
  */
 
+/** Optional person line on product cards (primary creator + collaborators). */
+export interface ProductCreatorRef {
+  readonly name: string;
+  readonly avatarUrl?: string | null;
+}
+
 /** Product summary for listing cards — matches Vendure SearchResult shape. */
 export interface ProductListItem {
   readonly id: string;
@@ -24,8 +30,20 @@ export interface ProductListItem {
   readonly heroImageUrl: string | null;
   readonly heroTransparentUrl: string | null;
   readonly creatorName: string;
+  /** Primary seller avatar when the API provides it (listing / trending). */
+  readonly creatorAvatarUrl?: string | null;
+  /** Additional collaborators (excludes the primary `creatorName`). */
+  readonly collaborators?: readonly ProductCreatorRef[];
   readonly tags: readonly string[];
   readonly categorySlug: string | null;
+  /** Average 0–5 when the listing API provides review aggregates. */
+  readonly averageRating?: number | null;
+  readonly reviewCount?: number | null;
+  /**
+   * Dev / mock only: CSS color (e.g. `#7c3aed`) for listing shell or accent stripes.
+   * Omitted in production catalog APIs unless explicitly modeled.
+   */
+  readonly previewColor?: string | null;
 }
 
 /** Paginated list response — matches Vendure PaginatedList shape. */

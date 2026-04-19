@@ -54,6 +54,10 @@ export interface EditorialItem {
   readonly publishedAt: string;
   readonly slug: string;
   readonly tags: readonly string[];
+  /**
+   * Dev / mock only: CSS color for bento shell or card accent. Production may omit.
+   */
+  readonly previewColor?: string | null;
 }
 
 export interface UseEditorialResult {
