@@ -1,71 +1,28 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import * as http from 'node:http';
-import { CrowdSecBouncer, crowdSecMiddleware } from './crowdsec.js';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { BrokenCircuitError } from '../resilience/resilience.js';
+
+const getIpRemediationMock = vi.fn();
+
+vi.mock('@crowdsec/nodejs-bouncer', () => ({
+  CrowdSecBouncer: class MockCrowdSecBouncerSDK {
+    constructor(_options: unknown) {}
+
+    getIpRemediation(ip: string) {
+      return getIpRemediationMock(ip);
+    }
+  },
+}));
+
+import { CrowdSecBouncer, crowdSecMiddleware } from './crowdsec.js';
+
+const passthroughPolicy = {
+  execute<T>(fn: () => Promise<T>) {
+    return fn();
+  },
+};
 
 /* ---------- helpers ---------- */
 
-/**
- * Proper CrowdSec LAPI decision object format.
- * The @crowdsec/nodejs-bouncer SDK requires these fields.
- * Ref: https://docs.crowdsec.net/docs/cscli/cscli_decisions_list/
- */
-interface LapiDecision {
-  id: number;
-  origin: string;
-  type: string;
-  scope: string;
-  value: string;
-  duration: string;
-  scenario: string;
-}
-
-/** Minimal fake LAPI server with proper CrowdSec response format. */
-function createFakeLapi(decisions: Record<string, LapiDecision[]>): http.Server {
-  return http.createServer((req, res) => {
-    const url = new URL(req.url!, `http://localhost`);
-
-    // SDK sends HEAD /v1/decisions to check connectivity
-    if (req.method === 'HEAD') {
-      res.writeHead(200);
-      res.end();
-      return;
-    }
-
-    const ip = url.searchParams.get('ip');
-    res.setHeader('Content-Type', 'application/json');
-
-    if (!ip || !decisions[ip]) {
-      // CrowdSec returns null (no decision) for clean IPs
-      res.writeHead(200);
-      res.end('null');
-      return;
-    }
-
-    res.writeHead(200);
-    res.end(JSON.stringify(decisions[ip]));
-  });
-}
-
-function listenOnRandomPort(server: http.Server): Promise<number> {
-  return new Promise((resolve) => {
-    server.listen(0, '127.0.0.1', () => {
-      const addr = server.address();
-      if (addr && typeof addr === 'object') {
-        resolve(addr.port);
-      }
-    });
-  });
-}
-
-function closeServer(server: http.Server): Promise<void> {
-  return new Promise((resolve) => {
-    server.closeAllConnections?.();
-    server.close(() => resolve());
-  });
-}
-
-/** Minimal Express-compatible request/response stubs for middleware tests. */
 function createMockReq(
   ip: string,
   headers: Record<string, string> = {},
@@ -102,95 +59,89 @@ function createMockRes(): {
   return res;
 }
 
-/** Helper to create a proper LAPI decision for the SDK. */
-function makeBanDecision(ip: string): LapiDecision {
-  return { id: 1, origin: 'cscli', type: 'ban', scope: 'ip', value: ip, duration: '4h', scenario: 'manual' };
-}
-
-function makeCaptchaDecision(ip: string): LapiDecision {
-  return { id: 2, origin: 'cscli', type: 'captcha', scope: 'ip', value: ip, duration: '4h', scenario: 'manual' };
-}
-
-/* ---------- CrowdSecBouncer tests ---------- */
-
 describe('CrowdSecBouncer', () => {
-  let server: http.Server;
-  let port: number;
-
-  beforeAll(async () => {
-    server = createFakeLapi({
-      '10.0.0.1': [makeBanDecision('10.0.0.1')],
-      '10.0.0.2': [makeCaptchaDecision('10.0.0.2')],
-      // 10.0.0.3 is clean — no entry
-    });
-    port = await listenOnRandomPort(server);
-  });
-
-  afterAll(async () => {
-    await closeServer(server);
+  beforeEach(() => {
+    getIpRemediationMock.mockReset();
   });
 
   it('should return "allow" for a clean IP', async () => {
+    getIpRemediationMock.mockResolvedValue({ remediation: 'bypass' });
+
     const bouncer = new CrowdSecBouncer({
-      lapiUrl: `http://127.0.0.1:${port}`,
+      lapiUrl: 'http://127.0.0.1:8080',
       apiKey: 'test-key',
+      policy: passthroughPolicy,
     });
-    const decision = await bouncer.checkIp('10.0.0.3');
-    expect(decision).toBe('allow');
+
+    await expect(bouncer.checkIp('10.0.0.3')).resolves.toBe('allow');
+    expect(getIpRemediationMock).toHaveBeenCalledWith('10.0.0.3');
   });
 
   it('should return "deny" for a banned IP', async () => {
+    getIpRemediationMock.mockResolvedValue({ remediation: 'ban' });
+
     const bouncer = new CrowdSecBouncer({
-      lapiUrl: `http://127.0.0.1:${port}`,
+      lapiUrl: 'http://127.0.0.1:8080',
       apiKey: 'test-key',
+      policy: passthroughPolicy,
     });
-    const decision = await bouncer.checkIp('10.0.0.1');
-    expect(decision).toBe('deny');
+
+    await expect(bouncer.checkIp('10.0.0.1')).resolves.toBe('deny');
   });
 
   it('should return "captcha" for a captcha-flagged IP', async () => {
+    getIpRemediationMock.mockResolvedValue({ remediation: 'captcha' });
+
     const bouncer = new CrowdSecBouncer({
-      lapiUrl: `http://127.0.0.1:${port}`,
+      lapiUrl: 'http://127.0.0.1:8080',
       apiKey: 'test-key',
+      policy: passthroughPolicy,
     });
-    const decision = await bouncer.checkIp('10.0.0.2');
-    expect(decision).toBe('captcha');
+
+    await expect(bouncer.checkIp('10.0.0.2')).resolves.toBe('captcha');
   });
 
   it('should fail-closed (deny) when LAPI is unreachable and fallbackMode is deny-all', async () => {
+    getIpRemediationMock.mockRejectedValue(new Error('LAPI unreachable'));
+
     const bouncer = new CrowdSecBouncer({
-      lapiUrl: 'http://127.0.0.1:1', // unreachable port
+      lapiUrl: 'http://127.0.0.1:8080',
       apiKey: 'test-key',
       fallbackMode: 'deny-all',
+      policy: passthroughPolicy,
     });
-    const decision = await bouncer.checkIp('99.99.99.99');
-    expect(decision).toBe('deny');
+
+    await expect(bouncer.checkIp('99.99.99.99')).resolves.toBe('deny');
   });
 
   it('should fall back to rate-limit mode when LAPI is unreachable', async () => {
+    getIpRemediationMock.mockRejectedValue(new Error('LAPI unreachable'));
+
     const bouncer = new CrowdSecBouncer({
-      lapiUrl: 'http://127.0.0.1:1', // unreachable port
+      lapiUrl: 'http://127.0.0.1:8080',
       apiKey: 'test-key',
       fallbackMode: 'rate-limit',
+      policy: passthroughPolicy,
     });
-    // First calls within rate limit should be allowed
-    const decision = await bouncer.checkIp('88.88.88.88');
-    expect(decision).toBe('allow');
+
+    await expect(bouncer.checkIp('88.88.88.88')).resolves.toBe('allow');
   });
 
   it('should default to deny-all fallbackMode', async () => {
+    getIpRemediationMock.mockRejectedValue(new Error('LAPI unreachable'));
+
     const bouncer = new CrowdSecBouncer({
-      lapiUrl: 'http://127.0.0.1:1',
+      lapiUrl: 'http://127.0.0.1:8080',
       apiKey: 'test-key',
-      // no fallbackMode specified
+      policy: passthroughPolicy,
     });
-    const decision = await bouncer.checkIp('77.77.77.77');
-    expect(decision).toBe('deny');
+
+    await expect(bouncer.checkIp('77.77.77.77')).resolves.toBe('deny');
   });
 
   it('should deny immediately when the CrowdSec circuit breaker is open', async () => {
     const bouncer = new CrowdSecBouncer({
-      lapiUrl: `http://127.0.0.1:${port}`,
+      lapiUrl: 'http://127.0.0.1:8080',
       apiKey: 'test-key',
       fallbackMode: 'rate-limit',
       policy: {
@@ -204,27 +155,20 @@ describe('CrowdSecBouncer', () => {
   });
 });
 
-/* ---------- Middleware tests ---------- */
-
 describe('crowdSecMiddleware', () => {
-  let server: http.Server;
-  let port: number;
-
-  beforeAll(async () => {
-    server = createFakeLapi({
-      '10.0.0.1': [makeBanDecision('10.0.0.1')],
-    });
-    port = await listenOnRandomPort(server);
-  });
-
-  afterAll(async () => {
-    await closeServer(server);
+  beforeEach(() => {
+    getIpRemediationMock.mockReset();
   });
 
   it('should pass through for allowed IPs', async () => {
+    getIpRemediationMock.mockImplementation(async (ip: string) => ({
+      remediation: ip === '10.0.0.1' ? 'ban' : 'bypass',
+    }));
+
     const bouncer = new CrowdSecBouncer({
-      lapiUrl: `http://127.0.0.1:${port}`,
+      lapiUrl: 'http://127.0.0.1:8080',
       apiKey: 'test-key',
+      policy: passthroughPolicy,
     });
     const middleware = crowdSecMiddleware(bouncer);
 
@@ -245,9 +189,12 @@ describe('crowdSecMiddleware', () => {
   });
 
   it('should return 403 for denied IPs', async () => {
+    getIpRemediationMock.mockResolvedValue({ remediation: 'ban' });
+
     const bouncer = new CrowdSecBouncer({
-      lapiUrl: `http://127.0.0.1:${port}`,
+      lapiUrl: 'http://127.0.0.1:8080',
       apiKey: 'test-key',
+      policy: passthroughPolicy,
     });
     const middleware = crowdSecMiddleware(bouncer);
 
@@ -269,13 +216,17 @@ describe('crowdSecMiddleware', () => {
   });
 
   it('should extract IP from X-Forwarded-For header first', async () => {
+    getIpRemediationMock.mockImplementation(async (ip: string) => ({
+      remediation: ip === '10.0.0.1' ? 'ban' : 'bypass',
+    }));
+
     const bouncer = new CrowdSecBouncer({
-      lapiUrl: `http://127.0.0.1:${port}`,
+      lapiUrl: 'http://127.0.0.1:8080',
       apiKey: 'test-key',
+      policy: passthroughPolicy,
     });
     const middleware = crowdSecMiddleware(bouncer);
 
-    // req.ip says clean, but X-Forwarded-For says banned
     const req = createMockReq('10.0.0.3', { 'x-forwarded-for': '10.0.0.1, 172.16.0.1' });
     const res = createMockRes();
     let nextCalled = false;
@@ -293,9 +244,14 @@ describe('crowdSecMiddleware', () => {
   });
 
   it('should extract IP from X-Real-IP header as second priority', async () => {
+    getIpRemediationMock.mockImplementation(async (ip: string) => ({
+      remediation: ip === '10.0.0.1' ? 'ban' : 'bypass',
+    }));
+
     const bouncer = new CrowdSecBouncer({
-      lapiUrl: `http://127.0.0.1:${port}`,
+      lapiUrl: 'http://127.0.0.1:8080',
       apiKey: 'test-key',
+      policy: passthroughPolicy,
     });
     const middleware = crowdSecMiddleware(bouncer);
 
@@ -316,9 +272,12 @@ describe('crowdSecMiddleware', () => {
   });
 
   it('should set X-CrowdSec-Decision response header', async () => {
+    getIpRemediationMock.mockResolvedValue({ remediation: 'bypass' });
+
     const bouncer = new CrowdSecBouncer({
-      lapiUrl: `http://127.0.0.1:${port}`,
+      lapiUrl: 'http://127.0.0.1:8080',
       apiKey: 'test-key',
+      policy: passthroughPolicy,
     });
     const middleware = crowdSecMiddleware(bouncer);
 
