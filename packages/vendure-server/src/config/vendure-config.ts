@@ -1,14 +1,18 @@
 import { VendureConfig } from '@vendure/core';
 import path from 'node:path';
 import { AbTestingPlugin } from '../plugins/ab-testing/index.js';
-import { NotificationPlugin } from '../plugins/notification/index.js';
-import { PlatformFeePlugin } from '../plugins/platform-fee/index.js';
-import { PurchaseParityPlugin } from '../plugins/purchase-parity/index.js';
-import { ProductMetadataPlugin } from '../plugins/product-metadata/index.js';
-import { GiftPlugin } from '../plugins/gifts/index.js';
-import { ReportingPlugin } from '../plugins/reporting/index.js';
+import { BundlePlugin } from '../plugins/bundle/index.js';
+import { CatalogPlugin } from '../plugins/catalog/index.js';
 import { CheckoutPlugin } from '../plugins/checkout/index.js';
+import { DependencyPlugin } from '../plugins/dependency/index.js';
+import { GiftPlugin } from '../plugins/gifts/index.js';
+import { NotificationPlugin } from '../plugins/notification/index.js';
 import { PaymentWebhookPlugin } from '../plugins/payment-webhook/index.js';
+import { PlatformFeePlugin } from '../plugins/platform-fee/index.js';
+import { ProductMetadataPlugin } from '../plugins/product-metadata/index.js';
+import { PurchaseParityPlugin } from '../plugins/purchase-parity/index.js';
+import { ReportingPlugin } from '../plugins/reporting/index.js';
+import { SearchSyncPlugin } from '../plugins/search/index.js';
 import { SettlementPlugin } from '../plugins/settlement/index.js';
 import { WishlistPlugin } from '../plugins/wishlist/index.js';
 
@@ -62,5 +66,21 @@ export const config: VendureConfig = {
     paymentMethodHandlers: [],
   },
 
-  plugins: [NotificationPlugin, WishlistPlugin, AbTestingPlugin, PlatformFeePlugin, PurchaseParityPlugin, ProductMetadataPlugin, GiftPlugin, ReportingPlugin, CheckoutPlugin, PaymentWebhookPlugin, SettlementPlugin],
+  plugins: [
+    CatalogPlugin,
+    BundlePlugin,
+    DependencyPlugin,
+    SearchSyncPlugin,
+    NotificationPlugin,
+    WishlistPlugin,
+    AbTestingPlugin,
+    PlatformFeePlugin,
+    PurchaseParityPlugin,
+    ProductMetadataPlugin,
+    GiftPlugin,
+    ReportingPlugin,
+    CheckoutPlugin,
+    PaymentWebhookPlugin,
+    SettlementPlugin,
+  ],
 };
