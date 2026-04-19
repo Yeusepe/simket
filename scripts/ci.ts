@@ -58,13 +58,13 @@ function run(name: string, cmd: string, opts?: { allowFail?: boolean }): void {
 
 // ── Pipeline steps ──
 
-run('Format check', fixMode ? 'npx pnpm@9.15.4 format' : 'npx pnpm@9.15.4 format:check');
+run('Format check', fixMode ? 'bun run format' : 'bun run format:check');
 
-run('Build', 'npx pnpm@9.15.4 build');
+run('Build', 'bun run build');
 
-run('Unit tests', 'npx pnpm@9.15.4 test');
+run('Unit tests', 'bun run test');
 
-run('Security audit', 'npx pnpm@9.15.4 audit --audit-level=high', { allowFail: true });
+run('Security audit', 'bun pm audit --audit-level=high', { allowFail: true });
 
 if (!skipDocker) {
   run('Docker Compose health', 'docker compose ps --format json', { allowFail: true });

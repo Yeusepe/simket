@@ -20,7 +20,6 @@ concurrency:
 
 env:
   NODE_VERSION: '22'
-  PNPM_VERSION: '9.15.4'
 
 jobs:
   ci:
@@ -57,40 +56,37 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: ${{ env.PNPM_VERSION }}
+      - name: Setup bun
+        uses: oven-sh/setup-bun@v2
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: pnpm
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: bun install --frozen-lockfile
 
       - name: Build shared packages
-        run: pnpm turbo run build --filter=@simket/shared
+        run: bun run turbo run build --filter=@simket/shared
 
       - name: Type check
-        run: pnpm turbo run typecheck
+        run: bun run turbo run typecheck
         continue-on-error: true  # Pre-existing TS errors — will be fixed incrementally
 
       - name: Lint
-        run: pnpm turbo run lint
+        run: bun run turbo run lint
         continue-on-error: true  # ESLint not yet configured in all packages
 
       - name: Unit tests
-        run: pnpm turbo run test
+        run: bun run turbo run test
         env:
           DATABASE_URL: postgres://simket:simket_test@localhost:5432/simket_test
           REDIS_URL: redis://localhost:6379
 
       - name: Build all packages
-        run: pnpm turbo run build
+        run: bun run turbo run build
 
       - name: Format check
-        run: pnpm format:check
+        run: bun run format:check
         continue-on-error: true

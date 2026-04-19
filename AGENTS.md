@@ -320,25 +320,25 @@ Follow this order for every non-documentation-only task:
 
 ```bash
 # Run all tests
-npm test
+bun test
 
 # Run unit tests
-npm run test:unit
+bun run test:unit
 
 # Run integration tests
-npm run test:integration
+bun run test:integration
 
 # Run E2E tests
-npm run test:e2e
+bun run test:e2e
 
 # Run linting
-npm run lint
+bun run lint
 
 # Run type-checking
-npm run typecheck
+bun run typecheck
 
 # Run all checks (tests + lint + typecheck)
-npm run check
+bun run check
 ```
 
 > Note: These commands will be established as the project is scaffolded. Until they exist, the agent must set them up following NestJS/Vitest conventions before writing implementation code.

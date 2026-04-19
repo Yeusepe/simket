@@ -63,7 +63,8 @@
     "sharp": "^0.34.5",
     "stripe": "^22.0.2",
     "svix": "^1.90.0",
-    "typeorm": "^0.3.28"
+    "typeorm": "^0.3.28",
+    "typesense": "^3.0.5"
   },
   "devDependencies": {
     "@types/clamscan": "^2.4.1",
