@@ -84,6 +84,13 @@ jobs:
           DATABASE_URL: postgres://simket:simket_test@localhost:5432/simket_test
           REDIS_URL: redis://localhost:6379
 
+      - name: E2E integration tests (vendure-server)
+        run: cd packages/vendure-server && npx vitest run --config vitest.config.e2e.ts --pool=forks --poolOptions.forks.singleFork=true
+        env:
+          DATABASE_URL: postgres://simket:simket_test@localhost:5432/simket_test
+          REDIS_URL: redis://localhost:6379
+        continue-on-error: true  # E2E tests are new — allow failures while stabilizing
+
       - name: Build all packages
         run: bun run turbo run build
 

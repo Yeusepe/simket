@@ -13,6 +13,7 @@
     "start:worker": "node dist/bootstrap-worker.js",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:e2e": "vitest run --config vitest.config.e2e.ts",
     "lint": "eslint src/",
     "typecheck": "tsc --noEmit",
     "clean": "rimraf dist *.tsbuildinfo",
@@ -71,14 +72,18 @@
     "typesense": "^3.0.5"
   },
   "devDependencies": {
+    "@swc/core": "^1.15.26",
     "@types/clamscan": "^2.4.1",
     "@types/express": "^5.0.6",
     "@types/fluent-ffmpeg": "^2.1.28",
     "@types/node": "^22.0.0",
+    "@vendure/testing": "^3.6.2",
+    "better-sqlite3": "^12.9.0",
     "concurrently": "^9.2.1",
     "rimraf": "^6.0.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.7.0",
+    "unplugin-swc": "^1.5.9",
     "vitest": "^2.1.0"
   }
 }

@@ -1,4 +1,4 @@
-import { VendureConfig } from '@vendure/core';
+import { DefaultSchedulerPlugin, VendureConfig } from '@vendure/core';
 import { BullMQJobQueuePlugin } from '@vendure/job-queue-plugin/package/bullmq/index.js';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -81,6 +81,9 @@ export const config: VendureConfig = {
   },
 
   plugins: [
+    // Scheduler: ensures scheduled tasks run exactly once across all worker instances
+    // https://docs.vendure.io/reference/core-plugins/default-scheduler-plugin/
+    DefaultSchedulerPlugin.init({ defaultTimeout: '60s' }),
     // Job queue: BullMQ (Redis-backed, push-based — no DB polling)
     // https://docs.vendure.io/reference/core-plugins/job-queue-plugin/bull-mqjob-queue-plugin/
     BullMQJobQueuePlugin.init({
