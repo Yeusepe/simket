@@ -25,6 +25,9 @@ type RawItem = {
   readonly heroImage: string;
   readonly heroTransparent?: string;
   readonly author: string;
+  readonly creatorName?: string;
+  readonly productThumbnailUrl?: string;
+  readonly productName?: string;
   readonly publishedAt: string;
   readonly slug: string;
   readonly tags: readonly string[];
@@ -80,6 +83,9 @@ function isRawItem(value: unknown): value is RawItem {
     isString(value.heroImage) &&
     (value.heroTransparent === undefined || isString(value.heroTransparent)) &&
     isString(value.author) &&
+    (value.creatorName === undefined || isString(value.creatorName)) &&
+    (value.productThumbnailUrl === undefined || isString(value.productThumbnailUrl)) &&
+    (value.productName === undefined || isString(value.productName)) &&
     isString(value.publishedAt) &&
     isString(value.slug) &&
     isStringArray(value.tags)
@@ -162,6 +168,9 @@ function mapItem(item: RawItem): EditorialItem {
     heroImage: item.heroImage,
     heroTransparent: item.heroTransparent,
     author: item.author,
+    creatorName: item.creatorName,
+    productThumbnailUrl: item.productThumbnailUrl,
+    productName: item.productName,
     publishedAt: item.publishedAt,
     slug: item.slug,
     tags: item.tags,
@@ -207,6 +216,15 @@ async function loadEditorialState(
   };
 }
 
+function isDevMode(): boolean {
+  try {
+    return (import.meta as ImportMeta & { readonly env?: Record<string, string | undefined> }).env?.DEV === 'true'
+      || (import.meta as ImportMeta & { readonly env?: Record<string, string | undefined> }).env?.MODE === 'development';
+  } catch {
+    return false;
+  }
+}
+
 export function useEditorial(options: UseEditorialOptions = {}): UseEditorialResult {
   const fetcher = useMemo<Fetcher>(
     () => options.fetcher ?? globalThis.fetch.bind(globalThis),
@@ -220,7 +238,21 @@ export function useEditorial(options: UseEditorialOptions = {}): UseEditorialRes
   const [hasFreshContent, setHasFreshContent] = useState(false);
   const [requestVersion, setRequestVersion] = useState(0);
 
+  // In dev mode without a custom fetcher, return mock editorial data immediately
+  const devMode = isDevMode() && !options.fetcher;
   useEffect(() => {
+    if (!devMode) return;
+    import('../../mock-data').then(({ MOCK_EDITORIAL_SECTIONS }) => {
+      setSections(MOCK_EDITORIAL_SECTIONS);
+      setVersion(1);
+      setIsLoading(false);
+    }).catch(() => {
+      setIsLoading(false);
+    });
+  }, [devMode]);
+
+  useEffect(() => {
+    if (devMode) return;
     const abortController = new AbortController();
 
     setIsLoading(true);
@@ -250,9 +282,10 @@ export function useEditorial(options: UseEditorialOptions = {}): UseEditorialRes
     return () => {
       abortController.abort();
     };
-  }, [fetcher, requestVersion]);
+  }, [devMode, fetcher, requestVersion]);
 
   useEffect(() => {
+    if (devMode) return;
     const intervalId = globalThis.setInterval(() => {
       const abortController = new AbortController();
 

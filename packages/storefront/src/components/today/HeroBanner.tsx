@@ -11,11 +11,22 @@
  *   - packages/storefront/src/components/today/HeroBanner.test.tsx
  */
 import { Button, Chip } from '@heroui/react';
+
+import { BentoHeroFrame, DEFAULT_BENTO_SHELL_COLOR } from './BentoHeroFrame';
 import type { EditorialItem } from './today-types';
 
 interface HeroBannerProps {
   readonly item: EditorialItem;
   readonly sectionName?: string;
+  /** `bento` is a square tile without the side depth column (paired with small square picks). */
+  readonly variant?: 'full' | 'bento';
+  /**
+   * Bento only: CSS color for the outer frame and bottom image fade.
+   * Any valid CSS color (hex, rgb, `var(--token)`, `oklch(...)`).
+   */
+  readonly shellColor?: string;
+  /** Bento only: override navigation when "Read more" is pressed. */
+  readonly onReadMore?: () => void;
 }
 
 function formatPublishedDate(value: string): string {
@@ -34,10 +45,41 @@ function navigateToEditorialStory(slug: string): void {
   window.location.assign(getEditorialHref(slug));
 }
 
-export function HeroBanner({ item, sectionName = 'Today' }: HeroBannerProps) {
+export function HeroBanner({
+  item,
+  sectionName = 'Today',
+  variant = 'full',
+  shellColor = DEFAULT_BENTO_SHELL_COLOR,
+  onReadMore,
+}: HeroBannerProps) {
+  const isBento = variant === 'bento';
+
+  if (isBento) {
+    const productName = item.productName ?? item.title;
+    const creatorName = item.creatorName ?? item.author;
+
+    return (
+      <BentoHeroFrame
+        shellColor={shellColor}
+        heroImage={item.heroImage}
+        heroImageAlt={item.title}
+        eyebrow={sectionName}
+        title={item.title}
+        productName={productName}
+        creatorName={creatorName}
+        productThumbnailUrl={item.productThumbnailUrl}
+        storyHref={getEditorialHref(item.slug)}
+        onReadMore={onReadMore}
+        testId="hero-banner"
+        dataVariant="bento"
+      />
+    );
+  }
+
   return (
     <article
       data-testid="hero-banner"
+      data-variant={variant}
       className="grid overflow-hidden rounded-[2rem] border border-divider bg-content1 shadow-xl lg:grid-cols-[minmax(0,1fr)_18rem]"
     >
       <div className="relative min-h-[28rem] overflow-hidden">
@@ -53,9 +95,7 @@ export function HeroBanner({ item, sectionName = 'Today' }: HeroBannerProps) {
             <p className="text-sm font-semibold uppercase tracking-[0.3em] text-white/75">
               {sectionName}
             </p>
-            <h2 className="max-w-3xl text-4xl font-semibold tracking-tight sm:text-5xl">
-              {item.title}
-            </h2>
+            <h2 className="max-w-3xl text-4xl font-semibold tracking-tight sm:text-5xl">{item.title}</h2>
             <p className="max-w-2xl text-sm text-white/80 sm:text-base">{item.excerpt}</p>
           </div>
 

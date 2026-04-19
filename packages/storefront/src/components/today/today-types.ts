@@ -35,6 +35,12 @@ export interface EditorialItem {
   readonly heroImage: string;
   readonly heroTransparent?: string;
   readonly author: string;
+  /** Spotlight footer: shown as the underlined creator line (defaults to `author`). */
+  readonly creatorName?: string;
+  /** Small square image in the bento footer (defaults to `heroImage`). */
+  readonly productThumbnailUrl?: string;
+  /** Spotlight footer primary line — product / listing name (defaults to `title`). */
+  readonly productName?: string;
   readonly publishedAt: string;
   readonly slug: string;
   readonly tags: readonly string[];

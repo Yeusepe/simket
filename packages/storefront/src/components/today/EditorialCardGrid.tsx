@@ -30,7 +30,11 @@ export function EditorialCardGrid({ title, items, columns }: EditorialCardGridPr
         className={`grid grid-cols-1 gap-6 ${gridColumnsClass}`}
       >
         {items.map((item) => (
-          <EditorialCard key={item.id} item={item} />
+          <EditorialCard
+            key={item.id}
+            item={item}
+            size={columns === 4 ? 'small' : 'medium'}
+          />
         ))}
       </div>
     </section>

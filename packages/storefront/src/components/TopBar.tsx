@@ -1,3 +1,18 @@
+/**
+ * Purpose: Floating top navigation bar for Simket storefront.
+ * Features: search, home, dark/light toggle, cart, notifications, library, profile dropdown.
+ * Profile dropdown: inventory, account settings, creator dashboard.
+ * Governing docs:
+ *   - docs/architecture.md (§7 HeroUI everywhere)
+ * External references:
+ *   - https://heroui.com/docs/react/components/dropdown.mdx
+ *   - https://heroui.com/docs/react/components/search-field.mdx
+ *   - https://heroui.com/docs/react/components/badge.mdx
+ *   - https://heroui.com/docs/react/components/avatar.mdx
+ * Tests:
+ *   - packages/storefront/src/components/TopBar.test.tsx
+ */
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Button,
@@ -5,6 +20,7 @@ import {
   SearchField,
   Dropdown,
   Avatar,
+  Label,
 } from '@heroui/react';
 import { useTheme } from '../hooks/use-theme';
 import { useWishlist } from '../hooks/useWishlist';
@@ -13,12 +29,6 @@ import type { WishlistApi } from '../types/wishlist';
 import { NotificationBell } from './notifications';
 import { Icon } from './common/Icon';
 
-/**
- * Floating top navigation bar with:
- * - Search input
- * - Home, dark/light toggle, cart, notifications, library, profile
- * - Profile dropdown: inventory, account settings, creator dashboard
- */
 interface TopBarProps {
   readonly wishlistApi?: WishlistApi;
 }
@@ -28,10 +38,18 @@ export function TopBar({ wishlistApi }: TopBarProps) {
   const navigate = useNavigate();
   const totalItems = useCartState((state) => state.totalItems);
   const { wishlistCount } = useWishlist({ api: wishlistApi });
+  const [searchQuery, setSearchQuery] = useState('');
+
+  function handleSearch(value: string) {
+    const q = value.trim();
+    if (q) {
+      navigate(`/search?q=${encodeURIComponent(q)}`);
+    }
+  }
 
   return (
     <header className="fixed left-0 right-0 top-4 z-50 mx-auto max-w-7xl px-4">
-      <div className="flex h-14 items-center gap-4 rounded-2xl border border-divider bg-background/70 px-4 shadow-lg backdrop-blur-xl">
+      <div className="flex h-14 items-center gap-3 rounded-2xl border border-divider bg-background/70 px-4 shadow-lg backdrop-blur-xl">
         {/* Logo / Home */}
         <Link to="/" className="flex-shrink-0 text-xl font-bold text-foreground">
           Simket
@@ -39,7 +57,14 @@ export function TopBar({ wishlistApi }: TopBarProps) {
 
         {/* Search */}
         <div className="flex-1">
-          <SearchField aria-label="Search products" className="max-w-md">
+          <SearchField
+            name="search"
+            value={searchQuery}
+            onChange={setSearchQuery}
+            onSubmit={handleSearch}
+            aria-label="Search products"
+            className="w-full max-w-md"
+          >
             <SearchField.Group>
               <SearchField.SearchIcon />
               <SearchField.Input placeholder="Search products..." />
@@ -120,24 +145,31 @@ export function TopBar({ wishlistApi }: TopBarProps) {
 
           {/* Profile dropdown */}
           <Dropdown>
-            <Dropdown.Trigger>
-              <div
-                role="button"
-                tabIndex={0}
-                aria-label="User menu"
-                data-testid="profile-avatar"
-                className="cursor-pointer"
-              >
-                <Avatar size="sm">
-                  <Avatar.Fallback>U</Avatar.Fallback>
-                </Avatar>
-              </div>
-            </Dropdown.Trigger>
+            <Button
+              isIconOnly
+              variant="ghost"
+              size="sm"
+              aria-label="User menu"
+              data-testid="profile-avatar"
+            >
+              <Avatar size="sm">
+                <Avatar.Fallback>U</Avatar.Fallback>
+              </Avatar>
+            </Button>
             <Dropdown.Popover>
               <Dropdown.Menu onAction={(key) => navigate(String(key))}>
-                <Dropdown.Item id="/library">Inventory</Dropdown.Item>
-                <Dropdown.Item id="/profile">Account Settings</Dropdown.Item>
-                <Dropdown.Item id="/dashboard">Creator Dashboard</Dropdown.Item>
+                <Dropdown.Item id="/library" textValue="Inventory">
+                  <Icon name="library" size={16} />
+                  <Label>Inventory</Label>
+                </Dropdown.Item>
+                <Dropdown.Item id="/profile" textValue="Account Settings">
+                  <Icon name="settings" size={16} />
+                  <Label>Account Settings</Label>
+                </Dropdown.Item>
+                <Dropdown.Item id="/dashboard" textValue="Creator Dashboard">
+                  <Icon name="chart" size={16} />
+                  <Label>Creator Dashboard</Label>
+                </Dropdown.Item>
               </Dropdown.Menu>
             </Dropdown.Popover>
           </Dropdown>

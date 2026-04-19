@@ -17,60 +17,60 @@ import { Icon as IconifyIcon } from '@iconify/react';
  */
 const ICON_MAP = {
   // Navigation
-  home: 'streamline-plump:house-1',
-  search: 'streamline-plump:magnifying-glass',
-  cart: 'streamline-plump:shopping-cart-2',
-  library: 'streamline-plump:book-open',
-  notifications: 'streamline-plump:alarm-bell',
-  profile: 'streamline-plump:single-neutral',
+  home: 'streamline-plump:home-1',
+  search: 'streamline-plump:search-visual',
+  cart: 'streamline-plump:shopping-cart-add',
+  library: 'streamline-plump:book-1',
+  notifications: 'streamline-plump:ringing-bell-notification',
+  profile: 'streamline-plump:user-single-neutral-male',
   settings: 'streamline-plump:cog',
-  menu: 'streamline-plump:navigation-menu-1',
-  close: 'streamline-plump:delete-1',
+  menu: 'streamline-plump:horizontal-menu-circle',
+  close: 'streamline-plump:delete-keyboard',
 
   // Theme
-  sun: 'streamline-plump:sun-1',
-  moon: 'streamline-plump:moon-1',
+  sun: 'streamline-plump:sun',
+  moon: 'streamline-plump:moon-stars',
 
   // Actions
-  plus: 'streamline-plump:add-circle',
-  edit: 'streamline-plump:pencil-write',
-  check: 'streamline-plump:check-circle-1',
-  'arrow-up': 'streamline-plump:arrow-up-1',
-  'arrow-down': 'streamline-plump:arrow-down-1',
+  plus: 'streamline-plump:shopping-cart-add',
+  edit: 'streamline-plump:pencil-square',
+  check: 'streamline-plump:check-thick',
+  'arrow-up': 'streamline-plump:arrow-transfer-horizontal-square',
+  'arrow-down': 'streamline-plump:arrow-transfer-horizontal-square',
 
   // Wishlist
-  'heart-filled': 'streamline-plump:love-it',
-  'heart-outline': 'streamline-plump:love-it',
+  'heart-filled': 'streamline-plump:user-feedback-heart',
+  'heart-outline': 'streamline-plump:user-feedback-heart',
 
   // Dashboard stats
-  revenue: 'streamline-plump:money-wallet',
-  sales: 'streamline-plump:shopping-cart-2',
-  views: 'streamline-plump:view-1',
+  revenue: 'streamline-plump:wallet',
+  sales: 'streamline-plump:shopping-basket-1',
+  views: 'streamline-plump:eye-optic',
   conversion: 'streamline-plump:flash-1',
 
   // Dashboard nav
-  products: 'streamline-plump:box-1',
-  licenses: 'streamline-plump:key',
-  templates: 'streamline-plump:layout-module-1',
-  collaborations: 'streamline-plump:multiple-neutral-1',
-  flows: 'streamline-plump:arrow-switch-horizontal',
+  products: 'streamline-plump:shipping-box-1',
+  licenses: 'streamline-plump:keyhole-lock-circle',
+  templates: 'streamline-plump:graphic-template-website-ui',
+  collaborations: 'streamline-plump:user-multiple-accounts',
+  flows: 'streamline-plump:arrow-transfer-horizontal-square',
   chart: 'streamline-plump:graph-bar-increase',
 
   // Notification types
-  purchase: 'streamline-plump:shopping-cart-2',
-  'collaboration-invite': 'streamline-plump:multiple-neutral-1',
-  'collaboration-accepted': 'streamline-plump:check-circle-1',
-  'product-update': 'streamline-plump:box-1',
-  'price-drop': 'streamline-plump:money-wallet',
-  system: 'streamline-plump:alarm-bell',
+  purchase: 'streamline-plump:shopping-basket-1',
+  'collaboration-invite': 'streamline-plump:user-multiple-accounts',
+  'collaboration-accepted': 'streamline-plump:check-thick',
+  'product-update': 'streamline-plump:shipping-box-1',
+  'price-drop': 'streamline-plump:wallet',
+  system: 'streamline-plump:ringing-bell-notification',
   'gift-received': 'streamline-plump:gift',
-  review: 'streamline-plump:rating-star',
-  settlement: 'streamline-plump:money-wallet',
+  review: 'streamline-plump:star-circle',
+  settlement: 'streamline-plump:wallet',
 
   // Activity types
-  sale: 'streamline-plump:money-wallet',
-  collaboration: 'streamline-plump:multiple-neutral-1',
-  'product-edit': 'streamline-plump:pencil-write',
+  sale: 'streamline-plump:wallet',
+  collaboration: 'streamline-plump:user-multiple-accounts',
+  'product-edit': 'streamline-plump:pencil-square',
 } as const;
 
 export type IconName = keyof typeof ICON_MAP;

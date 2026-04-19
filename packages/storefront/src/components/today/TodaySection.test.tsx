@@ -77,13 +77,12 @@ describe('TodaySection', () => {
 
     const renderedLayouts = screen.getAllByTestId(/today-layout-/).map((element) => element.dataset.testid);
     expect(renderedLayouts).toEqual([
-      'today-layout-hero-banner',
-      'today-layout-card-grid-4',
+      'today-layout-bento',
       'today-layout-card-grid-2',
       'today-layout-horizontal-scroll',
     ]);
     expect(screen.getByRole('button', { name: /read more/i })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Grid Four' })).toBeInTheDocument();
+    expect(screen.getByText('Grid Four')).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Grid Two' })).toBeInTheDocument();
     expect(screen.getByRole('region', { name: 'Scroll' })).toBeInTheDocument();
   });

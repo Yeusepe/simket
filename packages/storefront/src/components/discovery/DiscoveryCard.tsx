@@ -27,8 +27,11 @@ export function DiscoveryCard({ item }: DiscoveryCardProps) {
   const addItem = useCartState((state) => state.addItem);
 
   return (
-    <Card className="h-full overflow-hidden">
-      <div className="aspect-video overflow-hidden bg-muted">
+    <Card
+      data-discovery-size="medium"
+      className="flex h-full min-h-0 flex-col overflow-hidden"
+    >
+      <div className="aspect-square shrink-0 overflow-hidden bg-muted">
         {item.imageUrl ? (
           <img
             src={item.imageUrl}
@@ -89,8 +92,8 @@ export function DiscoveryCard({ item }: DiscoveryCardProps) {
 export function DiscoveryCardSkeleton() {
   return (
     <div data-testid="discovery-card-skeleton">
-      <Card className="h-full">
-        <Skeleton className="aspect-video w-full rounded-none" />
+      <Card className="flex h-full flex-col overflow-hidden">
+        <Skeleton className="aspect-square w-full rounded-none" />
         <Card.Header className="pb-2">
           <Skeleton className="h-5 w-3/4" />
           <Skeleton className="mt-1 h-4 w-1/2" />
