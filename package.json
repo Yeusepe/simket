@@ -7,6 +7,7 @@
   "workspaces": [
     "packages/*"
   ],
+  "packageManager": "bun@1.3.9",
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev --parallel --filter=@simket/vendure-server --filter=@simket/storefront",
