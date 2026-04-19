@@ -246,7 +246,7 @@ export class SearchSyncPlugin implements OnApplicationBootstrap, OnApplicationSh
             );
           } else {
             const product = event.entity;
-            const customFields = (product as Record<string, unknown>)['customFields'] as
+            const customFields = (product as unknown as Record<string, unknown>)['customFields'] as
               | Record<string, unknown>
               | undefined;
 

@@ -46,8 +46,8 @@ export function parseStoreSubdomain(hostname: string): string | null {
   const parts = hostname.split('.');
   if (parts.length <= 2) return null; // root domain
 
-  const subdomain = parts[0].toLowerCase();
-  if (RESERVED_SLUGS.has(subdomain)) return null;
+  const subdomain = parts[0]?.toLowerCase();
+  if (!subdomain || RESERVED_SLUGS.has(subdomain)) return null;
 
   return subdomain;
 }

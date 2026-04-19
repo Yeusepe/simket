@@ -22,8 +22,6 @@ import { OrderSettlementStatus } from './settlement.entity.js';
 import { SettlementService } from './settlement.service.js';
 
 export const settlementAdminApiExtensions = gql`
-  scalar JSON
-
   enum SettlementProcessStatus {
     PENDING
     PROCESSING

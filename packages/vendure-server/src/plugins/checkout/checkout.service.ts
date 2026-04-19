@@ -25,8 +25,8 @@ import {
   Product,
   ProductPriceApplicator,
   ProductVariant,
+  TransactionalConnection,
   type RequestContext,
-  type TransactionalConnection,
 } from '@vendure/core';
 import { calculatePlatformFee } from '../platform-fee/platform-fee.service.js';
 import {
@@ -116,7 +116,7 @@ export class CheckoutError extends Error {
 @Injectable()
 export class CheckoutService {
   constructor(
-    private readonly connection: Pick<TransactionalConnection, 'getRepository' | 'findOneInChannel'>,
+    private readonly connection: TransactionalConnection,
     private readonly customerService: CustomerService,
     private readonly productPriceApplicator: ProductPriceApplicator,
   ) {}

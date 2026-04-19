@@ -12,7 +12,8 @@
  * Tests:
  *   - packages/vendure-server/src/plugins/payment-webhook/payment-webhook.controller.test.ts
  */
-import { Controller, Post, Req, Res, HttpStatus, Logger } from '@nestjs/common';
+import { Controller, Post, Req, Res, HttpStatus } from '@nestjs/common';
+import { Logger } from '@vendure/core';
 import type { Request, Response } from 'express';
 import {
   parseWebhookEventType,

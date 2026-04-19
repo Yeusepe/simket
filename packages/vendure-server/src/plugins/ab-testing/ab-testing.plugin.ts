@@ -15,7 +15,6 @@ import {
   AbTestingAdminResolver,
   AbTestingShopResolver,
   abTestingAdminApiExtensions,
-  abTestingJsonScalar,
   abTestingShopApiExtensions,
 } from './ab-testing.api.js';
 import { AbTestingService } from './ab-testing.service.js';
@@ -28,16 +27,10 @@ import { ExperimentEntity, ExperimentResultEntity } from './experiment.entity.js
   adminApiExtensions: {
     schema: abTestingAdminApiExtensions,
     resolvers: [AbTestingAdminResolver],
-    scalars: {
-      JSON: abTestingJsonScalar,
-    },
   },
   shopApiExtensions: {
     schema: abTestingShopApiExtensions,
     resolvers: [AbTestingShopResolver],
-    scalars: {
-      JSON: abTestingJsonScalar,
-    },
   },
   compatibility: '^3.0.0',
 })

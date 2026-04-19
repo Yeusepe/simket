@@ -21,8 +21,6 @@ import { gql } from 'graphql-tag';
 import { ProductMetadataService } from './product-metadata.service.js';
 
 export const productMetadataAdminApiExtensions = gql`
-  scalar JSON
-
   type ProductMetadata {
     productId: ID!
     tryAvatarUrl: String
@@ -44,8 +42,6 @@ export const productMetadataAdminApiExtensions = gql`
 `;
 
 export const productMetadataShopApiExtensions = gql`
-  scalar JSON
-
   type ProductMetadata {
     productId: ID!
     tryAvatarUrl: String

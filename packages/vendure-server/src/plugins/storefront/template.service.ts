@@ -14,7 +14,7 @@
  */
 import { Injectable } from '@nestjs/common';
 import { SpanStatusCode, trace } from '@opentelemetry/api';
-import type { RequestContext, TransactionalConnection } from '@vendure/core';
+import { TransactionalConnection, type RequestContext } from '@vendure/core';
 import { StorePageEntity } from './storefront.entity.js';
 import {
   TemplateEntity,
@@ -157,7 +157,7 @@ function matchesScope(template: TemplateEntity, scope: TemplateScope, creatorId:
 
 @Injectable()
 export class TemplateService {
-  constructor(private readonly connection: Pick<TransactionalConnection, 'getRepository'>) {}
+  constructor(private readonly connection: TransactionalConnection) {}
 
   async listTemplates(
     ctx: RequestContext | undefined,

@@ -10,7 +10,7 @@
  * Tests:
  *   - packages/vendure-server/src/plugins/wishlist/wishlist.service.test.ts
  */
-import { DeepPartial } from '@vendure/common/lib/shared-types';
+import type { DeepPartial } from '@vendure/common/lib/shared-types';
 import { Customer, Product, VendureEntity } from '@vendure/core';
 import { Column, Entity, Index, JoinColumn, ManyToOne, Unique } from 'typeorm';
 

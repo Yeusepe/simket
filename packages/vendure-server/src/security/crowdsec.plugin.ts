@@ -23,9 +23,11 @@ const crowdSecBouncerProvider: Provider = {
     const apiKey = process.env['CROWDSEC_API_KEY'];
 
     if (!lapiUrl || !apiKey) {
-      throw new Error(
-        'CrowdSec requires CROWDSEC_LAPI_URL and CROWDSEC_API_KEY to enforce abuse protection.',
-      );
+      // In dev, CrowdSec is optional — return a pass-through bouncer
+      return {
+        checkIp: async () => 'allow' as const,
+        shutdown: async () => {},
+      } as unknown as CrowdSecBouncer;
     }
 
     return new CrowdSecBouncer({

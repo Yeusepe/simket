@@ -13,7 +13,7 @@
  */
 import { Injectable } from '@nestjs/common';
 import { SpanStatusCode, trace } from '@opentelemetry/api';
-import type { RequestContext, TransactionalConnection } from '@vendure/core';
+import { TransactionalConnection, type RequestContext } from '@vendure/core';
 import { ProductService } from '@vendure/core';
 import { ReportEntity } from './reporting.entity.js';
 
@@ -177,7 +177,7 @@ function orderReports(reports: readonly ReportEntity[]): ReportEntity[] {
 @Injectable()
 export class ReportingService {
   constructor(
-    private readonly connection: Pick<TransactionalConnection, 'getRepository'>,
+    private readonly connection: TransactionalConnection,
     private readonly productService: ProductService,
   ) {}
 

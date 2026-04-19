@@ -16,7 +16,7 @@
  */
 import { Injectable } from '@nestjs/common';
 import { SpanStatusCode, trace } from '@opentelemetry/api';
-import type { RequestContext, TransactionalConnection } from '@vendure/core';
+import { TransactionalConnection, type RequestContext } from '@vendure/core';
 import { OrderService } from '@vendure/core';
 import { OrderSettlementEntity, OrderSettlementStatus } from './settlement.entity.js';
 
@@ -199,7 +199,7 @@ function orderSettlements(settlements: readonly OrderSettlementEntity[]): OrderS
 @Injectable()
 export class SettlementService {
   constructor(
-    private readonly connection: Pick<TransactionalConnection, 'getRepository'>,
+    private readonly connection: TransactionalConnection,
     private readonly orderService: OrderService,
   ) {}
 

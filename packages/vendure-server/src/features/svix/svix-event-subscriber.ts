@@ -19,7 +19,7 @@ import {
   ProductEvent,
   OrderStateTransitionEvent,
 } from '@vendure/core';
-import { SvixService, validateEventType } from './svix.service.js';
+import { SvixService } from './svix.service.js';
 import type { SimketEventType } from './svix.types.js';
 
 const loggerCtx = 'SvixEventSubscriber';
@@ -75,8 +75,9 @@ export class SvixEventSubscriber implements OnModuleInit {
       // Forward order.completed for each product's creator
       const { order } = event;
       for (const line of order.lines ?? []) {
-        const creatorId = (line.productVariant as Record<string, unknown>)?.customFields
-          ? String((line.productVariant.customFields as Record<string, unknown>)?.creatorId ?? '')
+        const variant = line.productVariant as unknown as Record<string, unknown>;
+        const creatorId = variant?.customFields
+          ? String((variant.customFields as Record<string, unknown>)?.creatorId ?? '')
           : '';
 
         if (creatorId) {

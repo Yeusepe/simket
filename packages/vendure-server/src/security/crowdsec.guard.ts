@@ -49,7 +49,7 @@ export function getRequestFromExecutionContext(
 
 @Injectable()
 export class CrowdSecGuard implements CanActivate {
-  constructor(private readonly bouncer: Pick<CrowdSecBouncer, 'checkIp'>) {}
+  constructor(private readonly bouncer: CrowdSecBouncer) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = getRequestFromExecutionContext(context);

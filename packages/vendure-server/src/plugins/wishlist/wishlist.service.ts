@@ -14,7 +14,7 @@
  */
 import { Injectable } from '@nestjs/common';
 import { SpanStatusCode, trace } from '@opentelemetry/api';
-import type { RequestContext, TransactionalConnection } from '@vendure/core';
+import { TransactionalConnection, type RequestContext } from '@vendure/core';
 import { ProductService } from '@vendure/core';
 import { WishlistItem } from './wishlist.entity.js';
 
@@ -77,7 +77,7 @@ const MAX_LIMIT = 50;
 @Injectable()
 export class WishlistService {
   constructor(
-    private readonly connection: Pick<TransactionalConnection, 'getRepository'>,
+    private readonly connection: TransactionalConnection,
     private readonly productService: ProductService,
   ) {}
 

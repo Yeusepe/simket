@@ -4,4 +4,4 @@ export {
   isAllowedEmbedDomain,
   stripDangerousAttributes,
   ALLOWED_EMBED_DOMAINS,
-} from './html-sanitize.service';
+} from './html-sanitize.service.js';

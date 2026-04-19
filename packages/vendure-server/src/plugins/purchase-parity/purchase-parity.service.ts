@@ -23,8 +23,8 @@ import {
   Product,
   ProductPriceApplicator,
   ProductVariant,
+  TransactionalConnection,
   type RequestContext,
-  type TransactionalConnection,
 } from '@vendure/core';
 import { resolveRegion, isRegionGroup } from './regions.js';
 import { COUNTRY_TO_REGION, REGION_GROUPS, type RegionGroup } from './regions.js';
@@ -70,7 +70,7 @@ const tracer = trace.getTracer('simket-purchase-parity');
 @Injectable()
 export class PurchaseParityService {
   constructor(
-    private readonly connection: Pick<TransactionalConnection, 'findOneInChannel' | 'getRepository'>,
+    private readonly connection: TransactionalConnection,
     private readonly productPriceApplicator: ProductPriceApplicator,
   ) {}
 

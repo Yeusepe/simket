@@ -28,6 +28,8 @@
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\""
   },
   "devDependencies": {
+    "@swc-node/register": "^1.11.1",
+    "@swc/core": "^1.15.26",
     "prettier": "^3.4.0",
     "tsx": "^4.21.0",
     "turbo": "^2.3.0",

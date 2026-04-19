@@ -15,7 +15,7 @@
 import { randomBytes } from 'node:crypto';
 import { Injectable } from '@nestjs/common';
 import { SpanStatusCode, trace } from '@opentelemetry/api';
-import { ProductService, type RequestContext, type TransactionalConnection } from '@vendure/core';
+import { ProductService, TransactionalConnection, type RequestContext } from '@vendure/core';
 import { GiftEntity } from './gift.entity.js';
 import { GiftStatus, type GiftFilter, type GiftRecord } from './gift.types.js';
 
@@ -112,7 +112,7 @@ export function formatGiftCodeForDisplay(code: string): string {
 @Injectable()
 export class GiftService {
   constructor(
-    private readonly connection: Pick<TransactionalConnection, 'getRepository'>,
+    private readonly connection: TransactionalConnection,
     private readonly productService: ProductService,
   ) {}
 

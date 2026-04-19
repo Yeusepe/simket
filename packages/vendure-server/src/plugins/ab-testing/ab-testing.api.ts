@@ -11,7 +11,6 @@
  */
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { gql } from 'graphql-tag';
-import { GraphQLScalarType, Kind, type ValueNode } from 'graphql';
 import {
   Allow,
   Ctx,
@@ -22,42 +21,7 @@ import {
 import { AbTestingService, type CreateExperimentInput } from './ab-testing.service.js';
 import { isExperimentEvent } from './experiment.entity.js';
 
-function parseLiteral(ast: ValueNode): unknown {
-  switch (ast.kind) {
-    case Kind.STRING:
-    case Kind.BOOLEAN:
-      return ast.value;
-    case Kind.INT:
-    case Kind.FLOAT:
-      return Number(ast.value);
-    case Kind.NULL:
-      return null;
-    case Kind.LIST:
-      return ast.values.map((value) => parseLiteral(value));
-    case Kind.OBJECT:
-      return Object.fromEntries(
-        ast.fields.map((field) => [field.name.value, parseLiteral(field.value)]),
-      );
-    default:
-      return null;
-  }
-}
-
-export const abTestingJsonScalar = new GraphQLScalarType({
-  name: 'JSON',
-  description: 'Arbitrary JSON payload used for experiment definitions and results.',
-  serialize(value) {
-    return value;
-  },
-  parseValue(value) {
-    return value;
-  },
-  parseLiteral,
-});
-
 export const abTestingAdminApiExtensions = gql`
-  scalar JSON
-
   type Experiment implements Node {
     id: ID!
     createdAt: DateTime!
@@ -110,8 +74,6 @@ export const abTestingAdminApiExtensions = gql`
 `;
 
 export const abTestingShopApiExtensions = gql`
-  scalar JSON
-
   type ExperimentVariantAssignment {
     experimentId: ID!
     productId: String

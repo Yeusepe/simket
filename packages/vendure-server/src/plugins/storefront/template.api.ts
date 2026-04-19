@@ -13,8 +13,6 @@
 import { gql } from 'graphql-tag';
 
 export const templateAdminApiExtensions = gql`
-  scalar JSON
-
   type Template implements Node {
     id: ID!
     createdAt: DateTime!

@@ -20,8 +20,8 @@ import { SpanStatusCode, trace } from '@opentelemetry/api';
 import {
   CustomerService,
   ProductService,
+  TransactionalConnection,
   type RequestContext,
-  type TransactionalConnection,
 } from '@vendure/core';
 import { Order } from '@vendure/core';
 import { DependencyEntity } from './dependency.entity.js';
@@ -347,7 +347,7 @@ export function detectCircularDependencies(graph: DependencyGraph): string[][] {
 @Injectable()
 export class DependencyService {
   constructor(
-    private readonly connection: Pick<TransactionalConnection, 'getRepository'>,
+    private readonly connection: TransactionalConnection,
     private readonly productService: ProductService,
     private readonly customerService: CustomerService,
   ) {}

@@ -14,7 +14,7 @@
  */
 import { Injectable, Optional } from '@nestjs/common';
 import { SpanStatusCode, trace } from '@opentelemetry/api';
-import type { RequestContext, TransactionalConnection } from '@vendure/core';
+import { TransactionalConnection, type RequestContext } from '@vendure/core';
 import { StripeService } from '../../features/hyperswitch/index.js';
 import {
   RevenueSplitService,
@@ -56,7 +56,7 @@ const tracer = trace.getTracer('simket-collaboration-settlements');
 @Injectable()
 export class SettlementService {
   constructor(
-    private readonly connection: Pick<TransactionalConnection, 'getRepository'>,
+    private readonly connection: TransactionalConnection,
     private readonly revenueSplitService: RevenueSplitService,
     @Optional() private readonly stripeService?: StripeService,
   ) {}

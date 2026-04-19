@@ -36,6 +36,15 @@ export class EmailEventSubscriber implements OnModuleInit {
   ) {}
 
   async onModuleInit(): Promise<void> {
+    if (!this.jobQueueService) {
+      Logger.error(
+        'JobQueueService not injected — email queue will not be available. ' +
+        'Ensure PluginCommonModule is imported in EmailNotificationsPlugin.',
+        loggerCtx,
+      );
+      return;
+    }
+
     this.emailQueue = await this.jobQueueService.createQueue({
       name: 'email-notifications',
       process: async (job) => {
@@ -81,6 +90,11 @@ export class EmailEventSubscriber implements OnModuleInit {
         orderTotal: String(order.totalWithTax),
       },
     });
+
+    if (!this.emailQueue) {
+      Logger.warn(`Email queue not initialized — skipping confirmation for order ${String(order.code)}`, loggerCtx);
+      return;
+    }
 
     await this.emailQueue.add(payload, { retries: 3 });
     Logger.info(`Enqueued order confirmation email for order ${String(order.code)}`, loggerCtx);

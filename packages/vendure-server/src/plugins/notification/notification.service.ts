@@ -13,7 +13,7 @@
  */
 import { Injectable } from '@nestjs/common';
 import { SpanStatusCode, trace } from '@opentelemetry/api';
-import type { RequestContext, TransactionalConnection } from '@vendure/core';
+import { TransactionalConnection, type RequestContext } from '@vendure/core';
 import {
   NotificationEntity,
   type NotificationPayload,
@@ -141,7 +141,7 @@ function matchesCursor(notification: NotificationEntity, cursor: NotificationCur
 
 @Injectable()
 export class NotificationService {
-  constructor(private readonly connection: Pick<TransactionalConnection, 'getRepository'>) {}
+  constructor(private readonly connection: TransactionalConnection) {}
 
   async createNotification(
     input: CreateNotificationInput,

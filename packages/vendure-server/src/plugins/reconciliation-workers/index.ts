@@ -13,4 +13,4 @@ export {
   type AssetReferenceDriftResult,
   type OrderProductPair,
   type LicenseRecord,
-} from './reconciliation-workers.service';
+} from './reconciliation-workers.service.js';

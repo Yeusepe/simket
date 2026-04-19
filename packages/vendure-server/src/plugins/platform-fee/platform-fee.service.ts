@@ -20,7 +20,7 @@
  */
 import { Injectable } from '@nestjs/common';
 import { SpanStatusCode, trace } from '@opentelemetry/api';
-import { Product, type RequestContext, type TransactionalConnection } from '@vendure/core';
+import { Product, TransactionalConnection, type RequestContext } from '@vendure/core';
 
 /** Minimum platform take rate: 5%. */
 export const MIN_TAKE_RATE = 5;
@@ -55,7 +55,7 @@ const tracer = trace.getTracer('simket-platform-fee');
 @Injectable()
 export class PlatformFeeService {
   constructor(
-    private readonly connection: Pick<TransactionalConnection, 'findOneInChannel' | 'getRepository'>,
+    private readonly connection: TransactionalConnection,
   ) {}
 
   getDefaults(): PlatformFeeDefaults {

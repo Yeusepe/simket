@@ -9,7 +9,7 @@ import {
   Logger,
 } from '@vendure/core';
 import type { RuntimeVendureConfig } from '@vendure/core';
-import type { OnApplicationBootstrap, OnApplicationShutdown } from '@nestjs/common';
+import { Injectable, type OnApplicationBootstrap, type OnApplicationShutdown } from '@nestjs/common';
 import { SanitizationService } from '../../sanitization/sanitization.service.js';
 
 const loggerCtx = 'CatalogPlugin';
@@ -156,12 +156,8 @@ function catalogConfiguration(config: RuntimeVendureConfig): RuntimeVendureConfi
  * @see https://docs.vendure.io/guides/developer-guide/custom-fields/
  * @see https://docs.vendure.io/guides/developer-guide/plugins/
  */
-@VendurePlugin({
-  imports: [PluginCommonModule],
-  providers: [SanitizationService],
-  configuration: catalogConfiguration,
-})
-export class CatalogPlugin implements OnApplicationBootstrap, OnApplicationShutdown {
+@Injectable()
+class CatalogEventSubscriber implements OnApplicationBootstrap, OnApplicationShutdown {
   private readonly sanitizingProductIds = new Set<string>();
 
   constructor(
@@ -171,7 +167,6 @@ export class CatalogPlugin implements OnApplicationBootstrap, OnApplicationShutd
   ) {}
 
   onApplicationBootstrap() {
-    // Log product lifecycle events for observability
     this.eventBus.ofType(ProductEvent).subscribe((event) => {
       Logger.info(
         `ProductEvent [${event.type}]: product=${event.entity.id}`,
@@ -210,5 +205,12 @@ export class CatalogPlugin implements OnApplicationBootstrap, OnApplicationShutd
     this.sanitizingProductIds.clear();
   }
 }
+
+@VendurePlugin({
+  imports: [PluginCommonModule],
+  providers: [SanitizationService, CatalogEventSubscriber],
+  configuration: catalogConfiguration,
+})
+export class CatalogPlugin {}
 
 export { MIN_TAKE_RATE, MAX_TAKE_RATE, validateTakeRate, catalogConfiguration };

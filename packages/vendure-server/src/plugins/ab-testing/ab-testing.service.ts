@@ -21,7 +21,7 @@ import {
   type JsonValue,
 } from '@openfeature/server-sdk';
 import { SpanStatusCode, trace } from '@opentelemetry/api';
-import type { RequestContext, TransactionalConnection } from '@vendure/core';
+import { TransactionalConnection, type RequestContext } from '@vendure/core';
 import { createHash } from 'node:crypto';
 import {
   ExperimentEntity,
@@ -253,7 +253,7 @@ export class AbTestingService {
   private readonly provider = new InMemoryProvider({});
   private providerReadyPromise: Promise<void> | null = null;
 
-  constructor(private readonly connection: Pick<TransactionalConnection, 'getRepository'>) {}
+  constructor(private readonly connection: TransactionalConnection) {}
 
   async createExperiment(
     creatorId: string,

@@ -15,7 +15,7 @@
  */
 import { Injectable } from '@nestjs/common';
 import { SpanStatusCode, trace } from '@opentelemetry/api';
-import { ProductService, type RequestContext, type TransactionalConnection } from '@vendure/core';
+import { ProductService, TransactionalConnection, type RequestContext } from '@vendure/core';
 import type { Product } from '@vendure/core';
 import { BundleEntity } from './bundle.entity.js';
 
@@ -154,7 +154,7 @@ export function allocateBundleLinePricing(
 @Injectable()
 export class BundleService {
   constructor(
-    private readonly connection: Pick<TransactionalConnection, 'getRepository'>,
+    private readonly connection: TransactionalConnection,
     private readonly productService: ProductService,
   ) {}
 
