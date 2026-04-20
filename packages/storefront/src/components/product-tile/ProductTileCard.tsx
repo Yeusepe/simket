@@ -11,6 +11,14 @@ import { Link } from 'react-router-dom';
 /** Slot context (reserved; callers may ignore). */
 export type ProductTileShellRenderProps = Record<string, never>;
 
+export type ProductTileArticleProps = JSX.IntrinsicElements['article'] & {
+  readonly [key: `data-${string}`]: string | number | boolean | undefined;
+};
+
+export type ProductTileSectionProps = JSX.IntrinsicElements['section'] & {
+  readonly [key: `data-${string}`]: string | number | boolean | undefined;
+};
+
 function renderShellSlot(
   slot: ReactNode | ((props: ProductTileShellRenderProps) => ReactNode),
   ctx: ProductTileShellRenderProps,
@@ -23,13 +31,14 @@ export interface ProductTileCardProps {
   readonly title: string;
   readonly imageUrl: string | null | undefined;
   readonly imageAlt: string;
+  readonly shellColor?: string | null;
   readonly placeholderTestId?: string;
   readonly overlayTopRight?: ReactNode;
   readonly linkBodyExtra: ReactNode | ((props: ProductTileShellRenderProps) => ReactNode);
   readonly priceSection: ReactNode | ((props: ProductTileShellRenderProps) => ReactNode);
   readonly articleClassName?: string;
-  readonly articleProps?: JSX.IntrinsicElements['article'];
-  readonly priceStripeProps?: JSX.IntrinsicElements['section'];
+  readonly articleProps?: ProductTileArticleProps;
+  readonly priceStripeProps?: ProductTileSectionProps;
 }
 
 export function ProductTileCard({
@@ -37,6 +46,7 @@ export function ProductTileCard({
   title,
   imageUrl,
   imageAlt,
+  shellColor,
   placeholderTestId,
   overlayTopRight,
   linkBodyExtra,
@@ -46,6 +56,13 @@ export function ProductTileCard({
   priceStripeProps,
 }: ProductTileCardProps) {
   const shellCtx: ProductTileShellRenderProps = {};
+  const accentColor =
+    typeof shellColor === 'string' && shellColor.trim().length > 0
+      ? shellColor.trim()
+      : undefined;
+  const leonardoBackground = 'var(--store-bg, var(--simket-bg, var(--background)))';
+  const leonardoSurface =
+    'color-mix(in srgb, var(--store-bg, var(--simket-bg, var(--background))) 78%, var(--store-subtle, var(--simket-subtle, var(--surface))) 22%)';
 
   const articleClass = cn(
     'group relative flex h-full min-h-0 flex-1 flex-col overflow-visible text-foreground',
@@ -56,20 +73,25 @@ export function ProductTileCard({
   const { className: _a, style: articleStyleFromProps, ...articleDomRest } = articleProps ?? {};
 
   const frameClass = cn(
-    'relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-[1.25rem]',
-    'border border-default-200/65 bg-gradient-to-b from-default-100/35 via-background to-background',
-    'dark:border-default-600/50 dark:from-default-900/60 dark:via-background dark:to-background',
-    'transition-[transform,border-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]',
-    'group-hover:-translate-y-1 group-hover:border-default-300/80 dark:group-hover:border-default-500/65',
+    'relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-[1.35rem]',
+    'transition-transform duration-300 ease-out',
+    'group-hover:-translate-y-1',
   );
+  const frameStyle: CSSProperties = {
+    backgroundColor: leonardoSurface,
+    '--product-tile-bg': leonardoBackground,
+    '--product-tile-surface': leonardoSurface,
+  };
 
   const articleNode = (
     <article
       className={articleClass}
+      data-shell-color={accentColor}
+      data-surface-theme="leonardo"
       style={articleStyleFromProps as CSSProperties | undefined}
       {...articleDomRest}
     >
-      <div className={frameClass}>
+      <div className={frameClass} style={frameStyle}>
         <Link
           to={productHref}
           className={cn(
@@ -77,9 +99,9 @@ export function ProductTileCard({
             'focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-primary/55 focus-visible:ring-offset-2 focus-visible:ring-offset-background',
           )}
         >
-          <div className="relative isolate aspect-[4/5] w-full shrink-0 overflow-hidden rounded-[0.875rem] bg-muted/25">
+          <div className="relative isolate mx-3 mt-3 aspect-square w-auto shrink-0 overflow-hidden rounded-t-[1rem] rounded-b-none bg-muted/20">
             {overlayTopRight ? (
-              <div className="pointer-events-none absolute inset-x-0 top-0 z-20 flex justify-end p-3.5">
+              <div className="pointer-events-none absolute inset-x-0 top-0 z-20 flex justify-end p-3">
                 <div className="pointer-events-auto">{overlayTopRight}</div>
               </div>
             ) : null}
@@ -90,8 +112,8 @@ export function ProductTileCard({
                 alt={imageAlt}
                 className={cn(
                   'absolute inset-0 size-full object-cover object-center',
-                  'transition-[transform,filter] duration-[1100ms] ease-[cubic-bezier(0.22,1,0.36,1)]',
-                  'group-hover:scale-[1.06] group-hover:saturate-[1.06]',
+                  'transition-transform duration-500 ease-out',
+                  'group-hover:scale-[1.025]',
                 )}
                 loading="lazy"
               />
@@ -105,24 +127,19 @@ export function ProductTileCard({
                 </span>
               </div>
             )}
-
-            <div
-              className="pointer-events-none absolute inset-x-0 bottom-0 h-[32%] bg-gradient-to-t from-background/90 via-background/30 to-transparent dark:from-background/95 dark:via-background/25"
-              aria-hidden
-            />
           </div>
 
-          <div className="px-3.5 pb-3 pt-3.5">
+          <div className="px-4 pb-3.5 pt-3 sm:px-5">
             <h3
               className={cn(
-                'line-clamp-2 text-left text-[0.9375rem] font-bold leading-[1.2] tracking-[-0.02em] text-balance text-foreground',
-                'sm:text-[1rem]',
+                'min-h-[2.4rem] line-clamp-2 text-left text-[1rem] font-semibold leading-[1.2] tracking-[-0.025em] text-balance text-foreground',
+                'sm:text-[1.06rem]',
               )}
               title={title}
             >
               {title}
             </h3>
-            <div className="mt-2 flex flex-col gap-2 text-[0.8125rem] leading-snug text-foreground/90">
+            <div className="mt-1.5 flex flex-col gap-2 text-[0.8rem] leading-snug text-foreground/85">
               {renderShellSlot(linkBodyExtra, shellCtx)}
             </div>
           </div>
@@ -131,7 +148,7 @@ export function ProductTileCard({
         <section
           {...priceStripeProps}
           className={cn(
-            'border-t border-default-200/50 px-3.5 pb-2.5 pt-2 text-left dark:border-default-600/40',
+            'px-4 pb-4 pt-0.5 text-left sm:px-5',
             priceStripeProps?.className,
           )}
           style={priceStripeProps?.style as CSSProperties | undefined}

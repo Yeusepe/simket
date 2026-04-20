@@ -13,17 +13,22 @@
  */
 
 import { render, screen, within } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter } from 'react-router-dom';
 import { describe, expect, it } from 'vitest';
 
+import { makeProductListItem, resetProductCounter } from '../../types/product.factory';
 import { DiscoveryCard } from './DiscoveryCard';
 import type { DiscoveryFeedItem } from './discovery-types';
 
 function renderDiscoveryCard(item: DiscoveryFeedItem) {
+  const queryClient = new QueryClient();
   return render(
-    <MemoryRouter>
-      <DiscoveryCard item={item} />
-    </MemoryRouter>,
+    <QueryClientProvider client={queryClient}>
+      <MemoryRouter>
+        <DiscoveryCard item={item} />
+      </MemoryRouter>
+    </QueryClientProvider>,
   );
 }
 
@@ -31,13 +36,19 @@ function makeDiscoveryItem(
   overrides: Partial<DiscoveryFeedItem> = {},
 ): DiscoveryFeedItem {
   return {
-    productId: 'product-1',
-    slug: 'product-1',
-    name: 'Shader Lab',
-    imageUrl: 'https://cdn.example.com/products/shader-lab.webp',
-    price: 2499,
-    currencyCode: 'USD',
-    creatorName: 'Pixel Forge',
+    product: makeProductListItem({
+      id: 'product-1',
+      slug: 'product-1',
+      name: 'Shader Lab',
+      heroImageUrl: 'https://cdn.example.com/products/shader-lab.webp',
+      priceMin: 2499,
+      priceMax: 2499,
+      creatorName: 'Pixel Forge',
+      collaborators: [{ name: 'Alex Kim' }],
+      tags: ['shader', 'unity'],
+      averageRating: 4.8,
+      reviewCount: 214,
+    }),
     reason: 'Because you bought Ambient Toolkit',
     score: 0.92,
     source: 'purchase-history',
@@ -48,13 +59,18 @@ function makeDiscoveryItem(
 
 describe('DiscoveryCard', () => {
   it('renders product information through the unified tile contract', () => {
+    resetProductCounter();
     renderDiscoveryCard(makeDiscoveryItem());
 
     expect(screen.getByText('Shader Lab')).toBeInTheDocument();
     expect(screen.getByText('Pixel Forge')).toBeInTheDocument();
+    expect(screen.getByText('Alex Kim')).toBeInTheDocument();
     expect(screen.getByText('$24.99')).toBeInTheDocument();
     expect(screen.getByTestId('trending-product-tags')).toBeInTheDocument();
     expect(screen.getByTestId('product-creators-byline')).toBeInTheDocument();
-    expect(within(screen.getByTestId('trending-product-price')).getByRole('button')).toBeInTheDocument();
+    expect(within(screen.getByTestId('trending-product-price')).getByRole('link')).toHaveAttribute(
+      'href',
+      '/product/product-1',
+    );
   });
 });

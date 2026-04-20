@@ -1,9 +1,9 @@
 /**
- * Purpose: Tag chips for trending tiles — soft pills, no outlines.
+ * Purpose: Compact taxonomy row for product tiles.
  */
 import { cn } from '@/lib/utils';
 
-const MAX_VISIBLE = 3;
+const MAX_VISIBLE = 2;
 
 export interface TrendingProductTagsProps {
   readonly tags: readonly string[];
@@ -25,38 +25,56 @@ export function TrendingProductTags({ tags, size = 'sm', className }: TrendingPr
   return (
     <div
       className={cn(
-        'flex min-w-0 flex-wrap items-center gap-x-1.5 gap-y-1',
-        isMd ? 'min-h-0' : isXs ? 'min-h-[0.75rem]' : 'min-h-[1.125rem]',
+        'flex min-w-0 items-center gap-1.5 overflow-hidden whitespace-nowrap',
+        isMd ? 'min-h-[0.875rem]' : isXs ? 'min-h-[0.75rem]' : 'min-h-[0.875rem]',
         className,
       )}
       data-testid="trending-product-tags"
       aria-label="Tags"
     >
-      {visible.map((tag) => (
-        <span
-          key={tag}
-          className={cn(
-            'inline-flex max-w-full rounded-full bg-muted/50 break-words text-left text-muted-foreground uppercase tracking-wide whitespace-normal',
-            isMd
-              ? 'px-2 py-0.5 text-[0.625rem] font-medium leading-snug'
-              : isXs
-                ? 'px-1 py-0 text-[0.375rem] leading-snug'
-                : 'px-1.5 py-px text-[0.5rem] font-medium leading-snug',
-          )}
-        >
-          {tag}
-        </span>
+      {visible.map((tag, index) => (
+        <div key={tag} className="inline-flex min-w-0 shrink items-center gap-1.5">
+          {index > 0 ? (
+            <span className="shrink-0 text-foreground/28" aria-hidden>
+              ·
+            </span>
+          ) : null}
+          <span
+            className={cn(
+              'min-w-0 truncate uppercase text-foreground/52',
+              isMd
+                ? 'text-[0.58rem] font-semibold leading-none tracking-[0.14em]'
+                : isXs
+                  ? 'text-[0.375rem] leading-none tracking-[0.12em]'
+                  : 'text-[0.5rem] font-semibold leading-none tracking-[0.12em]',
+            )}
+            title={tag}
+          >
+            {tag}
+          </span>
+        </div>
       ))}
       {overflow > 0 ? (
-        <span
-          className={cn(
-            'shrink-0 rounded-full font-medium text-muted-foreground tabular-nums',
-            isMd ? 'px-1 py-0.5 text-[0.625rem] leading-none' : isXs ? 'px-0.5 py-0 text-[0.375rem] leading-none' : 'px-1 py-px text-[0.5rem]',
-          )}
-          title={`${overflow} more tags`}
-        >
-          +{overflow}
-        </span>
+        <>
+          {visible.length > 0 ? (
+            <span className="shrink-0 text-foreground/28" aria-hidden>
+              ·
+            </span>
+          ) : null}
+          <span
+            className={cn(
+              'shrink-0 font-semibold tabular-nums text-foreground/38',
+              isMd
+                ? 'text-[0.625rem] leading-none'
+                : isXs
+                  ? 'text-[0.375rem] leading-none'
+                  : 'text-[0.5rem] leading-none',
+            )}
+            title={`${overflow} more tags`}
+          >
+            +{overflow}
+          </span>
+        </>
       ) : null}
     </div>
   );

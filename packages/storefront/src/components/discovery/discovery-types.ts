@@ -12,6 +12,8 @@
  *   - packages/storefront/src/components/discovery/use-discovery.test.ts
  */
 
+import type { ProductListItem } from '../../types/product';
+
 export interface DiscoveryRequest {
   readonly userId: string;
   readonly cursor?: string;
@@ -20,19 +22,11 @@ export interface DiscoveryRequest {
 }
 
 export interface DiscoveryFeedItem {
-  readonly productId: string;
-  readonly slug: string;
-  readonly name: string;
-  readonly imageUrl: string | null;
-  readonly price: number;
-  readonly currencyCode: string;
-  readonly creatorName: string;
+  readonly product: ProductListItem;
   readonly reason: string;
   readonly score: number;
   readonly source: string;
   readonly variantId: string;
-  /** Optional CSS accent when the feed API provides a per-item tint (e.g. discovery stripe). */
-  readonly previewColor?: string | null;
 }
 
 export interface DiscoveryPage {

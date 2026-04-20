@@ -24,7 +24,7 @@ function SmallAvatar({
     size <= 13 ? 'text-[0.5rem]' : size <= 16 ? 'text-[0.6rem]' : 'text-[0.55rem]';
   return (
     <span
-      className="relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted"
+      className="relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full border border-default-200/70 bg-default-100 dark:border-default-700/70 dark:bg-default-900/90"
       style={{ width: size, height: size }}
       title={name}
     >
@@ -51,52 +51,37 @@ export function SparseCreatorByline({
   collaborators,
 }: SparseCreatorBylineProps) {
   const collabs = collaborators ?? [];
-  const multiStack = collabs.length > 1;
   const avatar = 16;
-  const stack = 18;
+  const collaboratorLabel =
+    collabs.length === 1
+      ? collabs[0]!.name
+      : collabs.length > 1
+        ? `${collabs.length} collaborators`
+        : null;
 
   return (
     <div
-      className="flex min-w-0 flex-nowrap items-center gap-x-1 overflow-hidden text-[0.8125rem] leading-none text-muted-foreground"
+      className="flex min-w-0 flex-nowrap items-center gap-x-1.5 overflow-hidden text-[0.78rem] leading-none text-muted-foreground"
       data-testid="product-creators-byline"
     >
       <SmallAvatar name={creatorName} src={creatorAvatarUrl} size={avatar} />
       <span
-        className="min-w-0 shrink truncate py-px font-medium leading-tight text-foreground/85"
+        className="min-w-0 shrink truncate py-px font-medium leading-tight text-foreground/78"
         title={creatorName}
       >
         {creatorName}
       </span>
 
-      {collabs.length === 1 ? (
+      {collaboratorLabel ? (
         <>
-          <span className="shrink-0 font-normal">and</span>
-          <SmallAvatar name={collabs[0]!.name} src={collabs[0]!.avatarUrl} size={avatar} />
-          <span
-            className="min-w-0 flex-1 truncate py-px font-medium leading-tight text-foreground/85"
-            title={collabs[0]!.name}
-          >
-            {collabs[0]!.name}
+          <span className="shrink-0 text-foreground/28" aria-hidden>
+            ·
           </span>
-        </>
-      ) : null}
-
-      {multiStack ? (
-        <>
-          <span className="shrink-0 font-normal">·</span>
           <span
-            className="inline-flex min-w-0 shrink items-center -space-x-1.5 overflow-hidden"
-            aria-label={collabs.map((c) => c.name).join(', ')}
+            className="min-w-0 flex-1 truncate py-px font-normal leading-tight text-foreground/56"
+            title={collaboratorLabel}
           >
-            {collabs.map((c, i) => (
-              <span
-                key={`${c.name}-${i}`}
-                className="relative shrink-0"
-                style={{ zIndex: collabs.length - i }}
-              >
-                <SmallAvatar name={c.name} src={c.avatarUrl} size={stack} />
-              </span>
-            ))}
+            {collaboratorLabel}
           </span>
         </>
       ) : null}

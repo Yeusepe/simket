@@ -38,11 +38,11 @@ function mergeItems(
   const deduplicated = new Map<string, DiscoveryFeedItem>();
 
   for (const item of existing) {
-    deduplicated.set(item.productId, item);
+    deduplicated.set(item.product.id, item);
   }
 
   for (const item of incoming) {
-    deduplicated.set(item.productId, item);
+    deduplicated.set(item.product.id, item);
   }
 
   return [...deduplicated.values()];
@@ -137,7 +137,7 @@ export function useDiscovery(
           userId,
           pageSize,
           cursor,
-          excludeIds: append ? itemsRef.current.map((item) => item.productId) : [],
+          excludeIds: append ? itemsRef.current.map((item) => item.product.id) : [],
         });
 
         setItems((current) => {

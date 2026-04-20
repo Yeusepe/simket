@@ -102,8 +102,8 @@ export function SpotlightHeroFooter({
               className={
                 footerColors
                   ? compact
-                    ? 'h-6 min-h-6 shrink-0 rounded-full border border-white/15 px-2 text-[0.6rem] leading-none text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.16),0_10px_30px_rgba(2,6,23,0.18)] backdrop-blur-xl'
-                    : 'h-7 min-h-7 shrink-0 rounded-full border border-white/15 px-3 text-[0.7rem] leading-none text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.16),0_10px_30px_rgba(2,6,23,0.18)] backdrop-blur-xl max-sm:h-6 max-sm:min-h-6 max-sm:px-2 max-sm:text-[0.65rem] sm:text-xs'
+                    ? 'h-6 min-h-6 shrink-0 rounded-full border px-2 text-[0.6rem] leading-none shadow-none'
+                    : 'h-7 min-h-7 shrink-0 rounded-full border px-3 text-[0.7rem] leading-none shadow-none max-sm:h-6 max-sm:min-h-6 max-sm:px-2 max-sm:text-[0.65rem] sm:text-xs'
                   : compact
                     ? 'h-6 min-h-6 shrink-0 rounded-full bg-white px-2 text-[0.6rem] leading-none text-default-foreground shadow-none'
                     : 'h-7 min-h-7 shrink-0 rounded-full bg-white px-3 text-[0.7rem] leading-none text-default-foreground shadow-none max-sm:h-6 max-sm:min-h-6 max-sm:px-2 max-sm:text-[0.65rem] sm:text-xs'
@@ -111,10 +111,8 @@ export function SpotlightHeroFooter({
               style={
                 footerColors
                   ? {
-                      backgroundColor: `color-mix(in srgb, ${footerColors.ctaBackground} 78%, transparent)`,
-                      backgroundImage:
-                        'linear-gradient(135deg, color-mix(in srgb, white 16%, transparent), transparent)',
-                      borderColor: `color-mix(in srgb, ${footerColors.ctaForeground} 22%, transparent)`,
+                      backgroundColor: footerColors.ctaBackground,
+                      borderColor: `color-mix(in srgb, ${footerColors.ctaForeground} 36%, transparent)`,
                       color: footerColors.ctaForeground,
                     }
                   : undefined

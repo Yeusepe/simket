@@ -15,6 +15,7 @@
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
+import { makeProductListItem, resetProductCounter } from '../../types/product.factory';
 import type {
   DiscoveryFeedItem,
   DiscoveryPage,
@@ -26,13 +27,15 @@ function makeDiscoveryItem(
   overrides: Partial<DiscoveryFeedItem> = {},
 ): DiscoveryFeedItem {
   return {
-    productId: `product-${index}`,
-    slug: `product-${index}`,
-    name: `Discovery Product ${index}`,
-    imageUrl: `https://cdn.example.com/products/${index}.webp`,
-    price: 999 + index,
-    currencyCode: 'USD',
-    creatorName: `Creator ${index}`,
+    product: makeProductListItem({
+      id: `product-${index}`,
+      slug: `product-${index}`,
+      name: `Discovery Product ${index}`,
+      heroImageUrl: `https://cdn.example.com/products/${index}.webp`,
+      priceMin: 999 + index,
+      priceMax: 999 + index,
+      creatorName: `Creator ${index}`,
+    }),
     reason: `Because you bought Collection ${index}`,
     score: 1 - index / 100,
     source: 'purchase-history',
@@ -54,6 +57,7 @@ function page(
 
 describe('useDiscovery', () => {
   it('loads the first page on mount', async () => {
+    resetProductCounter();
     const fetcher: DiscoveryFetcher = vi.fn(async () =>
       page([makeDiscoveryItem(1), makeDiscoveryItem(2)], 'cursor-2'),
     );
@@ -77,6 +81,7 @@ describe('useDiscovery', () => {
   });
 
   it('appends items when loadMore is called', async () => {
+    resetProductCounter();
     const fetcher: DiscoveryFetcher = vi
       .fn()
       .mockResolvedValueOnce(page([makeDiscoveryItem(1)], 'cursor-1'))
@@ -94,7 +99,7 @@ describe('useDiscovery', () => {
 
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
-    expect(result.current.items.map((item) => item.productId)).toEqual([
+    expect(result.current.items.map((item) => item.product.id)).toEqual([
       'product-1',
       'product-2',
     ]);
@@ -107,6 +112,7 @@ describe('useDiscovery', () => {
   });
 
   it('captures fetch errors and retries the failed request', async () => {
+    resetProductCounter();
     const fetcher: DiscoveryFetcher = vi
       .fn()
       .mockRejectedValueOnce(new Error('Network down'))
@@ -131,6 +137,7 @@ describe('useDiscovery', () => {
   });
 
   it('marks the feed as complete when no next cursor is returned', async () => {
+    resetProductCounter();
     const fetcher: DiscoveryFetcher = vi.fn(async () =>
       page([makeDiscoveryItem(1), makeDiscoveryItem(2)], undefined),
     );

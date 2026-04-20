@@ -64,7 +64,7 @@ describe('BentoHeroFrame', () => {
       />,
     );
 
-    expect(screen.getByRole('button', { name: '€35.00+' })).toHaveClass('backdrop-blur-xl');
+    expect(screen.getByRole('button', { name: '€35.00+' })).not.toHaveClass('backdrop-blur-xl');
 
     rerender(
       <BentoHeroFrame

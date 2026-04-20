@@ -9,11 +9,11 @@
  * Tests:
  *   - Type-only module; validated through component tests
  */
-import type { ProductListItem } from '../types/product';
-import type { EditorialSection, EditorialItem } from '../components/today/today-types';
-import type { DiscoveryFeedItem } from '../components/discovery/discovery-types';
-import type { DashboardStats, ActivityItem, QuickAction } from '../components/dashboard/dashboard-types';
-import type { AppNotification } from '../types/notifications';
+import type { ProductListItem } from './types/product';
+import type { EditorialSection, EditorialItem } from './components/today/today-types';
+import type { DiscoveryFeedItem } from './components/discovery/discovery-types';
+import type { DashboardStats, ActivityItem, QuickAction } from './components/dashboard/dashboard-types';
+import type { AppNotification } from './types/notifications';
 
 /** Deterministic, typically full-color photos (avoids grayscale-heavy IDs in local dev). */
 function picsumSeed(path: string, w: number, h: number): string {
@@ -294,116 +294,60 @@ export const MOCK_EDITORIAL_SECTIONS: readonly EditorialSection[] = [
 
 export const MOCK_DISCOVERY_ITEMS: readonly DiscoveryFeedItem[] = [
   {
-    productId: 'prod-001',
-    slug: 'ethereal-avatar-base',
-    name: 'Ethereal Avatar Base',
-    imageUrl: picsumSeed('simket-prod-001-discovery', 600, 340),
-    price: 2999,
-    currencyCode: 'USD',
-    creatorName: 'Nova Studio',
+    product: MOCK_PRODUCTS[0]!,
     reason: 'Because you bought avatar tools',
     score: 0.95,
     source: 'collaborative-filtering',
     variantId: 'var-001',
-    previewColor: MOCK_PREVIEW.violet,
   },
   {
-    productId: 'prod-002',
-    slug: 'pixel-dust-shader-pack',
-    name: 'Pixel Dust Shader Pack',
-    imageUrl: picsumSeed('simket-prod-002-discovery', 600, 340),
-    price: 1499,
-    currencyCode: 'USD',
-    creatorName: 'ShaderLab',
+    product: MOCK_PRODUCTS[1]!,
     reason: 'Popular in Unity tools',
     score: 0.88,
     source: 'content-based',
     variantId: 'var-002',
-    previewColor: MOCK_PREVIEW.sky,
   },
   {
-    productId: 'prod-003',
-    slug: 'cozy-cabin-world',
-    name: 'Cozy Cabin World',
-    imageUrl: picsumSeed('simket-prod-003-discovery', 600, 340),
-    price: 999,
-    currencyCode: 'USD',
-    creatorName: 'WorldCraft',
+    product: MOCK_PRODUCTS[2]!,
     reason: 'Trending in worlds',
     score: 0.82,
     source: 'popularity',
     variantId: 'var-003',
-    previewColor: MOCK_PREVIEW.emerald,
   },
   {
-    productId: 'prod-004',
-    slug: 'neon-clothing-set',
-    name: 'Neon Clothing Set',
-    imageUrl: picsumSeed('simket-prod-004-discovery', 600, 340),
-    price: 799,
-    currencyCode: 'USD',
-    creatorName: 'VoxelWear',
+    product: MOCK_PRODUCTS[3]!,
     reason: 'Matches your style',
     score: 0.79,
     source: 'collaborative-filtering',
     variantId: 'var-004',
-    previewColor: MOCK_PREVIEW.pink,
   },
   {
-    productId: 'prod-005',
-    slug: 'ambient-soundscape-vol-1',
-    name: 'Ambient Soundscape Vol. 1',
-    imageUrl: picsumSeed('simket-prod-005-discovery', 600, 340),
-    price: 499,
-    currencyCode: 'USD',
-    creatorName: 'SoundSphere',
+    product: MOCK_PRODUCTS[4]!,
     reason: 'World builders also bought',
     score: 0.74,
     source: 'collaborative-filtering',
     variantId: 'var-005',
-    previewColor: MOCK_PREVIEW.amber,
   },
   {
-    productId: 'prod-006',
-    slug: 'particle-fx-toolkit',
-    name: 'Particle FX Toolkit',
-    imageUrl: picsumSeed('simket-prod-006-discovery', 600, 340),
-    price: 1999,
-    currencyCode: 'USD',
-    creatorName: 'FXForge',
+    product: MOCK_PRODUCTS[5]!,
     reason: 'Top rated in VFX',
     score: 0.71,
     source: 'content-based',
     variantId: 'var-006',
-    previewColor: MOCK_PREVIEW.indigo,
   },
   {
-    productId: 'prod-007',
-    slug: 'retro-prop-collection',
-    name: 'Retro Prop Collection',
-    imageUrl: picsumSeed('simket-prod-007-discovery', 600, 340),
-    price: 599,
-    currencyCode: 'USD',
-    creatorName: 'PolyProps',
+    product: MOCK_PRODUCTS[6]!,
     reason: 'New release',
     score: 0.68,
     source: 'recency',
     variantId: 'var-007',
-    previewColor: MOCK_PREVIEW.teal,
   },
   {
-    productId: 'prod-008',
-    slug: 'dynamic-tail-physics',
-    name: 'Dynamic Tail Physics',
-    imageUrl: picsumSeed('simket-prod-008-discovery', 600, 340),
-    price: 399,
-    currencyCode: 'USD',
-    creatorName: 'PhysicsWorks',
+    product: MOCK_PRODUCTS[7]!,
     reason: 'Avatar creators love this',
     score: 0.65,
     source: 'collaborative-filtering',
     variantId: 'var-008',
-    previewColor: MOCK_PREVIEW.orange,
   },
 ];
 

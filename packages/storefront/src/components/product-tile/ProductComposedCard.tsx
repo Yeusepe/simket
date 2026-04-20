@@ -1,6 +1,10 @@
-import type { JSX, ReactNode } from 'react';
+import type { ReactNode } from 'react';
 
-import { ProductTileCard } from './ProductTileCard';
+import {
+  ProductTileCard,
+  type ProductTileArticleProps,
+  type ProductTileSectionProps,
+} from './ProductTileCard';
 import { ProductTileMetaBlock, ProductTilePriceRow } from './ProductTileSections';
 import { SparseCreatorByline } from './SparseCreatorByline';
 import type { ProductCreatorRef } from '../../types/product';
@@ -10,6 +14,7 @@ export interface ProductComposedCardProps {
   readonly title: string;
   readonly imageUrl: string | null | undefined;
   readonly imageAlt: string;
+  readonly shellColor?: string | null;
   readonly placeholderTestId?: string;
   readonly overlayTopRight?: ReactNode;
   readonly metaTop: ReactNode;
@@ -20,8 +25,8 @@ export interface ProductComposedCardProps {
   readonly footerLeft: ReactNode;
   readonly footerRight?: ReactNode;
   readonly articleClassName?: string;
-  readonly articleProps?: JSX.IntrinsicElements['article'];
-  readonly priceStripeProps?: JSX.IntrinsicElements['section'];
+  readonly articleProps?: ProductTileArticleProps;
+  readonly priceStripeProps?: ProductTileSectionProps;
 }
 
 /**
@@ -33,6 +38,7 @@ export function ProductComposedCard({
   title,
   imageUrl,
   imageAlt,
+  shellColor,
   placeholderTestId,
   overlayTopRight,
   metaTop,
@@ -52,6 +58,7 @@ export function ProductComposedCard({
       title={title}
       imageUrl={imageUrl}
       imageAlt={imageAlt}
+      shellColor={shellColor}
       placeholderTestId={placeholderTestId}
       overlayTopRight={overlayTopRight}
       articleClassName={articleClassName}

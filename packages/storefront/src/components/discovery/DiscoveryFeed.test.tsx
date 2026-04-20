@@ -15,15 +15,22 @@
 
 import type { ReactNode } from 'react';
 import { render, screen } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { makeProductListItem, resetProductCounter } from '../../types/product.factory';
 import { DiscoveryFeed } from './DiscoveryFeed';
 import type { DiscoveryFeedItem } from './discovery-types';
 import type { UseDiscoveryReturn } from './use-discovery';
 
 function renderWithRouter(node: ReactNode) {
-  return render(<MemoryRouter>{node}</MemoryRouter>);
+  const queryClient = new QueryClient();
+  return render(
+    <QueryClientProvider client={queryClient}>
+      <MemoryRouter>{node}</MemoryRouter>
+    </QueryClientProvider>,
+  );
 }
 
 function makeDiscoveryItem(
@@ -31,13 +38,15 @@ function makeDiscoveryItem(
   overrides: Partial<DiscoveryFeedItem> = {},
 ): DiscoveryFeedItem {
   return {
-    productId: `product-${index}`,
-    slug: `product-${index}`,
-    name: `Discovery Product ${index}`,
-    imageUrl: `https://cdn.example.com/products/${index}.webp`,
-    price: 1000 + index,
-    currencyCode: 'USD',
-    creatorName: `Creator ${index}`,
+    product: makeProductListItem({
+      id: `product-${index}`,
+      slug: `product-${index}`,
+      name: `Discovery Product ${index}`,
+      heroImageUrl: `https://cdn.example.com/products/${index}.webp`,
+      priceMin: 1000 + index,
+      priceMax: 1000 + index,
+      creatorName: `Creator ${index}`,
+    }),
     reason: `Because you bought Collection ${index}`,
     score: 0.9 - index / 100,
     source: 'purchase-history',
@@ -81,6 +90,7 @@ class MockIntersectionObserver {
 
 describe('DiscoveryFeed', () => {
   beforeEach(() => {
+    resetProductCounter();
     MockIntersectionObserver.instances = [];
     Object.defineProperty(window, 'IntersectionObserver', {
       writable: true,

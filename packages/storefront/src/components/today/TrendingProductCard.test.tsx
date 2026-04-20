@@ -29,12 +29,15 @@ describe('TrendingProductCard', () => {
     renderCard(product);
 
     expect(screen.getByTestId('trending-product-card')).toBeInTheDocument();
+    expect(screen.getByTestId('trending-product-card')).toHaveAttribute('data-shell-color', '#8b5cf6');
+    expect(screen.getByTestId('trending-product-card')).toHaveAttribute('data-surface-theme', 'leonardo');
     expect(screen.getByTestId('trending-product-tags')).toBeInTheDocument();
     expect(screen.getByTestId('product-creators-byline')).toBeInTheDocument();
     expect(screen.getByTestId('trending-product-price')).toBeInTheDocument();
     expect(screen.getByText('Alex Kim')).toBeInTheDocument();
-    expect(within(screen.getByTestId('trending-product-price')).getByRole('button')).toHaveClass(
-      'font-semibold',
+    expect(within(screen.getByTestId('trending-product-price')).getByRole('link')).toHaveAttribute(
+      'href',
+      '/product/product-1',
     );
   });
 });

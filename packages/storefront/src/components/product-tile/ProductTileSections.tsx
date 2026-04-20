@@ -17,7 +17,7 @@ export function ProductTileMetaBlock({
 }: ProductTileMetaBlockProps) {
   return (
     <div className="flex flex-col gap-2">
-      <div className="min-h-[1rem]">{top}</div>
+      <div className="min-h-[0.875rem]">{top}</div>
       <div className="min-h-[1rem]" data-testid={bylineWrapperTestId}>
         {byline}
       </div>
@@ -35,7 +35,7 @@ interface ProductTilePriceRowProps {
  */
 export function ProductTilePriceRow({ left, right }: ProductTilePriceRowProps) {
   return (
-    <div className="flex w-full items-center justify-between gap-3">
+    <div className="flex w-full items-end justify-between gap-3 pt-2.5">
       <div className="min-w-0 flex-1">{left}</div>
       {right ? <div className="shrink-0">{right}</div> : null}
     </div>

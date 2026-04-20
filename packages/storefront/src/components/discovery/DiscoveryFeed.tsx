@@ -82,7 +82,7 @@ export function DiscoveryFeed({
     <div className="space-y-6">
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {items.map((item) => (
-          <DiscoveryCard key={item.productId} item={item} />
+          <DiscoveryCard key={item.product.id} item={item} />
         ))}
         {isLoading && items.length === 0 && Array.from({ length: 4 }, (_, index) => (
           <DiscoveryCardSkeleton key={`skeleton-${index}`} />
