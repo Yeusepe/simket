@@ -25,8 +25,12 @@ export interface DiscoveryResponse {
   readonly totalEstimate: number;
 }
 
+export interface DiscoveryProductReference {
+  readonly id: string;
+}
+
 export interface DiscoveryItem {
-  readonly productId: string;
+  readonly product: DiscoveryProductReference;
   readonly score: number;
   readonly reason: string;
   readonly source: string;

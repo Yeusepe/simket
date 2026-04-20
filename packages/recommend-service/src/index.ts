@@ -39,6 +39,7 @@ export {
 } from './discovery/index.js';
 export type {
   DiscoveryItem,
+  DiscoveryProductReference,
   DiscoveryRequest,
   DiscoveryResponse,
 } from './discovery/index.js';

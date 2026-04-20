@@ -74,7 +74,9 @@ function toDiscoveryItem(candidate: ScoredCandidate): DiscoveryItem {
   const reason = candidate.metadata?.reason;
 
   return {
-    productId: candidate.productId,
+    product: {
+      id: candidate.productId,
+    },
     score: candidate.score,
     reason: typeof reason === 'string' && reason.length > 0
       ? reason

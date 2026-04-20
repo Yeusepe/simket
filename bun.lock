@@ -110,12 +110,14 @@
         "@uppy/core": "^5.2.0",
         "@uppy/react": "^5.2.0",
         "@uppy/tus": "^5.1.1",
+        "clsx": "^2.1.1",
         "convex": "^1.28.3",
         "isomorphic-dompurify": "2.29.0",
         "react": "^19.2.5",
         "react-dom": "^19.2.5",
         "react-router-dom": "^7.14.1",
         "recharts": "^3.8.1",
+        "tailwind-merge": "^3.5.0",
         "wrangler": "^4.83.0",
         "zustand": "^5.0.12",
       },
@@ -2763,7 +2765,7 @@
 
     "tagged-tag": ["tagged-tag@1.0.0", "", {}, "sha512-yEFYrVhod+hdNyx7g5Bnkkb0G6si8HJurOoOEgC8B/O0uXLHlaey/65KRv6cuWBNhBgHKAROVpc7QyYqE5gFng=="],
 
-    "tailwind-merge": ["tailwind-merge@3.4.0", "", {}, "sha512-uSaO4gnW+b3Y2aWoWfFpX62vn2sR3skfhbjsEnaBI81WD1wBLlHZe5sWf0AqjksNdYTbGBEd0UasQMT3SNV15g=="],
+    "tailwind-merge": ["tailwind-merge@3.5.0", "", {}, "sha512-I8K9wewnVDkL1NTGoqWmVEIlUcB9gFriAEkXkfCjX5ib8ezGxtR3xD7iZIxrfArjEsH7F1CHD4RFUtxefdqV/A=="],
 
     "tailwind-variants": ["tailwind-variants@3.2.2", "", { "peerDependencies": { "tailwind-merge": ">=3.0.0", "tailwindcss": "*" }, "optionalPeers": ["tailwind-merge"] }, "sha512-Mi4kHeMTLvKlM98XPnK+7HoBPmf4gygdFmqQPaDivc3DpYS6aIY6KiG/PgThrGvii5YZJqRsPz0aPyhoFzmZgg=="],
 
@@ -3036,6 +3038,8 @@
     "@graphql-tools/wrap/@graphql-tools/schema": ["@graphql-tools/schema@10.0.32", "", { "dependencies": { "@graphql-tools/merge": "^9.1.8", "@graphql-tools/utils": "^11.0.1", "tslib": "^2.4.0" }, "peerDependencies": { "graphql": "^14.0.0 || ^15.0.0 || ^16.0.0 || ^17.0.0" } }, "sha512-kJ1Qn20MPnlaEVH37639E6rzQ1tEtr6XTUhNdR4EKydl+FijtLhWX2WLZbGnvrYuG8XUcMxsZU9mRRYYNvK02w=="],
 
     "@graphql-tools/wrap/@graphql-tools/utils": ["@graphql-tools/utils@11.0.1", "", { "dependencies": { "@graphql-typed-document-node/core": "^3.1.1", "@whatwg-node/promise-helpers": "^1.0.0", "cross-inspect": "1.0.1", "tslib": "^2.4.0" }, "peerDependencies": { "graphql": "^14.0.0 || ^15.0.0 || ^16.0.0 || ^17.0.0" } }, "sha512-pNyCOb95ab/z3zkkiPwIPYxigX7IcpyFVcgD1XACDEvg/7yGnKCESx3k/XHEeneKYx/aWKGzEh/uuf6M6Q8HOw=="],
+
+    "@heroui/react/tailwind-merge": ["tailwind-merge@3.4.0", "", {}, "sha512-uSaO4gnW+b3Y2aWoWfFpX62vn2sR3skfhbjsEnaBI81WD1wBLlHZe5sWf0AqjksNdYTbGBEd0UasQMT3SNV15g=="],
 
     "@isaacs/cliui/string-width": ["string-width@5.1.2", "", { "dependencies": { "eastasianwidth": "^0.2.0", "emoji-regex": "^9.2.2", "strip-ansi": "^7.0.1" } }, "sha512-HnLOCR3vjcY8beoNLtcjZ5/nxn2afmME6lhrDrebokqMap+XbeW8n9TXpPDOqdGK5qcI3oT0GKTW6wC7EMiVqA=="],
 

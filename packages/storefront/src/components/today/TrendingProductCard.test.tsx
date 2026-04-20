@@ -18,7 +18,7 @@ function renderCard(product: ReturnType<typeof makeProductListItem>) {
 }
 
 describe('TrendingProductCard', () => {
-  it('renders bento-radius tile, md tags, byline, and price', () => {
+  it('renders neutral tile, tags, byline, and price', () => {
     resetProductCounter();
     const product = makeProductListItem({
       name: 'Ethereal Avatar Base',
@@ -34,11 +34,7 @@ describe('TrendingProductCard', () => {
     expect(screen.getByTestId('trending-product-price')).toBeInTheDocument();
     expect(screen.getByText('Alex Kim')).toBeInTheDocument();
     expect(within(screen.getByTestId('trending-product-price')).getByRole('button')).toHaveClass(
-      'backdrop-blur-xl',
+      'font-semibold',
     );
-
-    const shell = document.querySelector('[data-bento-text-themed="leonardo"]');
-    expect(shell).toBeTruthy();
-    expect(shell).toHaveStyle({ backgroundColor: '#8b5cf6' });
   });
 });

@@ -149,12 +149,12 @@ describe('DiscoveryService', () => {
       request({ cursor: firstPage.nextCursor }),
     );
 
-    expect(firstPage.items.map((item) => item.productId)).toEqual([
+    expect(firstPage.items.map((item) => item.product.id)).toEqual([
       'product-1',
       'product-2',
     ]);
     expect(firstPage.nextCursor).toBeDefined();
-    expect(finalPage.items.map((item) => item.productId)).toEqual(['product-3']);
+    expect(finalPage.items.map((item) => item.product.id)).toEqual(['product-3']);
     expect(finalPage.nextCursor).toBeUndefined();
   });
 
@@ -175,7 +175,7 @@ describe('DiscoveryService', () => {
       request({ excludeIds: ['product-2'], pageSize: 5 }),
     );
 
-    expect(response.items.map((item) => item.productId)).toEqual([
+    expect(response.items.map((item) => item.product.id)).toEqual([
       'product-1',
       'product-3',
     ]);
@@ -188,7 +188,7 @@ describe('DiscoveryService', () => {
       request({ userId: 'new-user', pageSize: 3 }),
     );
 
-    expect(response.items.map((item) => item.productId)).toEqual([
+    expect(response.items.map((item) => item.product.id)).toEqual([
       'popular-1',
       'popular-2',
       'popular-3',
@@ -203,7 +203,7 @@ describe('DiscoveryService', () => {
       request({ userId: 'ordered-user', pageSize: 5 }),
     );
 
-    expect(response.items.map((item) => [item.productId, item.score])).toEqual([
+    expect(response.items.map((item) => [item.product.id, item.score])).toEqual([
       ['product-b', 0.9],
       ['product-c', 0.6],
       ['product-a', 0.3],

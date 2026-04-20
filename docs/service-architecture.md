@@ -41,7 +41,7 @@ Exposed as an Encore service. Not directly accessible by clients.
 ```
 POST /recommend/candidates
   Request:  { userId, context: { recentPurchases, tags, sessionSignals } }
-  Response: { candidates: [{ productId, score, source, metadata }] }
+  Response: { candidates: [{ product: { id }, score, source, metadata }] }
 
 POST /recommend/feedback
   Request:  { userId, productId, action: "click" | "purchase" | "dismiss" }

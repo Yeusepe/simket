@@ -1,20 +1,17 @@
 /**
- * Purpose: Today “Trending” carousel tile — thin wrapper around {@link ProductTileCard}.
- * Governing docs:
- *   - docs/architecture.md
+ * Purpose: Today “Trending” carousel tile — minimal layout on {@link ProductTileCard}.
  * Tests:
  *   - packages/storefront/src/components/today/TrendingProductCard.test.tsx
  */
-import { Button } from '@heroui/react';
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import type { JSX } from 'react';
 
 import type { ProductListItem } from '../../types/product';
 import type { WishlistApi } from '../../types/wishlist';
-import { ProductCreatorsByline } from '../creators';
-import { ProductTileCard } from '../product-tile';
-import { WishlistButton } from '../wishlist';
+import { ProductComposedCard } from '../product-tile/ProductComposedCard';
 import { formatPrice } from '../ProductCard';
+import { WishlistButton } from '../wishlist';
 import { TrendingProductTags } from './TrendingProductTags';
 
 export interface TrendingProductCardProps {
@@ -22,6 +19,8 @@ export interface TrendingProductCardProps {
   readonly href?: string;
   readonly wishlistApi?: WishlistApi;
   readonly showWishlistButton?: boolean;
+  readonly articleClassName?: string;
+  readonly articleProps?: JSX.IntrinsicElements['article'];
 }
 
 export function TrendingProductCard({
@@ -29,6 +28,8 @@ export function TrendingProductCard({
   href,
   wishlistApi,
   showWishlistButton = true,
+  articleClassName,
+  articleProps,
 }: TrendingProductCardProps) {
   const navigate = useNavigate();
 
@@ -44,64 +45,56 @@ export function TrendingProductCard({
   const productHref = href ?? `/product/${product.slug}`;
 
   return (
-    <ProductTileCard
-      shellColor={product.previewColor}
+    <ProductComposedCard
       productHref={productHref}
       title={product.name}
       imageUrl={product.heroImageUrl}
       imageAlt={product.name}
-      shellAccent={product.previewColor}
       placeholderTestId="trending-product-card-placeholder"
       overlayTopRight={
         showWishlistButton ? (
           <WishlistButton
             api={wishlistApi}
-            className="absolute right-3 top-3 z-20"
+            className="absolute right-3.5 top-3.5 z-20"
             productId={product.id}
           />
         ) : undefined
       }
-      articleProps={{ 'data-testid': 'trending-product-card' }}
+      articleClassName={articleClassName}
+      articleProps={articleProps ?? { 'data-testid': 'trending-product-card' }}
+      metaTop={<TrendingProductTags tags={product.tags} size="md" />}
+      bylineWrapperTestId="trending-product-footer-row"
+      creatorName={product.creatorName}
+      creatorAvatarUrl={product.creatorAvatarUrl}
+      collaborators={product.collaborators}
       priceStripeProps={{
         'data-testid': 'trending-product-price',
         'aria-label': `Price ${priceDisplay}`,
       }}
-      linkBodyExtra={({ footerColors, shellColor }) => (
-        <>
-          <TrendingProductTags tags={product.tags} footerColors={footerColors} size="md" />
-          <div data-testid="trending-product-footer-row">
-            <ProductCreatorsByline
-              creatorName={product.creatorName}
-              creatorAvatarUrl={product.creatorAvatarUrl}
-              collaborators={product.collaborators}
-              footerColors={footerColors}
-              shellColor={shellColor}
-              showRoleIcons={false}
-              density="comfortable"
-            />
-          </div>
-        </>
-      )}
-      priceSection={({ footerColors }) => (
-        <Button
+      footerLeft={
+        <button
           type="button"
-          size="lg"
-          variant="primary"
-          className="h-auto min-h-0 w-full justify-start rounded-xl border border-white/15 px-3 py-2 text-left font-semibold tabular-nums text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.16),0_10px_30px_rgba(2,6,23,0.18)] backdrop-blur-xl sm:text-lg"
-          style={{
-            backgroundColor: `color-mix(in srgb, ${footerColors.ctaBackground} 78%, transparent)`,
-            backgroundImage:
-              'linear-gradient(135deg, color-mix(in srgb, white 16%, transparent), transparent)',
-            borderColor: `color-mix(in srgb, ${footerColors.ctaForeground} 22%, transparent)`,
-            color: footerColors.ctaForeground,
-          }}
-          onPress={() => {
+          className="cursor-pointer rounded-md py-0.5 text-left text-base font-semibold tabular-nums text-foreground underline-offset-4 transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+          onClick={() => {
             navigate(productHref);
           }}
         >
           {priceDisplay}
-        </Button>
-      )}
+        </button>
+      }
+      footerRight={
+        product.averageRating != null ? (
+          <span
+            className="text-xs tabular-nums text-muted-foreground"
+            aria-label={`${product.averageRating.toFixed(1)} rating${product.reviewCount != null && product.reviewCount > 0 ? `, ${product.reviewCount} reviews` : ''}`}
+          >
+            {product.averageRating.toFixed(1)}
+            {product.reviewCount != null && product.reviewCount > 0
+              ? ` · ${product.reviewCount.toLocaleString('en-US')}`
+              : ''}
+          </span>
+        ) : null
+      }
     />
   );
 }

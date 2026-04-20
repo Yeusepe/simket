@@ -1,25 +1,15 @@
 /**
- * Purpose: Single Leonardo-themed product tile — square hero, shell surface, title column,
- * price row. Used by Today trending and Discovery so layout and theming stay in sync.
- * Governing docs:
- *   - docs/architecture.md
+ * Purpose: Product tile — portrait hero and integrated content block (no floating overlay card).
+ * Used by Today trending and Discovery.
  */
-import type { ComponentPropsWithoutRef, CSSProperties, ReactNode } from 'react';
-import { useMemo } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
+import type { JSX } from 'react';
+
+import { cn } from '@/lib/utils';
 import { Link } from 'react-router-dom';
 
-import type { BentoSpotlightFooterColors } from '../../color/leonardo-theme';
-import { createBentoSpotlightFooterColors, shellHarmonyDividerColor } from '../../color/leonardo-theme';
-import { DEFAULT_BENTO_SHELL_COLOR } from '../today/BentoHeroFrame';
-
-export { DEFAULT_BENTO_SHELL_COLOR };
-
-/** Passed to {@link ProductTileCard} render slots so children can use the same Leonardo theme. */
-export interface ProductTileShellRenderProps {
-  readonly footerColors: BentoSpotlightFooterColors;
-  readonly shellColor: string;
-  readonly priceDividerColor: string;
-}
+/** Slot context (reserved; callers may ignore). */
+export type ProductTileShellRenderProps = Record<string, never>;
 
 function renderShellSlot(
   slot: ReactNode | ((props: ProductTileShellRenderProps) => ReactNode),
@@ -29,34 +19,24 @@ function renderShellSlot(
 }
 
 export interface ProductTileCardProps {
-  /** Listing / CMS tint; defaults to violet-200. */
-  readonly shellColor?: string | null;
   readonly productHref: string;
   readonly title: string;
   readonly imageUrl: string | null | undefined;
   readonly imageAlt: string;
-  /** Usually same as `previewColor` — drives no-image placeholder gradient. */
-  readonly shellAccent?: string | null;
   readonly placeholderTestId?: string;
-  /** e.g. wishlist — absolutely positioned top-right of the tile. */
   readonly overlayTopRight?: ReactNode;
-  /** Content below the title inside the product link (tags, byline, chips, …). */
   readonly linkBodyExtra: ReactNode | ((props: ProductTileShellRenderProps) => ReactNode);
-  /** Full contents of the bottom bordered stripe (price, actions). */
   readonly priceSection: ReactNode | ((props: ProductTileShellRenderProps) => ReactNode);
   readonly articleClassName?: string;
-  readonly articleProps?: ComponentPropsWithoutRef<'article'>;
-  /** Extra props on the bottom bordered stripe (e.g. `data-testid`, `aria-label`). */
-  readonly priceStripeProps?: ComponentPropsWithoutRef<'section'>;
+  readonly articleProps?: JSX.IntrinsicElements['article'];
+  readonly priceStripeProps?: JSX.IntrinsicElements['section'];
 }
 
 export function ProductTileCard({
-  shellColor: shellColorProp,
   productHref,
   title,
   imageUrl,
   imageAlt,
-  shellAccent,
   placeholderTestId,
   overlayTopRight,
   linkBodyExtra,
@@ -65,88 +45,84 @@ export function ProductTileCard({
   articleProps,
   priceStripeProps,
 }: ProductTileCardProps) {
-  const shellColor = shellColorProp ?? DEFAULT_BENTO_SHELL_COLOR;
-  const footerColors = useMemo(
-    () => createBentoSpotlightFooterColors(shellColor, { contrastSurface: 'solidShell' }),
-    [shellColor],
-  );
-  const priceDividerColor = useMemo(
-    () => shellHarmonyDividerColor(shellColor),
-    [shellColor],
-  );
-  const usesReadingScrim =
-    footerColors.surface.trim().toLowerCase() !== shellColor.trim().toLowerCase();
-  const shellBodyStyle = usesReadingScrim
-    ? ({
-        backgroundImage: `linear-gradient(180deg, color-mix(in srgb, ${footerColors.surface} 70%, ${shellColor}) 0%, color-mix(in srgb, ${footerColors.surface} 88%, ${shellColor}) 100%)`,
-      } satisfies CSSProperties)
-    : undefined;
+  const shellCtx: ProductTileShellRenderProps = {};
 
-  const shellCtx: ProductTileShellRenderProps = {
-    footerColors,
-    shellColor,
-    priceDividerColor,
-  };
-
-  const articleClass = [
-    'flex h-full min-h-0 flex-1 flex-col overflow-hidden rounded-[2rem] bg-content1 transition-transform duration-200 hover:-translate-y-0.5 focus-within:ring-2 focus-within:ring-primary',
+  const articleClass = cn(
+    'group relative flex h-full min-h-0 flex-1 flex-col overflow-visible text-foreground',
     articleClassName,
     articleProps?.className,
-  ]
-    .filter(Boolean)
-    .join(' ');
+  );
 
-  const { className: _a, ...articleRest } = articleProps ?? {};
+  const { className: _a, style: articleStyleFromProps, ...articleDomRest } = articleProps ?? {};
 
-  const inner = (
-    <article className={articleClass} {...articleRest}>
-      <div
-        className="flex min-h-0 flex-1 flex-col"
-        data-bento-text-themed="leonardo"
-        style={{
-          backgroundColor: shellColor,
-          ...(shellBodyStyle ?? {}),
-          color: footerColors.product,
-        }}
-      >
+  const frameClass = cn(
+    'relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-[1.25rem]',
+    'border border-default-200/65 bg-gradient-to-b from-default-100/35 via-background to-background',
+    'dark:border-default-600/50 dark:from-default-900/60 dark:via-background dark:to-background',
+    'transition-[transform,border-color] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]',
+    'group-hover:-translate-y-1 group-hover:border-default-300/80 dark:group-hover:border-default-500/65',
+  );
+
+  const articleNode = (
+    <article
+      className={articleClass}
+      style={articleStyleFromProps as CSSProperties | undefined}
+      {...articleDomRest}
+    >
+      <div className={frameClass}>
         <Link
           to={productHref}
-          className="flex min-h-0 flex-1 flex-col outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary"
+          className={cn(
+            'flex w-full shrink-0 flex-col outline-none',
+            'focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-primary/55 focus-visible:ring-offset-2 focus-visible:ring-offset-background',
+          )}
         >
-          <div className="relative aspect-square w-full shrink-0 overflow-hidden bg-content1">
+          <div className="relative isolate aspect-[4/5] w-full shrink-0 overflow-hidden rounded-[0.875rem] bg-muted/25">
+            {overlayTopRight ? (
+              <div className="pointer-events-none absolute inset-x-0 top-0 z-20 flex justify-end p-3.5">
+                <div className="pointer-events-auto">{overlayTopRight}</div>
+              </div>
+            ) : null}
+
             {imageUrl ? (
               <img
                 src={imageUrl}
                 alt={imageAlt}
-                className="absolute inset-0 h-full w-full object-cover object-center"
+                className={cn(
+                  'absolute inset-0 size-full object-cover object-center',
+                  'transition-[transform,filter] duration-[1100ms] ease-[cubic-bezier(0.22,1,0.36,1)]',
+                  'group-hover:scale-[1.06] group-hover:saturate-[1.06]',
+                )}
                 loading="lazy"
               />
             ) : (
               <div
                 data-testid={placeholderTestId}
-                className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-primary/35 via-secondary/25 to-primary/50"
-                style={
-                  shellAccent
-                    ? {
-                        background: `linear-gradient(145deg, color-mix(in srgb, ${shellAccent} 55%, white), color-mix(in srgb, ${shellAccent} 18%, white))`,
-                      }
-                    : undefined
-                }
+                className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-muted/90 via-muted/50 to-muted/70"
               >
-                <span className="text-xs font-medium text-foreground/80">No image</span>
+                <span className="max-w-[12rem] text-center text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+                  No preview
+                </span>
               </div>
             )}
+
+            <div
+              className="pointer-events-none absolute inset-x-0 bottom-0 h-[32%] bg-gradient-to-t from-background/90 via-background/30 to-transparent dark:from-background/95 dark:via-background/25"
+              aria-hidden
+            />
           </div>
 
-          <div className="flex min-h-0 flex-1 flex-col px-4 pt-4">
-            <div className="flex min-h-0 flex-1 flex-col gap-3">
-              <h3
-                className="line-clamp-2 shrink-0 text-left text-sm font-bold leading-snug tracking-tight text-balance sm:text-base"
-                style={{ color: footerColors.product }}
-                title={title}
-              >
-                {title}
-              </h3>
+          <div className="px-3.5 pb-3 pt-3.5">
+            <h3
+              className={cn(
+                'line-clamp-2 text-left text-[0.9375rem] font-bold leading-[1.2] tracking-[-0.02em] text-balance text-foreground',
+                'sm:text-[1rem]',
+              )}
+              title={title}
+            >
+              {title}
+            </h3>
+            <div className="mt-2 flex flex-col gap-2 text-[0.8125rem] leading-snug text-foreground/90">
               {renderShellSlot(linkBodyExtra, shellCtx)}
             </div>
           </div>
@@ -154,18 +130,11 @@ export function ProductTileCard({
 
         <section
           {...priceStripeProps}
-          className={[
-            'w-full shrink-0 border-t border-solid px-4 pb-4 pt-4 text-left',
+          className={cn(
+            'border-t border-default-200/50 px-3.5 pb-2.5 pt-2 text-left dark:border-default-600/40',
             priceStripeProps?.className,
-          ]
-            .filter(Boolean)
-            .join(' ')}
-          style={{
-            ...(priceStripeProps?.style as CSSProperties | undefined),
-            borderTopColor: usesReadingScrim
-              ? `color-mix(in srgb, ${footerColors.product} 12%, transparent)`
-              : priceDividerColor,
-          }}
+          )}
+          style={priceStripeProps?.style as CSSProperties | undefined}
         >
           {renderShellSlot(priceSection, shellCtx)}
         </section>
@@ -173,14 +142,5 @@ export function ProductTileCard({
     </article>
   );
 
-  if (overlayTopRight) {
-    return (
-      <div className="relative flex h-full min-h-0 w-full flex-col">
-        {overlayTopRight}
-        {inner}
-      </div>
-    );
-  }
-
-  return inner;
+  return articleNode;
 }
