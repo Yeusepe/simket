@@ -10,7 +10,7 @@
  *   - packages/storefront/src/components/dashboard/products/ProductList.test.tsx
  *   - packages/storefront/src/components/dashboard/products/ProductForm.test.tsx
  */
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Button } from '@heroui/react';
 import {
   ProductForm,
@@ -19,35 +19,7 @@ import {
   type ProductSummary,
   useProducts,
 } from '../../components/dashboard';
-
-const SAMPLE_PRODUCTS: readonly ProductSummary[] = [
-  {
-    id: 'product-brush-pack',
-    name: 'Brush Pack',
-    slug: 'brush-pack',
-    price: 2500,
-    currency: 'USD',
-    visibility: 'published',
-    salesCount: 12,
-    revenue: 30000,
-    heroImageUrl: 'https://cdn.example.com/products/brush-pack/hero.webp',
-    createdAt: '2025-02-01T10:00:00.000Z',
-    updatedAt: '2025-02-02T10:00:00.000Z',
-  },
-  {
-    id: 'product-shader-pack',
-    name: 'Shader Pack',
-    slug: 'shader-pack',
-    price: 4500,
-    currency: 'USD',
-    visibility: 'draft',
-    salesCount: 3,
-    revenue: 13500,
-    heroImageUrl: 'https://cdn.example.com/products/shader-pack/hero.webp',
-    createdAt: '2025-03-01T10:00:00.000Z',
-    updatedAt: '2025-03-01T10:00:00.000Z',
-  },
-];
+import { createCreatorProductsApi } from '../../services/catalog-api';
 
 const PRODUCT_TAG_SUGGESTIONS = ['unity', 'shader', 'textures', 'tools', 'workflow'] as const;
 
@@ -75,7 +47,12 @@ function buildInitialFormData(summary: ProductSummary): Partial<ProductFormData>
 export function DashboardProductsPage() {
   const [editingProductId, setEditingProductId] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
-  const { products, actions } = useProducts({ initialProducts: SAMPLE_PRODUCTS });
+  const productsApi = useMemo(() => createCreatorProductsApi(), []);
+  const { products, actions, isLoading, error } = useProducts({ api: productsApi });
+
+  useEffect(() => {
+    void actions.fetchProducts();
+  }, [actions]);
 
   const editingProduct = useMemo(
     () => products.find((product) => product.id === editingProductId) ?? null,
@@ -125,6 +102,16 @@ export function DashboardProductsPage() {
 
   return (
     <div className="space-y-6">
+      {error ? (
+        <div className="rounded-2xl border border-danger/20 bg-danger/5 p-4 text-sm text-danger">
+          {error.message}
+        </div>
+      ) : null}
+      {isLoading && products.length === 0 ? (
+        <div className="rounded-2xl border border-border/70 bg-surface-secondary p-4 text-sm text-muted-foreground">
+          Loading creator products…
+        </div>
+      ) : null}
       {showForm ? (
         <div className="space-y-4">
           <div className="flex justify-end">

@@ -144,16 +144,20 @@ describe('useWishlist', () => {
       await result.current.addToWishlist('product-9', true);
     });
 
-    expect(result.current.currentProductInWishlist).toBe(true);
-    expect(result.current.wishlistCount).toBe(1);
-    expect(result.current.wishlist.items[0]?.productId).toBe('product-9');
+    await waitFor(() => {
+      expect(result.current.currentProductInWishlist).toBe(true);
+      expect(result.current.wishlistCount).toBe(1);
+      expect(result.current.wishlist.items[0]?.productId).toBe('product-9');
+    });
 
     await act(async () => {
       await result.current.removeFromWishlist('product-9');
     });
 
-    expect(result.current.currentProductInWishlist).toBe(false);
-    expect(result.current.wishlistCount).toBe(0);
-    expect(result.current.wishlist.items).toHaveLength(0);
+    await waitFor(() => {
+      expect(result.current.currentProductInWishlist).toBe(false);
+      expect(result.current.wishlistCount).toBe(0);
+      expect(result.current.wishlist.items).toHaveLength(0);
+    });
   });
 });

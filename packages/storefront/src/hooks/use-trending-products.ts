@@ -8,9 +8,8 @@
  *   - packages/storefront/src/hooks/use-trending-products.test.tsx
  */
 import { useQuery } from '@tanstack/react-query';
-
-import { MOCK_PRODUCTS } from '../mock-data';
 import type { ProductListItem } from '../types/product';
+import { fetchCatalogProducts } from '../services/catalog-api';
 
 const TRENDING_LIMIT = 12;
 
@@ -22,7 +21,7 @@ export function useTrendingProducts() {
   return useQuery({
     queryKey: ['trending-products'],
     queryFn: async (): Promise<readonly ProductListItem[]> =>
-      [...MOCK_PRODUCTS].slice(0, TRENDING_LIMIT),
+      fetchCatalogProducts(TRENDING_LIMIT),
     staleTime: 60_000,
   });
 }

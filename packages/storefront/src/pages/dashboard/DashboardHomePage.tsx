@@ -10,22 +10,31 @@
  *   - packages/storefront/src/components/dashboard/DashboardHome.test.tsx
  */
 import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { DashboardHome } from '../../components/dashboard';
-import {
-  MOCK_DASHBOARD_STATS,
-  MOCK_ACTIVITY_ITEMS,
-  MOCK_QUICK_ACTIONS,
-} from '../../mock-data';
+import { fetchCreatorDashboardData } from '../../services/catalog-api';
 
 export function DashboardHomePage() {
   const navigate = useNavigate();
+  const dashboardQuery = useQuery({
+    queryKey: ['creator-dashboard'],
+    queryFn: fetchCreatorDashboardData,
+  });
+
+  if (!dashboardQuery.data) {
+    return (
+      <div className="rounded-2xl border border-border/70 bg-surface-secondary p-6 text-sm text-muted-foreground">
+        {dashboardQuery.error instanceof Error ? dashboardQuery.error.message : 'Loading dashboard…'}
+      </div>
+    );
+  }
 
   return (
     <DashboardHome
-      creatorName="Alex Creator"
-      stats={MOCK_DASHBOARD_STATS}
-      activityItems={MOCK_ACTIVITY_ITEMS}
-      quickActions={MOCK_QUICK_ACTIONS}
+      creatorName={dashboardQuery.data.creatorName}
+      stats={dashboardQuery.data.stats}
+      activityItems={dashboardQuery.data.activityItems}
+      quickActions={dashboardQuery.data.quickActions}
       onNavigate={(href) => navigate(href)}
     />
   );

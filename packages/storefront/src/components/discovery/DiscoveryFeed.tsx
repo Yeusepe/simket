@@ -1,20 +1,24 @@
 /**
- * Purpose: Render the discovery recommendation grid with product tiles (same shell layout as Today trending),
- * loading/error states, and IntersectionObserver-driven infinite scroll.
+ * Purpose: Render the discovery recommendation grid with a product-first spotlight,
+ * resilient empty/error states, and IntersectionObserver-driven infinite scroll.
  *
  * Governing docs:
  *   - docs/architecture.md (§6 storefront discovery, §7 HeroUI everywhere)
  *   - docs/regular-programming-practices/resilient-coding-debugging-and-performance.md
  * External references:
  *   - https://developer.mozilla.org/en-US/docs/Web/API/IntersectionObserver
- *   - https://www.heroui.com/docs/react/components/button
+ *   - https://heroui.com/react/llms.txt
  * Tests:
  *   - packages/storefront/src/components/discovery/DiscoveryFeed.test.tsx
  */
+import { useEffect, useMemo, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Button, Card, Surface } from '@heroui/react';
+import { Carousel } from '@heroui-pro/react/carousel';
+import { EmptyState } from '@heroui-pro/react/empty-state';
 
-import { useEffect, useRef } from 'react';
-import { Button } from '@heroui/react';
-
+import { Icon } from '../common/Icon';
+import { TrendingProductCard } from '../today/TrendingProductCard';
 import { DiscoveryCard, DiscoveryCardSkeleton } from './DiscoveryCard';
 import { useDiscovery, type UseDiscoveryReturn } from './use-discovery';
 
@@ -23,10 +27,13 @@ export interface DiscoveryFeedProps {
   readonly useDiscoveryHook?: (userId: string) => UseDiscoveryReturn;
 }
 
+const DISCOVERY_SPOTLIGHT_LIMIT = 5;
+
 export function DiscoveryFeed({
   userId,
   useDiscoveryHook = useDiscovery,
 }: DiscoveryFeedProps) {
+  const navigate = useNavigate();
   const {
     items,
     isLoading,
@@ -36,6 +43,10 @@ export function DiscoveryFeed({
     retry,
   } = useDiscoveryHook(userId);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const spotlightItems = useMemo(
+    () => items.slice(0, DISCOVERY_SPOTLIGHT_LIMIT),
+    [items],
+  );
 
   useEffect(() => {
     if (
@@ -69,17 +80,135 @@ export function DiscoveryFeed({
 
   if (error && items.length === 0) {
     return (
-      <div className="space-y-3" role="alert">
-        <p className="text-sm text-danger">{error.message}</p>
-        <Button variant="secondary" onPress={() => void retry()}>
-          Retry
-        </Button>
-      </div>
+      <EmptyState
+        aria-live="polite"
+        className="rounded-[2rem] border border-danger/20 bg-danger/5"
+        role="alert"
+        size="lg"
+      >
+        <EmptyState.Header>
+          <EmptyState.Media variant="icon">
+            <Icon name="notifications" size={22} />
+          </EmptyState.Media>
+          <EmptyState.Title>Recommendations are unavailable</EmptyState.Title>
+          <EmptyState.Description>{error.message}</EmptyState.Description>
+        </EmptyState.Header>
+        <EmptyState.Content>
+          <Button variant="secondary" onPress={() => void retry()}>
+            Retry
+          </Button>
+        </EmptyState.Content>
+      </EmptyState>
+    );
+  }
+
+  if (!isLoading && items.length === 0) {
+    return (
+      <EmptyState className="rounded-[2rem] border border-border/70 bg-surface-secondary" size="lg">
+        <EmptyState.Header>
+          <EmptyState.Media variant="icon">
+            <Icon name="search" size={22} />
+          </EmptyState.Media>
+          <EmptyState.Title>No recommendations yet</EmptyState.Title>
+          <EmptyState.Description>
+            Interact with products, creators, or tags and the discovery rail will start adapting.
+          </EmptyState.Description>
+        </EmptyState.Header>
+      </EmptyState>
     );
   }
 
   return (
     <div className="space-y-6">
+      {items.length > 0 && (
+        <Surface variant="secondary" className="rounded-[2rem] p-5 sm:p-6">
+          <div className="space-y-6">
+            <div className="space-y-4">
+              <span className="inline-flex rounded-full bg-accent/10 px-3 py-1 text-xs font-semibold tracking-[0.14em] text-foreground">
+                FOR YOU
+              </span>
+              <div className="space-y-2">
+                <h3 className="max-w-3xl text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+                  Picked to help you find your next favorite product
+                </h3>
+                <p className="max-w-3xl text-sm leading-6 text-muted-foreground">
+                  A tighter mix of worlds, avatars, tools, and packs worth opening right now,
+                  with the spotlight staying on the products themselves.
+                </p>
+              </div>
+            </div>
+
+            {spotlightItems.length > 0 && (
+              <Carousel
+                className="storefront-product-carousel space-y-5 pt-2"
+                opts={{ align: 'start', loop: spotlightItems.length > 1 }}
+              >
+                <Carousel.Content
+                  data-testid="discovery-spotlight-track"
+                  className="carousel__content--horizontal items-stretch"
+                >
+                  {spotlightItems.map((item) => (
+                    <Carousel.Item
+                      key={item.product.id}
+                      className="carousel__item--horizontal basis-full xl:basis-[78%]"
+                    >
+                      <Card className="h-full overflow-hidden rounded-[2rem] border-border/60 shadow-none">
+                        <Card.Content className="grid h-full gap-6 p-5 lg:grid-cols-[minmax(0,18rem)_1fr] lg:p-6">
+                          <TrendingProductCard
+                            articleClassName="w-full max-w-sm lg:max-w-none"
+                            product={item.product}
+                            showWishlistButton={false}
+                          />
+                          <div className="flex flex-col justify-between gap-6 py-1">
+                            <div className="space-y-3">
+                              <p className="text-sm font-semibold text-foreground">
+                                From {item.product.creatorName}
+                              </p>
+                              <p className="max-w-xl text-sm leading-6 text-muted-foreground">
+                                {item.product.description}
+                              </p>
+                            </div>
+                            <div className="flex flex-wrap items-center gap-3">
+                              <Button
+                                variant="secondary"
+                                onPress={() => navigate(`/product/${item.product.slug}`)}
+                              >
+                                View product
+                              </Button>
+                            </div>
+                          </div>
+                        </Card.Content>
+                      </Card>
+                    </Carousel.Item>
+                  ))}
+                </Carousel.Content>
+
+                {spotlightItems.length > 1 && (
+                  <div className="flex items-center gap-2 pt-1 sm:gap-4">
+                    <div className="min-h-8 min-w-0 flex-1" aria-hidden />
+                    <div className="flex min-h-8 flex-1 justify-center">
+                      <Carousel.Dots className="mt-0" />
+                    </div>
+                    <div className="flex min-h-8 flex-1 justify-end gap-2">
+                      <Carousel.Previous
+                        aria-label="Previous discovery spotlight"
+                        variant="outline"
+                        icon={<Icon name="arrow-left" size={16} />}
+                      />
+                      <Carousel.Next
+                        aria-label="Next discovery spotlight"
+                        variant="outline"
+                        icon={<Icon name="arrow-right" size={16} />}
+                      />
+                    </div>
+                  </div>
+                )}
+              </Carousel>
+            )}
+          </div>
+        </Surface>
+      )}
+
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {items.map((item) => (
           <DiscoveryCard key={item.product.id} item={item} />
@@ -90,12 +219,22 @@ export function DiscoveryFeed({
       </div>
 
       {error && items.length > 0 && (
-        <div className="space-y-3" role="alert">
-          <p className="text-sm text-danger">{error.message}</p>
-          <Button variant="secondary" onPress={() => void retry()}>
-            Retry
-          </Button>
-        </div>
+        <EmptyState
+          aria-live="polite"
+          className="rounded-2xl border border-danger/20 bg-danger/5"
+          role="alert"
+          size="sm"
+        >
+          <EmptyState.Header>
+            <EmptyState.Title>Couldn&apos;t refresh the next batch</EmptyState.Title>
+            <EmptyState.Description>{error.message}</EmptyState.Description>
+          </EmptyState.Header>
+          <EmptyState.Content>
+            <Button variant="secondary" onPress={() => void retry()}>
+              Retry
+            </Button>
+          </EmptyState.Content>
+        </EmptyState>
       )}
 
       {!hasMore && items.length > 0 && !isLoading && (

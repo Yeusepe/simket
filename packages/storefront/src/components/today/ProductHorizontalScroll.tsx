@@ -1,21 +1,18 @@
 /**
- * Purpose: Horizontally scrollable trending tiles (`TrendingProductCard`, same snap/track UX as `HorizontalScroll`).
+ * Purpose: HeroUI Pro carousel for non-editorial trending tiles.
  * Governing docs:
  *   - docs/architecture.md
  * External references:
+ *   - https://heroui.com/react/llms.txt
  *   - https://www.heroui.com/docs/react/components/button
  * Tests:
  *   - packages/storefront/src/components/today/ProductHorizontalScroll.test.tsx
  */
-import { Button } from '@heroui/react';
-import { useRef } from 'react';
+import { Carousel } from '@heroui-pro/react/carousel';
 
 import type { ProductListItem } from '../../types/product';
+import { Icon } from '../common/Icon';
 import { TrendingProductCard } from './TrendingProductCard';
-
-/** Trending tiles (`w-64`); scroll step = width + `gap-4`. */
-const TRENDING_CARD_WIDTH_PX = 256;
-const TRENDING_TRACK_GAP_PX = 16;
 
 export interface ProductHorizontalScrollProps {
   readonly title: string;
@@ -23,54 +20,53 @@ export interface ProductHorizontalScrollProps {
 }
 
 export function ProductHorizontalScroll({ title, products }: ProductHorizontalScrollProps) {
-  const trackRef = useRef<HTMLDivElement>(null);
-
-  const scrollStep = TRENDING_CARD_WIDTH_PX + TRENDING_TRACK_GAP_PX;
-
-  const scrollTrack = (direction: 'left' | 'right') => {
-    trackRef.current?.scrollBy({
-      left: direction === 'left' ? -scrollStep : scrollStep,
-      behavior: 'smooth',
-    });
-  };
-
   return (
-    <section aria-label={title} className="group relative space-y-4">
+    <section aria-label={title} className="space-y-4">
       <div className="flex items-center justify-between gap-4">
         <h3 className="text-xl font-semibold tracking-tight sm:text-2xl">{title}</h3>
       </div>
 
-      <Button
-        aria-label="Scroll left"
-        isIconOnly
-        variant="secondary"
-        onPress={() => scrollTrack('left')}
-        className="absolute left-2 top-1/2 z-10 hidden -translate-y-1/2 opacity-0 transition-opacity group-hover:opacity-100 md:inline-flex"
+      <Carousel
+        className="storefront-product-carousel space-y-5 pt-2"
+        opts={{ align: 'start', dragFree: products.length > 3, loop: products.length > 3 }}
       >
-        <span aria-hidden="true">←</span>
-      </Button>
+        <Carousel.Content
+          data-testid="product-horizontal-scroll-track"
+          className="carousel__content--horizontal items-stretch"
+        >
+          {products.map((product) => (
+            <Carousel.Item
+              key={product.id}
+              className="carousel__item--horizontal basis-[82%] sm:basis-[56%] lg:basis-[36%] xl:basis-[27%]"
+            >
+              <div className="flex h-full">
+                <TrendingProductCard articleClassName="w-full" product={product} />
+              </div>
+            </Carousel.Item>
+          ))}
+        </Carousel.Content>
 
-      <div
-        ref={trackRef}
-        data-testid="product-horizontal-scroll-track"
-        className="flex items-stretch snap-x snap-mandatory gap-4 overflow-x-auto pb-3 pl-8 scroll-pl-8 [scrollbar-width:none] md:pl-14 md:scroll-pl-14 [&::-webkit-scrollbar]:hidden"
-      >
-        {products.map((product) => (
-          <div key={product.id} className="flex w-64 flex-none snap-start self-stretch">
-            <TrendingProductCard product={product} />
+        {products.length > 1 && (
+          <div className="flex items-center gap-2 pt-1 sm:gap-3">
+            <div className="min-h-8 min-w-0 flex-1" aria-hidden />
+            <div className="flex min-h-8 flex-1 justify-center">
+              <Carousel.Dots className="mt-0" />
+            </div>
+            <div className="flex min-h-8 flex-1 justify-end gap-2">
+              <Carousel.Previous
+                aria-label="Previous trending product"
+                variant="outline"
+                icon={<Icon name="arrow-left" size={16} />}
+              />
+              <Carousel.Next
+                aria-label="Next trending product"
+                variant="outline"
+                icon={<Icon name="arrow-right" size={16} />}
+              />
+            </div>
           </div>
-        ))}
-      </div>
-
-      <Button
-        aria-label="Scroll right"
-        isIconOnly
-        variant="secondary"
-        onPress={() => scrollTrack('right')}
-        className="absolute right-2 top-1/2 z-10 hidden -translate-y-1/2 opacity-0 transition-opacity group-hover:opacity-100 md:inline-flex"
-      >
-        <span aria-hidden="true">→</span>
-      </Button>
+        )}
+      </Carousel>
     </section>
   );
 }

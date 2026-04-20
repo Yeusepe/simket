@@ -12,6 +12,7 @@
  *   - packages/storefront/src/hooks/use-notifications.test.ts
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { fetchShopGraphql } from '../lib/shop-api';
 import {
   type AppNotification,
   type NotificationConnection,
@@ -20,15 +21,6 @@ import {
   type NotificationTypeFilter,
   isNotificationType,
 } from '../types/notifications';
-
-interface GraphqlError {
-  readonly message: string;
-}
-
-interface GraphqlResponse<TData> {
-  readonly data?: TData;
-  readonly errors?: readonly GraphqlError[];
-}
 
 interface UseNotificationsOptions {
   readonly api?: NotificationsApi;
@@ -104,17 +96,6 @@ const MARK_ALL_NOTIFICATIONS_READ_MUTATION = `
   }
 `;
 
-function getShopApiUrl(): string {
-  const configuredUrl = (import.meta as ImportMeta & {
-    readonly env?: Record<string, string | undefined>;
-  }).env?.VITE_SIMKET_SHOP_API_URL;
-  if (typeof configuredUrl === 'string' && configuredUrl.length > 0) {
-    return configuredUrl;
-  }
-
-  return new URL('/shop-api', window.location.origin).toString();
-}
-
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
@@ -149,35 +130,6 @@ function isNotificationConnection(value: unknown): value is NotificationConnecti
     typeof value.pageInfo.hasNextPage === 'boolean' &&
     typeof value.unreadCount === 'number'
   );
-}
-
-async function fetchShopGraphql<TData>(
-  query: string,
-  variables: Record<string, unknown>,
-): Promise<TData> {
-  const response = await globalThis.fetch(getShopApiUrl(), {
-    method: 'POST',
-    headers: {
-      Accept: 'application/json',
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ query, variables }),
-  });
-
-  if (!response.ok) {
-    throw new Error(`Notification request failed with status ${response.status}.`);
-  }
-
-  const payload = (await response.json()) as GraphqlResponse<TData>;
-  if (payload.errors && payload.errors.length > 0) {
-    throw new Error(payload.errors[0]?.message ?? 'Notification request failed.');
-  }
-
-  if (!payload.data) {
-    throw new Error('Notification response did not include data.');
-  }
-
-  return payload.data;
 }
 
 export function createNotificationsApi(): NotificationsApi {

@@ -37,8 +37,10 @@ const ICON_MAP = {
   plus: 'streamline-flex:application-add-solid',
   edit: 'streamline-flex:pencil-square-solid',
   check: 'streamline-flex:check-square-solid',
-  'arrow-up': 'streamline-flex:arrow-move-solid',
-  'arrow-down': 'streamline-flex:arrow-move-solid',
+  'arrow-up': 'streamline-flex:arrow-up-solid',
+  'arrow-down': 'streamline-flex:arrow-down-solid',
+  'arrow-left': 'streamline-flex:arrow-left-solid',
+  'arrow-right': 'streamline-flex:arrow-right-solid',
 
   // Wishlist
   'heart-filled': 'streamline-flex:heart-solid',

@@ -37,7 +37,6 @@ export type {
 export {
   validateJwt,
   validateJwtWithKey,
-  issueServiceToken,
   resetPublicKeyCache,
   setValidationOverride,
 } from './auth/index.js';

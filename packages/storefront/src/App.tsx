@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { AuthProvider, RequireAuth, RequireCreator } from './auth/AuthProvider';
 import { RootLayout } from './layouts/RootLayout';
 import { HomePage } from './pages/HomePage';
 import { ProductDetailPage } from './pages/ProductDetailPage';
@@ -9,12 +10,15 @@ import { ProfilePage } from './pages/ProfilePage';
 import { CreatorDashboardPage } from './pages/CreatorDashboardPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { WishlistPage } from './pages/WishlistPage';
+import { SignInPage } from './pages/SignInPage';
 import { StoreLayout, StorePageRoute, StoreProductRoute, StoreNotFoundPage, resolveStoreRoute } from './store';
 
 export function App() {
   return (
     <BrowserRouter>
-      <AppRoutes />
+      <AuthProvider>
+        <AppRoutes />
+      </AuthProvider>
     </BrowserRouter>
   );
 }
@@ -54,13 +58,14 @@ export function AppRoutes({ hostname }: AppRoutesProps) {
       </Route>
       <Route element={<RootLayout />}>
         <Route index element={<HomePage />} />
+        <Route path="sign-in" element={<SignInPage />} />
         <Route path="product/:slug" element={<ProductDetailPage />} />
         <Route path="cart" element={<CartPage />} />
-        <Route path="wishlist" element={<WishlistPage />} />
-        <Route path="library" element={<LibraryPage />} />
-        <Route path="notifications" element={<NotificationsPage />} />
-        <Route path="profile" element={<ProfilePage />} />
-        <Route path="dashboard/*" element={<CreatorDashboardPage />} />
+        <Route path="wishlist" element={<RequireAuth><WishlistPage /></RequireAuth>} />
+        <Route path="library" element={<RequireAuth><LibraryPage /></RequireAuth>} />
+        <Route path="notifications" element={<RequireAuth><NotificationsPage /></RequireAuth>} />
+        <Route path="profile" element={<RequireAuth><ProfilePage /></RequireAuth>} />
+        <Route path="dashboard/*" element={<RequireCreator><CreatorDashboardPage /></RequireCreator>} />
         <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>

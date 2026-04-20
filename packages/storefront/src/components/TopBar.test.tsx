@@ -5,6 +5,23 @@ import { MemoryRouter } from 'react-router-dom';
 import { TopBar } from './TopBar';
 import type { WishlistApi } from '../types/wishlist';
 
+vi.mock('../auth/AuthProvider', () => ({
+  useAuth: () => ({
+    session: {
+      user: {
+        id: 'user-1',
+        email: 'creator@simket.test',
+        name: 'Simket Creator',
+        role: 'creator',
+      },
+      session: {
+        id: 'session-1',
+      },
+    },
+    signOut: vi.fn(async () => {}),
+  }),
+}));
+
 vi.mock('./notifications', () => ({
   NotificationBell: () => <button aria-label="Notifications">Bell</button>,
 }));

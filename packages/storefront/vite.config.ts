@@ -19,9 +19,20 @@ export default defineConfig({
     cloudflare(),
   ],
   resolve: {
-    alias: {
-      '@': path.resolve(__dirname, './src'),
-    },
+    alias: [
+      {
+        find: /^@gravity-ui\/icons$/,
+        replacement: path.resolve(__dirname, './node_modules/@gravity-ui/icons/esm/index.js'),
+      },
+      {
+        find: /^@gravity-ui\/icons\/(.+)$/,
+        replacement: path.resolve(__dirname, './node_modules/@gravity-ui/icons/esm/$1.js'),
+      },
+      {
+        find: '@',
+        replacement: path.resolve(__dirname, './src'),
+      },
+    ],
   },
   server: {
     port: 3000,

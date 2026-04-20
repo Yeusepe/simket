@@ -6,6 +6,7 @@ import { FeatureFlagsPlugin } from '../feature-flags/feature-flags.plugin.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 import { AbTestingPlugin } from '../plugins/ab-testing/index.js';
+import { BetterAuthBridgePlugin } from '../plugins/better-auth-bridge/index.js';
 import { BundlePlugin } from '../plugins/bundle/index.js';
 import { CatalogPlugin } from '../plugins/catalog/index.js';
 import { CheckoutPlugin } from '../plugins/checkout/index.js';
@@ -98,6 +99,7 @@ export const config: VendureConfig = {
     }),
     CrowdSecPlugin,
     FeatureFlagsPlugin,
+    BetterAuthBridgePlugin,
     CatalogPlugin,
     BundlePlugin,
     DependencyPlugin,

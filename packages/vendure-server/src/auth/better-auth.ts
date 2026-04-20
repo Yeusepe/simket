@@ -1,39 +1,137 @@
 /**
- * Better Auth integration — validates JWTs from the Better Auth OAuth provider.
- *
- * Uses `jose` library for standards-compliant JWT/JWKS validation instead
- * of hand-rolling crypto. jose handles JWKS fetching, key caching, key rotation,
- * algorithm verification, and expiry validation automatically.
- *
+ * Purpose: Validate Simket Better Auth JWTs against the locally-hosted JWKS so
+ *          Vendure can trust Better Auth sessions without duplicating auth state.
  * Governing docs:
- *   - docs/architecture.md §5 (Identity & Auth)
+ *   - docs/architecture.md
+ *   - docs/service-architecture.md
  * External references:
- *   - https://github.com/panva/jose (jose library)
- *   - https://www.better-auth.com/docs (Better Auth)
+ *   - https://better-auth.com/docs/plugins/jwt
+ *   - https://github.com/panva/jose
  * Tests:
  *   - packages/vendure-server/src/auth/better-auth.test.ts
  */
 import { createRemoteJWKSet, jwtVerify } from 'jose';
 import type { JWTPayload, CryptoKey as JoseCryptoKey, KeyObject, JWK, JWTVerifyGetKey } from 'jose';
-import { SERVICE_POLICIES } from '../resilience/resilience.js';
+import Database from 'better-sqlite3';
+import { Kysely, SqliteDialect } from 'kysely';
+import { BETTER_AUTH_PROVIDER_ID, resolveBetterAuthDatabasePath, resolveBetterAuthJwtAudience, resolveBetterAuthJwtIssuer, resolveBetterAuthServerOrigin } from './config.js';
 
 export interface JwtValidationResult {
   valid: boolean;
   userId?: string;
-  roles?: string[];
+  email?: string;
+  name?: string;
+  image?: string | null;
+  role?: string;
+  authSource?: string;
+  creatorSlug?: string | null;
 }
 
-interface BetterAuthConfig {
-  url: string;
-  clientId: string;
-  clientSecret: string;
+interface BetterAuthUserRow {
+  readonly id: string;
+  readonly role: string | null;
+  readonly authSource: string | null;
+  readonly creatorSlug: string | null;
+  readonly image: string | null;
 }
 
-function getConfig(): BetterAuthConfig {
+interface BetterAuthAccountRow {
+  readonly userId: string;
+  readonly providerId: string;
+}
+
+interface BetterAuthDatabase {
+  readonly user: BetterAuthUserRow;
+  readonly account: BetterAuthAccountRow;
+}
+
+function getJwksUrl(): string {
+  return `${resolveBetterAuthServerOrigin()}/api/auth/jwks`;
+}
+
+function toValidationResult(payload: JWTPayload): JwtValidationResult {
+  const role = typeof payload['role'] === 'string' ? payload['role'] : undefined;
+  const creatorSlug =
+    typeof payload['creatorSlug'] === 'string' ? payload['creatorSlug'] : null;
+
   return {
-    url: process.env['BETTER_AUTH_URL'] ?? '',
-    clientId: process.env['BETTER_AUTH_CLIENT_ID'] ?? '',
-    clientSecret: process.env['BETTER_AUTH_CLIENT_SECRET'] ?? '',
+    valid: true,
+    userId:
+      typeof payload.sub === 'string'
+        ? payload.sub
+        : typeof payload['id'] === 'string'
+          ? payload['id']
+          : undefined,
+    email: typeof payload['email'] === 'string' ? payload['email'] : undefined,
+    name: typeof payload['name'] === 'string' ? payload['name'] : undefined,
+    image: typeof payload['image'] === 'string' ? payload['image'] : null,
+    role,
+    authSource: typeof payload['authSource'] === 'string' ? payload['authSource'] : undefined,
+    creatorSlug,
+  };
+}
+
+let cachedAuthDatabase: Kysely<BetterAuthDatabase> | null = null;
+
+function getAuthDatabase(): Kysely<BetterAuthDatabase> {
+  if (cachedAuthDatabase) {
+    return cachedAuthDatabase;
+  }
+
+  cachedAuthDatabase = new Kysely<BetterAuthDatabase>({
+    dialect: new SqliteDialect({
+      database: new Database(resolveBetterAuthDatabasePath()),
+    }),
+  });
+
+  return cachedAuthDatabase;
+}
+
+export interface BetterAuthIdentity {
+  readonly role: string;
+  readonly authSource: string;
+  readonly creatorSlug: string | null;
+  readonly image: string | null;
+}
+
+export async function lookupBetterAuthIdentity(userId: string): Promise<BetterAuthIdentity | null> {
+  const authDatabase = getAuthDatabase();
+  const user = await authDatabase
+    .selectFrom('user')
+    .select(['role', 'authSource', 'creatorSlug', 'image'])
+    .where('id', '=', userId)
+    .executeTakeFirst();
+
+  const accounts = await authDatabase
+    .selectFrom('account')
+    .select(['providerId'])
+    .where('userId', '=', userId)
+    .execute();
+
+  const hasYucpAccount = accounts.some((account) => account.providerId === BETTER_AUTH_PROVIDER_ID);
+
+  if (!user && accounts.length === 0) {
+    return null;
+  }
+
+  return {
+    role:
+      typeof user?.role === 'string' && user.role.length > 0
+        ? user.role
+        : hasYucpAccount
+          ? 'creator'
+          : 'buyer',
+    authSource:
+      typeof user?.authSource === 'string' && user.authSource.length > 0
+        ? user.authSource
+        : hasYucpAccount
+          ? 'yucp'
+          : 'simket',
+    creatorSlug:
+      typeof user?.creatorSlug === 'string' && user.creatorSlug.length > 0
+        ? user.creatorSlug
+        : null,
+    image: typeof user?.image === 'string' && user.image.length > 0 ? user.image : null,
   };
 }
 
@@ -45,13 +143,7 @@ let cachedJwks: JWTVerifyGetKey | null = null;
 
 function getJwks(): JWTVerifyGetKey {
   if (cachedJwks) return cachedJwks;
-
-  const { url } = getConfig();
-  if (!url) {
-    throw new Error('BETTER_AUTH_URL not configured');
-  }
-
-  cachedJwks = createRemoteJWKSet(new URL(`${url}/.well-known/jwks.json`));
+  cachedJwks = createRemoteJWKSet(new URL(getJwksUrl()));
   return cachedJwks;
 }
 
@@ -93,13 +185,12 @@ export async function validateJwt(
     }
 
     const jwks = getJwks();
-    const { payload } = await jwtVerify(token, jwks);
+    const { payload } = await jwtVerify(token, jwks, {
+      issuer: resolveBetterAuthJwtIssuer(),
+      audience: resolveBetterAuthJwtAudience(),
+    });
 
-    return {
-      valid: true,
-      userId: payload.sub,
-      roles: (payload as JWTPayload & { roles?: string[] }).roles,
-    };
+    return toValidationResult(payload);
   } catch {
     return deny;
   }
@@ -122,50 +213,15 @@ export async function validateJwtWithKey(
       return deny;
     }
 
-    const { payload } = await jwtVerify(token, key);
+    const { payload } = await jwtVerify(token, key, {
+      issuer: resolveBetterAuthJwtIssuer(),
+      audience: resolveBetterAuthJwtAudience(),
+    });
 
-    return {
-      valid: true,
-      userId: payload.sub,
-      roles: (payload as JWTPayload & { roles?: string[] }).roles,
-    };
+    return toValidationResult(payload);
   } catch {
     return deny;
   }
-}
-
-/**
- * Issue a service-to-service token using client credentials.
- * Wrapped with Cockatiel resilience policy.
- */
-export async function issueServiceToken(): Promise<string> {
-  const config = getConfig();
-  if (!config.url || !config.clientId || !config.clientSecret) {
-    throw new Error('Better Auth configuration incomplete');
-  }
-
-  return SERVICE_POLICIES.betterAuth.execute(async () => {
-    const response = await fetch(`${config.url}/oauth/token`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        grant_type: 'client_credentials',
-        client_id: config.clientId,
-        client_secret: config.clientSecret,
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error(`Service token request failed: ${response.status}`);
-    }
-
-    const data = (await response.json()) as { access_token?: string };
-    if (!data.access_token) {
-      throw new Error('No access_token in response');
-    }
-
-    return data.access_token;
-  });
 }
 
 /** Reset JWKS cache (e.g., on key rotation or for tests). */

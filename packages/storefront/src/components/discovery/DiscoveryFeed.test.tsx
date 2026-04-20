@@ -108,8 +108,10 @@ describe('DiscoveryFeed', () => {
       />,
     );
 
-    expect(screen.getByText('Discovery Product 1')).toBeInTheDocument();
-    expect(screen.getByText('Discovery Product 2')).toBeInTheDocument();
+    expect(screen.getAllByText('Discovery Product 1').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Discovery Product 2').length).toBeGreaterThan(0);
+    expect(screen.getByText('Picked to help you find your next favorite product')).toBeInTheDocument();
+    expect(screen.getByTestId('discovery-spotlight-track')).toBeInTheDocument();
   });
 
   it('shows loading skeletons while the first page is fetching', () => {
@@ -156,6 +158,7 @@ describe('DiscoveryFeed', () => {
       />,
     );
 
+    expect(screen.getByText('Recommendations are unavailable')).toBeInTheDocument();
     expect(screen.getByText('Discovery failed')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /retry/i })).toBeInTheDocument();
   });

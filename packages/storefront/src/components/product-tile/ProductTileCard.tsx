@@ -60,7 +60,6 @@ export function ProductTileCard({
     typeof shellColor === 'string' && shellColor.trim().length > 0
       ? shellColor.trim()
       : undefined;
-  const leonardoBackground = 'var(--store-bg, var(--simket-bg, var(--background)))';
   const leonardoSurface =
     'color-mix(in srgb, var(--store-bg, var(--simket-bg, var(--background))) 78%, var(--store-subtle, var(--simket-subtle, var(--surface))) 22%)';
 
@@ -79,8 +78,6 @@ export function ProductTileCard({
   );
   const frameStyle: CSSProperties = {
     backgroundColor: leonardoSurface,
-    '--product-tile-bg': leonardoBackground,
-    '--product-tile-surface': leonardoSurface,
   };
 
   const articleNode = (
@@ -99,9 +96,12 @@ export function ProductTileCard({
             'focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-primary/55 focus-visible:ring-offset-2 focus-visible:ring-offset-background',
           )}
         >
-          <div className="relative isolate mx-3 mt-3 aspect-square w-auto shrink-0 overflow-hidden rounded-t-[1rem] rounded-b-none bg-muted/20">
+          <div
+            className="relative isolate aspect-square w-full shrink-0 overflow-hidden rounded-t-[1.35rem] rounded-b-none bg-muted/20"
+            data-testid="product-tile-media"
+          >
             {overlayTopRight ? (
-              <div className="pointer-events-none absolute inset-x-0 top-0 z-20 flex justify-end p-3">
+              <div className="pointer-events-none absolute inset-x-0 top-0 z-20 flex justify-end p-2.5">
                 <div className="pointer-events-auto">{overlayTopRight}</div>
               </div>
             ) : null}
@@ -129,17 +129,17 @@ export function ProductTileCard({
             )}
           </div>
 
-          <div className="px-4 pb-3.5 pt-3 sm:px-5">
+          <div className="px-4 pb-3 pt-2.5">
             <h3
               className={cn(
-                'min-h-[2.4rem] line-clamp-2 text-left text-[1rem] font-semibold leading-[1.2] tracking-[-0.025em] text-balance text-foreground',
+                'line-clamp-2 text-left text-[1rem] font-semibold leading-[1.2] tracking-[-0.025em] text-balance text-foreground',
                 'sm:text-[1.06rem]',
               )}
               title={title}
             >
               {title}
             </h3>
-            <div className="mt-1.5 flex flex-col gap-2 text-[0.8rem] leading-snug text-foreground/85">
+            <div className="mt-1 flex flex-col gap-1.5 text-[0.8rem] leading-snug text-foreground/85">
               {renderShellSlot(linkBodyExtra, shellCtx)}
             </div>
           </div>
@@ -148,7 +148,7 @@ export function ProductTileCard({
         <section
           {...priceStripeProps}
           className={cn(
-            'px-4 pb-4 pt-0.5 text-left sm:px-5',
+            'px-4 pb-4 pt-0 text-left',
             priceStripeProps?.className,
           )}
           style={priceStripeProps?.style as CSSProperties | undefined}

@@ -14,23 +14,16 @@
  */
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useMemo } from 'react';
+import { fetchShopGraphql } from '../lib/shop-api';
 import type { ProductListItem } from '../types/product';
 import type { WishlistApi, WishlistItem, WishlistPage } from '../types/wishlist';
-
-interface GraphqlError {
-  readonly message: string;
-}
-
-interface GraphqlResponse<TData> {
-  readonly data?: TData;
-  readonly errors?: readonly GraphqlError[];
-}
 
 export interface UseWishlistOptions {
   readonly api?: WishlistApi;
   readonly page?: number;
   readonly limit?: number;
   readonly productId?: string;
+  readonly enabled?: boolean;
 }
 
 export interface UseWishlistResult {
@@ -138,17 +131,6 @@ function createWishlistKeys(page: number, limit: number) {
   };
 }
 
-function getShopApiUrl(): string {
-  const configuredUrl = (import.meta as ImportMeta & {
-    readonly env?: Record<string, string | undefined>;
-  }).env?.VITE_SIMKET_SHOP_API_URL;
-  if (typeof configuredUrl === 'string' && configuredUrl.length > 0) {
-    return configuredUrl;
-  }
-
-  return new URL('/shop-api', window.location.origin).toString();
-}
-
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
@@ -193,34 +175,6 @@ function isWishlistPage(value: unknown): value is WishlistPage {
     typeof value.page === 'number' &&
     typeof value.limit === 'number'
   );
-}
-
-async function fetchShopGraphql<TData>(
-  query: string,
-  variables: Record<string, unknown>,
-): Promise<TData> {
-  const response = await globalThis.fetch(getShopApiUrl(), {
-    method: 'POST',
-    headers: {
-      Accept: 'application/json',
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ query, variables }),
-  });
-
-  if (!response.ok) {
-    throw new Error(`Wishlist request failed with status ${response.status}.`);
-  }
-
-  const payload = (await response.json()) as GraphqlResponse<TData>;
-  if (payload.errors && payload.errors.length > 0) {
-    throw new Error(payload.errors[0]?.message ?? 'Wishlist request failed.');
-  }
-  if (!payload.data) {
-    throw new Error('Wishlist response did not include data.');
-  }
-
-  return payload.data;
 }
 
 export function createWishlistApi(): WishlistApi {
@@ -271,6 +225,7 @@ export function createWishlistApi(): WishlistApi {
 export function useWishlist(options: UseWishlistOptions = {}): UseWishlistResult {
   const page = options.page ?? DEFAULT_PAGE;
   const limit = options.limit ?? DEFAULT_LIMIT;
+  const enabled = options.enabled ?? true;
   const api = useMemo(() => options.api ?? createWishlistApi(), [options.api]);
   const queryClient = useQueryClient();
   const keys = createWishlistKeys(page, limit);
@@ -278,7 +233,7 @@ export function useWishlist(options: UseWishlistOptions = {}): UseWishlistResult
   const pageQuery = useQuery({
     queryKey: keys.page,
     queryFn: () => api.listWishlist({ page, limit }),
-    enabled: options.page !== undefined || options.limit !== undefined,
+    enabled: enabled && (options.page !== undefined || options.limit !== undefined),
     initialData: (options.page !== undefined || options.limit !== undefined)
       ? { ...EMPTY_WISHLIST, page, limit }
       : undefined,
@@ -288,6 +243,7 @@ export function useWishlist(options: UseWishlistOptions = {}): UseWishlistResult
   const countQuery = useQuery({
     queryKey: keys.count,
     queryFn: () => api.getWishlistCount(),
+    enabled,
     initialData: 0,
     retry: false,
   });
@@ -295,7 +251,7 @@ export function useWishlist(options: UseWishlistOptions = {}): UseWishlistResult
   const membershipQuery = useQuery({
     queryKey: keys.contains(options.productId ?? ''),
     queryFn: () => api.isInWishlist(options.productId!),
-    enabled: Boolean(options.productId),
+    enabled: enabled && Boolean(options.productId),
     retry: false,
   });
 

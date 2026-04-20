@@ -73,7 +73,7 @@ export function TrendingProductCard({
       footerLeft={
         <Link
           to={productHref}
-          className="inline-flex rounded-md text-left text-[1.06rem] font-bold leading-none tracking-[-0.03em] tabular-nums text-foreground transition-opacity hover:opacity-75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+          className="inline-flex rounded-md text-left text-[1rem] font-bold leading-none tracking-[-0.03em] tabular-nums text-foreground transition-opacity hover:opacity-75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
         >
           {priceDisplay}
         </Link>
@@ -81,7 +81,7 @@ export function TrendingProductCard({
       footerRight={
         product.averageRating != null ? (
           <span
-            className="inline-flex items-center gap-1 text-[0.66rem] font-medium leading-none tabular-nums text-muted-foreground"
+            className="inline-flex items-center gap-1 text-[0.625rem] font-medium leading-none tabular-nums text-muted-foreground"
             aria-label={`${product.averageRating.toFixed(1)} rating${product.reviewCount != null && product.reviewCount > 0 ? `, ${product.reviewCount} reviews` : ''}`}
           >
             <Icon name="star-filled" size={12} className="text-amber-400" />

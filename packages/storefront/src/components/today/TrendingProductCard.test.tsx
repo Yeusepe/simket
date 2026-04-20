@@ -31,8 +31,10 @@ describe('TrendingProductCard', () => {
     expect(screen.getByTestId('trending-product-card')).toBeInTheDocument();
     expect(screen.getByTestId('trending-product-card')).toHaveAttribute('data-shell-color', '#8b5cf6');
     expect(screen.getByTestId('trending-product-card')).toHaveAttribute('data-surface-theme', 'leonardo');
+    expect(screen.getByTestId('product-tile-media')).toHaveClass('w-full');
     expect(screen.getByTestId('trending-product-tags')).toBeInTheDocument();
     expect(screen.getByTestId('product-creators-byline')).toBeInTheDocument();
+    expect(screen.getByTestId('product-creators-primary-avatar')).toBeInTheDocument();
     expect(screen.getByTestId('trending-product-price')).toBeInTheDocument();
     expect(screen.getByText('Alex Kim')).toBeInTheDocument();
     expect(within(screen.getByTestId('trending-product-price')).getByRole('link')).toHaveAttribute(

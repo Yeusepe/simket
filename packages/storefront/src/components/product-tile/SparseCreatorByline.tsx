@@ -1,5 +1,5 @@
 /**
- * Minimal creator line for listing tiles — neutral, no ring borders on avatars.
+ * Minimal creator line for listing tiles — compact circular avatars + concise text.
  */
 import type { ProductCreatorRef } from '../../types/product';
 
@@ -15,18 +15,21 @@ function SmallAvatar({
   name,
   src,
   size,
+  testId,
 }: {
   readonly name: string;
   readonly src?: string | null;
   readonly size: number;
+  readonly testId?: string;
 }) {
-  const initialClass =
-    size <= 13 ? 'text-[0.5rem]' : size <= 16 ? 'text-[0.6rem]' : 'text-[0.55rem]';
+  const initialClass = size <= 15 ? 'text-[0.55rem]' : 'text-[0.6rem]';
+
   return (
     <span
-      className="relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full border border-default-200/70 bg-default-100 dark:border-default-700/70 dark:bg-default-900/90"
+      className="relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-default-100 ring-1 ring-black/8 dark:bg-default-900 dark:ring-white/10"
       style={{ width: size, height: size }}
       title={name}
+      data-testid={testId}
     >
       {src ? (
         <img src={src} alt="" className="size-full object-cover" loading="lazy" decoding="async" />
@@ -51,22 +54,28 @@ export function SparseCreatorByline({
   collaborators,
 }: SparseCreatorBylineProps) {
   const collabs = collaborators ?? [];
-  const avatar = 16;
+  const singleCollaborator = collabs.length === 1 ? collabs[0]! : null;
+  const multiCollaborators = collabs.length > 1 ? collabs.slice(0, 3) : [];
   const collaboratorLabel =
-    collabs.length === 1
-      ? collabs[0]!.name
+    singleCollaborator
+      ? singleCollaborator.name
       : collabs.length > 1
         ? `${collabs.length} collaborators`
         : null;
 
   return (
     <div
-      className="flex min-w-0 flex-nowrap items-center gap-x-1.5 overflow-hidden text-[0.78rem] leading-none text-muted-foreground"
+      className="flex min-w-0 flex-nowrap items-center gap-x-1 overflow-hidden text-[0.765rem] leading-tight text-muted-foreground"
       data-testid="product-creators-byline"
     >
-      <SmallAvatar name={creatorName} src={creatorAvatarUrl} size={avatar} />
+      <SmallAvatar
+        name={creatorName}
+        src={creatorAvatarUrl}
+        size={16}
+        testId="product-creators-primary-avatar"
+      />
       <span
-        className="min-w-0 shrink truncate py-px font-medium leading-tight text-foreground/78"
+        className="min-w-0 shrink truncate font-medium text-foreground/74"
         title={creatorName}
       >
         {creatorName}
@@ -74,11 +83,34 @@ export function SparseCreatorByline({
 
       {collaboratorLabel ? (
         <>
-          <span className="shrink-0 text-foreground/28" aria-hidden>
+          <span className="shrink-0 text-foreground/22" aria-hidden>
             ·
           </span>
+          {singleCollaborator ? (
+            <SmallAvatar
+              name={singleCollaborator.name}
+              src={singleCollaborator.avatarUrl}
+              size={16}
+            />
+          ) : multiCollaborators.length > 0 ? (
+            <span
+              className="inline-flex shrink-0 -space-x-1 overflow-hidden"
+              aria-label={collabs.map((c) => c.name).join(', ')}
+              data-testid="product-creators-collaborator-avatars"
+            >
+              {multiCollaborators.map((collaborator, index) => (
+                <span key={`${collaborator.name}-${index}`} className="relative">
+                  <SmallAvatar
+                    name={collaborator.name}
+                    src={collaborator.avatarUrl}
+                    size={15}
+                  />
+                </span>
+              ))}
+            </span>
+          ) : null}
           <span
-            className="min-w-0 flex-1 truncate py-px font-normal leading-tight text-foreground/56"
+            className="min-w-0 flex-1 truncate font-normal text-foreground/52"
             title={collaboratorLabel}
           >
             {collaboratorLabel}

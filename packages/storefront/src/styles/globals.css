@@ -1,5 +1,6 @@
 @import 'tailwindcss';
 @import '@heroui/styles';
+@import '@heroui-pro/react/css';
 
 @font-face {
   font-family: 'CreatorFont';
@@ -71,4 +72,28 @@
 
 body {
   font-family: inherit;
+}
+
+
+.storefront-product-carousel {
+  --carousel-gap: calc(var(--spacing) * 5);
+}
+
+.storefront-product-carousel,
+.storefront-product-carousel .carousel__viewport-wrapper,
+.storefront-product-carousel .carousel__viewport,
+.storefront-product-carousel .carousel__content {
+  overflow: visible;
+}
+
+.storefront-product-carousel .carousel__viewport-wrapper {
+  padding-inline: calc(var(--spacing) * 4);
+}
+
+.storefront-product-carousel .carousel__previous--in-place {
+  left: calc(var(--spacing) * 2);
+}
+
+.storefront-product-carousel .carousel__next--in-place {
+  right: calc(var(--spacing) * 2);
 }

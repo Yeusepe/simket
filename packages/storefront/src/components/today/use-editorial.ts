@@ -15,6 +15,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { EditorialItem, EditorialSection, UseEditorialResult } from './today-types';
 import { TODAY_LAYOUTS } from './today-types';
+import { fetchCatalogProducts } from '../../services/catalog-api';
+import type { ProductListItem } from '../../types/product';
 
 type Fetcher = typeof globalThis.fetch;
 
@@ -64,6 +66,83 @@ interface UseEditorialOptions {
 }
 
 const DEFAULT_POLL_INTERVAL_MS = 30_000;
+
+function formatPrice(amount: number, currencyCode: string): string {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: currencyCode,
+    minimumFractionDigits: 2,
+  }).format(amount / 100);
+}
+
+function mapCatalogProductToEditorialItem(product: ProductListItem): EditorialItem {
+  return {
+    id: `catalog-${product.id}`,
+    title: product.name,
+    excerpt: product.description,
+    heroImage: product.heroImageUrl ?? product.heroTransparentUrl ?? '',
+    heroTransparent: product.heroTransparentUrl ?? undefined,
+    author: product.creatorName,
+    creatorName: product.creatorName,
+    productThumbnailUrl: product.heroImageUrl ?? product.heroTransparentUrl ?? undefined,
+    productName: product.name,
+    spotlightSubline: product.description,
+    spotlightPriceFormatted: formatPrice(product.priceMin, product.currencyCode),
+    publishedAt: new Date().toISOString(),
+    slug: product.slug,
+    tags: product.tags,
+    previewColor: product.previewColor ?? null,
+  };
+}
+
+function buildCatalogFallbackSections(products: readonly ProductListItem[]): readonly EditorialSection[] {
+  const items = products
+    .filter((product) => (product.heroImageUrl ?? product.heroTransparentUrl ?? '').length > 0)
+    .map(mapCatalogProductToEditorialItem);
+
+  if (items.length === 0) {
+    return [];
+  }
+
+  const sections: EditorialSection[] = [];
+  const featuredItem = items[0];
+  if (featuredItem) {
+    sections.push({
+      id: 'catalog-featured',
+      name: 'Featured today',
+      slug: 'featured-today',
+      layout: 'hero-banner',
+      sortOrder: 0,
+      items: [featuredItem],
+    });
+  }
+
+  const editorPicks = items.slice(1, 5);
+  if (editorPicks.length > 0) {
+    sections.push({
+      id: 'catalog-editor-picks',
+      name: 'Editor picks',
+      slug: 'editor-picks',
+      layout: 'card-grid-4',
+      sortOrder: 1,
+      items: editorPicks,
+    });
+  }
+
+  const scrollingItems = items.slice(5);
+  if (scrollingItems.length > 0) {
+    sections.push({
+      id: 'catalog-trending',
+      name: 'Trending now',
+      slug: 'trending-now',
+      layout: 'horizontal-scroll',
+      sortOrder: 2,
+      items: scrollingItems,
+    });
+  }
+
+  return sections;
+}
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
@@ -257,12 +336,12 @@ export function useEditorial(options: UseEditorialOptions = {}): UseEditorialRes
   const [hasFreshContent, setHasFreshContent] = useState(false);
   const [requestVersion, setRequestVersion] = useState(0);
 
-  // In dev mode without a custom fetcher, return mock editorial data immediately
+  // In dev mode without a CMS payload, fall back to the seeded catalog rather than mock data.
   const devMode = isDevMode() && !options.fetcher;
   useEffect(() => {
     if (!devMode) return;
-    import('../../mock-data').then(({ MOCK_EDITORIAL_SECTIONS }) => {
-      setSections(MOCK_EDITORIAL_SECTIONS);
+    fetchCatalogProducts(12).then((products) => {
+      setSections(buildCatalogFallbackSections(products));
       setVersion(1);
       setIsLoading(false);
     }).catch(() => {

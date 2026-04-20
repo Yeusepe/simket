@@ -22,6 +22,7 @@
 
 export interface Env {
   VENDURE_API_URL: string;
+  BETTER_AUTH_URL: string;
   ENVIRONMENT: string;
   // Future bindings:
   // STORE_CACHE: KVNamespace;
@@ -37,6 +38,10 @@ export default {
     // Forward /shop-api and /admin-api requests to the Vendure backend.
     if (url.pathname.startsWith('/shop-api') || url.pathname.startsWith('/admin-api')) {
       return proxyToVendure(request, url, env);
+    }
+
+    if (url.pathname.startsWith('/api/auth')) {
+      return proxyToBetterAuth(request, url, env);
     }
 
     // --- Subdomain Store Routing ---
@@ -85,6 +90,31 @@ async function proxyToVendure(
   const response = await fetch(proxyRequest);
 
   // Clone response with CORS headers for the storefront
+  const responseHeaders = new Headers(response.headers);
+  responseHeaders.set('Access-Control-Allow-Origin', url.origin);
+  responseHeaders.set('Access-Control-Allow-Credentials', 'true');
+
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers: responseHeaders,
+  });
+}
+
+async function proxyToBetterAuth(
+  request: Request,
+  url: URL,
+  env: Env,
+): Promise<Response> {
+  const betterAuthUrl = new URL(url.pathname + url.search, env.BETTER_AUTH_URL);
+
+  const proxyRequest = new Request(betterAuthUrl.toString(), {
+    method: request.method,
+    headers: request.headers,
+    body: request.body,
+  });
+
+  const response = await fetch(proxyRequest);
   const responseHeaders = new Headers(response.headers);
   responseHeaders.set('Access-Control-Allow-Origin', url.origin);
   responseHeaders.set('Access-Control-Allow-Credentials', 'true');

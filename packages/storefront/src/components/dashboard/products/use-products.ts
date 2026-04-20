@@ -18,8 +18,17 @@ interface ProductRecord {
   readonly formData: ProductFormData;
 }
 
+export interface CreatorProductsApi {
+  readonly list: (filters?: ProductListFilters) => Promise<readonly ProductSummary[]>;
+  readonly create: (data: ProductFormData) => Promise<ProductSummary>;
+  readonly update: (id: string, data: ProductFormData) => Promise<ProductSummary>;
+  readonly delete: (id: string) => Promise<void>;
+  readonly duplicate: (id: string) => Promise<ProductSummary>;
+}
+
 export interface UseProductsOptions {
   readonly initialProducts?: readonly ProductSummary[];
+  readonly api?: CreatorProductsApi;
 }
 
 export interface UseProductsActions {
@@ -248,15 +257,19 @@ export function useProducts(options: UseProductsOptions = {}): UseProductsReturn
         ...DEFAULT_FILTERS,
         ...filters,
       });
+      if (options.api) {
+        const nextProducts = await options.api.list(filters);
+        setRecords(nextProducts.map(toRecord));
+      }
     } catch (fetchError) {
       setError(fetchError instanceof Error ? fetchError : new Error(String(fetchError)));
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [options.api]);
 
   const createProduct = useCallback(async (data: ProductFormData) => {
-    const nextSummary = toSummary(data);
+    const nextSummary = options.api ? await options.api.create(data) : toSummary(data);
     const nextRecord: ProductRecord = {
       summary: nextSummary,
       formData: data,
@@ -264,9 +277,17 @@ export function useProducts(options: UseProductsOptions = {}): UseProductsReturn
 
     setRecords((current) => [...current, nextRecord]);
     return nextSummary;
-  }, []);
+  }, [options.api]);
 
   const updateProduct = useCallback(async (id: string, data: ProductFormData) => {
+    if (options.api) {
+      const updatedSummary = await options.api.update(id, data);
+      setRecords((current) =>
+        current.map((record) => record.summary.id === id ? { summary: updatedSummary, formData: data } : record),
+      );
+      return updatedSummary;
+    }
+
     let updatedSummary: ProductSummary | undefined;
 
     setRecords((current) =>
@@ -288,13 +309,22 @@ export function useProducts(options: UseProductsOptions = {}): UseProductsReturn
     }
 
     return updatedSummary;
-  }, []);
+  }, [options.api]);
 
   const deleteProduct = useCallback(async (id: string) => {
+    if (options.api) {
+      await options.api.delete(id);
+    }
     setRecords((current) => current.filter((record) => record.summary.id !== id));
-  }, []);
+  }, [options.api]);
 
   const duplicateProduct = useCallback(async (id: string) => {
+    if (options.api) {
+      const duplicatedSummary = await options.api.duplicate(id);
+      setRecords((current) => [...current, toRecord(duplicatedSummary)]);
+      return duplicatedSummary;
+    }
+
     const currentRecord = records.find((record) => record.summary.id === id);
     if (!currentRecord) {
       throw new Error(`Product ${id} was not found.`);
@@ -308,7 +338,7 @@ export function useProducts(options: UseProductsOptions = {}): UseProductsReturn
     };
 
     return createProduct(duplicatedData);
-  }, [createProduct, records]);
+  }, [createProduct, options.api, records]);
 
   return {
     products,

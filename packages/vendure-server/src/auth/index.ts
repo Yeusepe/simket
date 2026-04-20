@@ -8,7 +8,6 @@ export type {
 export {
   validateJwt,
   validateJwtWithKey,
-  issueServiceToken,
   resetPublicKeyCache,
   setValidationOverride,
 } from './better-auth.js';

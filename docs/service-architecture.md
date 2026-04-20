@@ -77,12 +77,32 @@ for full contract details.
 
 Key operations consumed:
 
-| Operation                     | Simket usage                                   |
-| ----------------------------- | ---------------------------------------------- |
-| JWT verification (public key) | Validate tokens on every authenticated request |
-| `GET /users/:id/profile`      | Fetch user profile for Customer entity cache   |
-| Webhook: `user.created`       | Create corresponding Vendure Customer record   |
-| Webhook: `user.updated`       | Sync profile changes to Vendure Customer cache |
+| Operation                                | Simket usage                                                                 |
+| ---------------------------------------- | ---------------------------------------------------------------------------- |
+| `POST /api/auth/sign-in/email`           | Simket-owned buyer and internal account sign-in                              |
+| `POST /api/auth/sign-up/email`           | Simket-owned buyer and internal account registration                         |
+| `POST /api/auth/oauth2/authorize`        | Redirect creator sign-in to the upstream YUCP identity authority             |
+| `GET /api/auth/list-accounts`            | Detect whether a Simket session is linked to the `yucp-creators` provider    |
+| `POST /api/auth/token`                   | Mint a Better Auth JWT for the storefront-to-Vendure bridge                  |
+| `GET /api/auth/jwks`                     | Vendure verifies Better Auth JWTs locally through the custom `better_auth` strategy |
+| `POST /shop-api authenticate(better_auth)` | Exchange the Better Auth JWT for Vendure's bearer session and sync the local `Customer` |
+
+Required environment/config surface for the Better Auth bridge:
+
+| Variable | Used by | Purpose |
+| --- | --- | --- |
+| `BETTER_AUTH_PORT` | vendure-server auth runtime | Local Better Auth listener port in development |
+| `BETTER_AUTH_PUBLIC_URL` | Better Auth, storefront, JWT defaults | Public origin used by browser clients and default JWT issuer/audience claims |
+| `BETTER_AUTH_SERVER_URL` | Vendure JWT verifier | Internal origin used by Vendure to fetch `/api/auth/jwks` |
+| `BETTER_AUTH_DB_PATH` | Better Auth runtime and seed readers | SQLite file for Better Auth users, sessions, accounts, and keys |
+| `BETTER_AUTH_URL` | storefront worker proxy | Upstream Better Auth base URL for `/api/auth/*` forwarding |
+| `VITE_SIMKET_AUTH_URL` | storefront browser client | Base URL for Better Auth API calls from the SPA |
+| `STOREFRONT_PUBLIC_URL` | Better Auth trusted origins | Storefront origin allowed to establish local Simket sessions |
+| `YUCP_CLIENT_ID` | Better Auth generic OAuth provider | OAuth client ID for the upstream `yucp-creators` link |
+| `YUCP_CLIENT_SECRET` | Better Auth generic OAuth provider | OAuth client secret for the upstream `yucp-creators` link |
+| `YUCP_BASE_URL` | Better Auth generic OAuth provider | Base YUCP identity URL; defaults to `https://api.creators.yucp.club` |
+| `YUCP_DISCOVERY_URL` | Better Auth generic OAuth provider | Optional explicit OAuth discovery URL override |
+| `YUCP_ISSUER` | Better Auth generic OAuth provider | Optional explicit issuer override for upstream creator identity validation |
 
 ### 1.5 PayloadCMS API
 
@@ -572,25 +592,38 @@ sequenceDiagram
     participant B as Browser
     participant V as Vendure
     participant BA as Better Auth
+    participant Y as YUCP OAuth
 
-    B->>BA: login (email/pass)
-    BA->>BA: validate
-    BA-->>B: JWT + refresh token
+    alt Buyer or internal account
+        B->>BA: sign-in / sign-up (email/password)
+        BA->>BA: create or validate Simket-owned identity
+    else Creator account
+        B->>BA: start OAuth2 sign-in
+        BA->>Y: authorize creator identity
+        Y-->>BA: creator profile + account link
+    end
 
-    B->>V: Bebop request (Authorization: Bearer)
-    V->>V: verify JWT (local, cached pubkey)
-    V->>V: populate RequestContext with userId, roles
+    BA-->>B: Better Auth session cookie
+    B->>BA: request JWT (/api/auth/token)
+    BA-->>B: Better Auth JWT
+
+    B->>V: authenticate(input: { better_auth: { token } })
+    V->>BA: verify JWT via JWKS (/api/auth/jwks)
+    V->>V: sync/find Customer by betterAuthUserId + linked provider
+    V-->>B: vendure-auth-token header
+
+    B->>V: Shop API request (vendure-auth-token bearer)
+    V->>V: populate RequestContext with Customer + creator role cache
     V-->>B: response
 ```
 
 ### 6.2 Role mapping
 
-| Better Auth role | Vendure role       | Permissions                                           |
-| ---------------- | ------------------ | ----------------------------------------------------- |
-| `user`           | `Customer`         | Shop API access                                       |
-| `creator`        | `Creator` (custom) | Admin API subset: own products, collaborations, flows |
-| `editor`         | `Editor` (custom)  | PayloadCMS access, editorial management               |
-| `admin`          | `SuperAdmin`       | Full Admin API access                                 |
+| Better Auth / provider signal              | Vendure role cache  | Permissions                                           |
+| ------------------------------------------ | ------------------- | ----------------------------------------------------- |
+| Local Simket account (default)             | `Customer`          | Shop API access                                       |
+| Linked `yucp-creators` OAuth account       | `Creator` (custom)  | Creator dashboard: own products, collaborations, flows |
+| Editorial/admin roles (when provisioned)   | `Editor` / `SuperAdmin` | Elevated internal surfaces                            |
 
 ### 6.3 Service-to-service auth
 

@@ -11,55 +11,41 @@
  */
 import { TodaySection } from '../components/today';
 import { DiscoveryFeed } from '../components/discovery';
-import { MOCK_DISCOVERY_ITEMS } from '../mock-data';
-import type { DiscoveryRequest, DiscoveryPage } from '../components/discovery/discovery-types';
+import type { DiscoveryFeedItem } from '../components/discovery/discovery-types';
 import type { UseDiscoveryReturn } from '../components/discovery/use-discovery';
+import { useTrendingProducts } from '../hooks/use-trending-products';
 
-const PAGE_SIZE = 8;
-
-function createMockDiscoveryHook(userId: string): UseDiscoveryReturn {
-  // Return all mock items as a static discovery feed for dev
+function useCatalogDiscovery(userId: string): UseDiscoveryReturn {
   void userId;
+  const trendingProducts = useTrendingProducts();
+  const discoveryItems: readonly DiscoveryFeedItem[] =
+    trendingProducts.data?.map((product, index) => ({
+      product,
+      reason: index % 2 === 0 ? 'Popular with creator-store shoppers' : 'Trending this week',
+      score: 100 - index,
+      source: 'simket-catalog',
+      variantId: `${product.id}-default`,
+    })) ?? [];
+
   return {
-    items: MOCK_DISCOVERY_ITEMS,
-    isLoading: false,
+    items: discoveryItems,
+    isLoading: trendingProducts.isLoading,
     hasMore: false,
-    error: null,
+    error: trendingProducts.error instanceof Error ? trendingProducts.error : null,
     loadMore: async () => {},
     retry: async () => {},
     reset: async () => {},
   };
 }
 
-function isDevMode(): boolean {
-  try {
-    const env = (import.meta as ImportMeta & { readonly env?: Record<string, string | undefined> }).env;
-    return env?.DEV === 'true' || env?.MODE === 'development';
-  } catch {
-    return false;
-  }
-}
-
 export function HomePage() {
-  const devMode = isDevMode();
-
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8">
+    <div className="mx-auto max-w-7xl px-4 py-10 sm:py-12">
       <TodaySection />
 
-      <section aria-label="Discover" className="mt-12">
-        <h2 className="mb-6 text-2xl font-bold">Discover</h2>
-        {devMode ? (
-          <DiscoveryFeed
-            userId="dev-user"
-            useDiscoveryHook={createMockDiscoveryHook}
-          />
-        ) : (
-          <p className="text-muted-foreground">
-            Infinite scroll recommendations will appear here — powered by the
-            pluggable recommendation pipeline.
-          </p>
-        )}
+      <section aria-label="Discover" className="mt-16 space-y-6">
+        <h2 className="text-2xl font-bold">Discover</h2>
+        <DiscoveryFeed userId="catalog-user" useDiscoveryHook={useCatalogDiscovery} />
       </section>
     </div>
   );
