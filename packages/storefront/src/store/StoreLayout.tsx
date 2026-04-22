@@ -14,7 +14,7 @@
 import { useEffect, useMemo, useState, type CSSProperties } from 'react';
 import { Link, Outlet, useLocation, useParams } from 'react-router-dom';
 import { resolveStoreRoute } from './routing';
-import { seededStoreService, type StoreService } from './store-service';
+import { liveStoreService, type StoreService } from './store-service';
 import { StoreNotFoundPage } from './StoreNotFoundPage';
 import type { CreatorStore } from './types';
 import { createStoreHrefs, StoreProvider } from './use-store';
@@ -39,7 +39,7 @@ interface StoreLayoutProps {
 
 export function StoreLayout({
   hostname,
-  storeService = seededStoreService,
+  storeService = liveStoreService,
 }: StoreLayoutProps) {
   const location = useLocation();
   const params = useParams<{

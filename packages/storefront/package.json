@@ -25,6 +25,7 @@
     "@iconify-json/streamline-flex": "^1.2.3",
     "@iconify/react": "^6.0.2",
     "@number-flow/react": "^0.5.0",
+    "@simket/framely-app": "workspace:*",
     "@simket/shared": "workspace:*",
     "@stripe/react-stripe-js": "^6.2.0",
     "@stripe/stripe-js": "^9.2.0",

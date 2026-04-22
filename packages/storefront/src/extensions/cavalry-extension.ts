@@ -28,7 +28,7 @@ export interface CavalryEmbedAttributes {
   controls: boolean;
 }
 
-export interface SetCavalryEmbedOptions extends CavalryEmbedConfig {}
+export type SetCavalryEmbedOptions = CavalryEmbedConfig;
 
 declare module '@tiptap/core' {
   interface Commands<ReturnType> {

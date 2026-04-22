@@ -5,13 +5,29 @@
  * External references:
  *   - https://heroui.com/docs/components/card
  */
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter } from 'react-router-dom';
 import { ProductCard, ProductCardSkeleton } from './ProductCard';
 import { makeProductListItem, resetProductCounter } from '../types/product.factory';
 import type { WishlistApi } from '../types/wishlist';
+
+vi.mock('../auth/AuthProvider', () => ({
+  useAuth: () => ({
+    session: {
+      user: {
+        id: 'user-1',
+        email: 'buyer@simket.test',
+        name: 'Simket Buyer',
+      },
+      session: {
+        id: 'session-1',
+      },
+    },
+    isVendureReady: true,
+  }),
+}));
 
 function renderWithRouter(ui: React.ReactElement) {
   const queryClient = new QueryClient({

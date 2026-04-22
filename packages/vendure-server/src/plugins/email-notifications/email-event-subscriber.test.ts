@@ -2,7 +2,7 @@
  * Purpose: Unit tests for EmailEventSubscriber — verifies event-to-payload mapping.
  */
 import { describe, it, expect } from 'vitest';
-import { buildEmailPayload, EmailTemplateType, type EmailPayload } from './email-notifications.service.js';
+import { buildEmailPayload, EmailTemplateType } from './email-notifications.service.js';
 
 describe('EmailEventSubscriber payload building', () => {
   it('builds ORDER_CONFIRMATION payload with correct fields', () => {

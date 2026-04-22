@@ -45,8 +45,9 @@ export class DiversityPostProcessor implements PostProcessor {
 
   async process(
     candidates: ScoredCandidate[],
-    _context: PipelineContext,
+    context: PipelineContext,
   ): Promise<ScoredCandidate[]> {
+    void context;
     const groupedCandidates = new Map<string, ScoredCandidate[]>();
 
     for (const candidate of candidates) {

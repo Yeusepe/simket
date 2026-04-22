@@ -38,3 +38,6 @@ docker-compose.override.yml
 npm-debug.log*
 pnpm-debug.log*
 /.cursor
+# heroui-agents-md
+.heroui-docs/
+/.agents

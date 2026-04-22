@@ -212,24 +212,19 @@ function sortProducts(
   });
 
   return [...filtered].sort((left, right) => {
-    let comparison = 0;
-
-    switch (sortBy) {
-      case 'price':
-        comparison = left.price - right.price;
-        break;
-      case 'sales':
-        comparison = left.salesCount - right.salesCount;
-        break;
-      case 'date':
-        comparison =
-          new Date(left.updatedAt).getTime() - new Date(right.updatedAt).getTime();
-        break;
-      case 'name':
-      default:
-        comparison = left.name.localeCompare(right.name);
-        break;
-    }
+    const comparison = (() => {
+      switch (sortBy) {
+        case 'price':
+          return left.price - right.price;
+        case 'sales':
+          return left.salesCount - right.salesCount;
+        case 'date':
+          return new Date(left.updatedAt).getTime() - new Date(right.updatedAt).getTime();
+        case 'name':
+        default:
+          return left.name.localeCompare(right.name);
+      }
+    })();
 
     return sortDirection === 'desc' ? comparison * -1 : comparison;
   });

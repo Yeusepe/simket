@@ -1,25 +1,28 @@
-import { describe, it, expect, vi } from 'vitest';
+import { beforeEach, describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter } from 'react-router-dom';
 import { TopBar } from './TopBar';
 import type { WishlistApi } from '../types/wishlist';
 
-vi.mock('../auth/AuthProvider', () => ({
-  useAuth: () => ({
-    session: {
-      user: {
-        id: 'user-1',
-        email: 'creator@simket.test',
-        name: 'Simket Creator',
-        role: 'creator',
-      },
-      session: {
-        id: 'session-1',
-      },
+const authState = vi.hoisted(() => ({
+  session: {
+    user: {
+      id: 'user-1',
+      email: 'creator@simket.test',
+      name: 'Simket Creator',
+      role: 'creator',
     },
-    signOut: vi.fn(async () => {}),
-  }),
+    session: {
+      id: 'session-1',
+    },
+  },
+  isVendureReady: true,
+  signOut: vi.fn(async () => {}),
+}));
+
+vi.mock('../auth/AuthProvider', () => ({
+  useAuth: () => authState,
 }));
 
 vi.mock('./notifications', () => ({
@@ -43,10 +46,10 @@ function renderWithRouter(ui: React.ReactElement, { route = '/' } = {}) {
 
 function createWishlistApi(): WishlistApi {
   return {
-    listWishlist: async () => ({ items: [], totalItems: 3, page: 1, limit: 12 }),
-    getWishlistCount: async () => 3,
-    isInWishlist: async () => false,
-    addToWishlist: async ({ productId }) => ({
+    listWishlist: vi.fn(async () => ({ items: [], totalItems: 3, page: 1, limit: 12 })),
+    getWishlistCount: vi.fn(async () => 3),
+    isInWishlist: vi.fn(async () => false),
+    addToWishlist: vi.fn(async ({ productId }) => ({
       id: `wishlist-${productId}`,
       customerId: 'customer-1',
       productId,
@@ -66,12 +69,16 @@ function createWishlistApi(): WishlistApi {
         tags: ['unity'],
         categorySlug: 'software',
       },
-    }),
-    removeFromWishlist: async () => true,
+    })),
+    removeFromWishlist: vi.fn(async () => true),
   };
 }
 
 describe('TopBar', () => {
+  beforeEach(() => {
+    authState.isVendureReady = true;
+  });
+
   it('renders the Simket logo link', () => {
     renderWithRouter(<TopBar wishlistApi={createWishlistApi()} />);
     expect(screen.getByText('Simket')).toBeInTheDocument();
@@ -120,6 +127,17 @@ describe('TopBar', () => {
 
     expect(screen.getByLabelText('Wishlist')).toBeInTheDocument();
     expect(await screen.findByText('3')).toBeInTheDocument();
+  });
+
+  it('does not fetch wishlist data before the Vendure bridge is ready', () => {
+    authState.isVendureReady = false;
+    const api = createWishlistApi();
+
+    renderWithRouter(<TopBar wishlistApi={api} />);
+
+    expect(screen.getByLabelText('Wishlist')).toBeInTheDocument();
+    expect(api.getWishlistCount).not.toHaveBeenCalled();
+    expect(screen.queryByText('3')).not.toBeInTheDocument();
   });
 
   it('navigates to search on submit', () => {

@@ -16,6 +16,7 @@ import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { ProductList } from './ProductList';
 import type { ProductSummary } from './product-types';
+import { DashboardPreferencesProvider } from '../dashboard-preferences';
 
 const PRODUCTS: readonly ProductSummary[] = [
   {
@@ -48,9 +49,13 @@ const PRODUCTS: readonly ProductSummary[] = [
 
 describe('ProductList', () => {
   it('renders creator products in a table', () => {
-    render(<ProductList products={PRODUCTS} />);
+    render(
+      <DashboardPreferencesProvider>
+        <ProductList products={PRODUCTS} />
+      </DashboardPreferencesProvider>,
+    );
 
-    expect(screen.getByRole('table', { name: 'Creator products' })).toBeInTheDocument();
+    expect(screen.getByRole('grid', { name: 'Creator products' })).toBeInTheDocument();
     expect(screen.getByText('Brush Pack')).toBeInTheDocument();
     expect(screen.getByText('Shader Pack')).toBeInTheDocument();
     expect(screen.getByText('$25.00')).toBeInTheDocument();
@@ -58,7 +63,11 @@ describe('ProductList', () => {
 
   it('filters products by search query', async () => {
     const user = userEvent.setup();
-    render(<ProductList products={PRODUCTS} />);
+    render(
+      <DashboardPreferencesProvider>
+        <ProductList products={PRODUCTS} />
+      </DashboardPreferencesProvider>,
+    );
 
     await user.type(screen.getByRole('searchbox', { name: 'Search creator products' }), 'shader');
 
@@ -68,18 +77,25 @@ describe('ProductList', () => {
 
   it('sorts products by price', async () => {
     const user = userEvent.setup();
-    render(<ProductList products={PRODUCTS} />);
+    render(
+      <DashboardPreferencesProvider>
+        <ProductList products={PRODUCTS} />
+      </DashboardPreferencesProvider>,
+    );
 
-    await user.click(screen.getByRole('button', { name: 'Sort by price' }));
+    await user.click(screen.getByRole('radio', { name: 'Sort by price' }));
 
     const rows = screen.getAllByRole('row');
-    const dataRowCells = within(rows[1]!).getAllByRole('cell');
-    expect(dataRowCells[1]).toHaveTextContent('Shader Pack');
+    expect(within(rows[1]!).getByRole('rowheader')).toHaveTextContent('Shader Pack');
   });
 
   it('shows an empty state when no products match', async () => {
     const user = userEvent.setup();
-    render(<ProductList products={PRODUCTS} />);
+    render(
+      <DashboardPreferencesProvider>
+        <ProductList products={PRODUCTS} />
+      </DashboardPreferencesProvider>,
+    );
 
     await user.type(screen.getByRole('searchbox', { name: 'Search creator products' }), 'missing');
 
@@ -90,26 +106,32 @@ describe('ProductList', () => {
   it('invokes callbacks for row actions', async () => {
     const user = userEvent.setup();
     const onEditProduct = vi.fn();
+    const onCustomizePage = vi.fn();
     const onDuplicateProduct = vi.fn();
     const onArchiveProduct = vi.fn();
     const onDeleteProduct = vi.fn();
 
     render(
-      <ProductList
-        products={PRODUCTS}
-        onEditProduct={onEditProduct}
-        onDuplicateProduct={onDuplicateProduct}
-        onArchiveProduct={onArchiveProduct}
-        onDeleteProduct={onDeleteProduct}
-      />,
+      <DashboardPreferencesProvider>
+        <ProductList
+          products={PRODUCTS}
+          onEditProduct={onEditProduct}
+          onCustomizePage={onCustomizePage}
+          onDuplicateProduct={onDuplicateProduct}
+          onArchiveProduct={onArchiveProduct}
+          onDeleteProduct={onDeleteProduct}
+        />
+      </DashboardPreferencesProvider>,
     );
 
     await user.click(screen.getByRole('button', { name: 'Edit Brush Pack' }));
+    await user.click(screen.getByRole('button', { name: 'Customize Brush Pack page' }));
     await user.click(screen.getByRole('button', { name: 'Duplicate Brush Pack' }));
     await user.click(screen.getByRole('button', { name: 'Archive Brush Pack' }));
     await user.click(screen.getByRole('button', { name: 'Delete Brush Pack' }));
 
     expect(onEditProduct).toHaveBeenCalledWith('prod-1');
+    expect(onCustomizePage).toHaveBeenCalledWith('prod-1');
     expect(onDuplicateProduct).toHaveBeenCalledWith('prod-1');
     expect(onArchiveProduct).toHaveBeenCalledWith('prod-1');
     expect(onDeleteProduct).toHaveBeenCalledWith('prod-1');

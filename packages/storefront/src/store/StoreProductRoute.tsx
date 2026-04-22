@@ -11,6 +11,7 @@
  */
 import { useMemo } from 'react';
 import { ProductDetailPage } from '../components/ProductDetailPage';
+import { fetchCatalogProduct } from '../services/catalog-api';
 import { StoreNotFoundPage } from './StoreNotFoundPage';
 import { useStore } from './use-store';
 
@@ -19,13 +20,13 @@ export function StoreProductRoute() {
 
   const fetcher = useMemo(
     () => async (slug: string) => {
-      const product = store.products.find((candidate) => candidate.slug === slug);
+      const storeProduct = store.products.find((candidate) => candidate.slug === slug);
 
-      if (!product) {
+      if (!storeProduct) {
         throw new Error(`Product "${slug}" was not found in ${store.creator.displayName}'s store.`);
       }
 
-      return product;
+      return fetchCatalogProduct(slug);
     },
     [store],
   );
@@ -44,6 +45,7 @@ export function StoreProductRoute() {
       fetcher={fetcher}
       slug={resolution.productSlug}
       buildProductHref={hrefs.product}
+      pageTheme={store.theme}
     />
   );
 }

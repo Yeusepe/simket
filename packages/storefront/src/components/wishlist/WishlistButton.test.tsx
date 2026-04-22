@@ -16,6 +16,43 @@ import { describe, expect, it, vi } from 'vitest';
 import { WishlistButton } from './WishlistButton';
 import type { WishlistApi } from '../../types/wishlist';
 
+const navigateMock = vi.hoisted(() => vi.fn());
+const authState = vi.hoisted(() => ({
+  session: {
+    user: {
+      id: 'user-1',
+      email: 'buyer@simket.test',
+      name: 'Simket Buyer',
+    },
+    session: {
+      id: 'session-1',
+    },
+  } as {
+    user: {
+      id: string;
+      email: string;
+      name: string;
+    };
+    session: {
+      id: string;
+    };
+  } | null,
+  isVendureReady: true,
+}));
+
+vi.mock('react-router-dom', async () => {
+  const actual = await vi.importActual<typeof import('react-router-dom')>('react-router-dom');
+  return {
+    ...actual,
+    useLocation: () => ({ pathname: '/product/shader-starter-kit' }),
+    useNavigate: () => navigateMock,
+  };
+});
+
+vi.mock('../../auth/AuthProvider', () => ({
+  useAuth: () => authState,
+}));
+
 function createWrapper() {
   const queryClient = new QueryClient({
     defaultOptions: {
@@ -69,6 +106,17 @@ function createApi(inWishlist = false): WishlistApi {
 
 describe('WishlistButton', () => {
   it('adds products to the wishlist', async () => {
+    authState.session = {
+      user: {
+        id: 'user-1',
+        email: 'buyer@simket.test',
+        name: 'Simket Buyer',
+      },
+      session: {
+        id: 'session-1',
+      },
+    };
+    authState.isVendureReady = true;
     const api = createApi(false);
     const user = userEvent.setup();
 
@@ -90,6 +138,17 @@ describe('WishlistButton', () => {
   });
 
   it('removes products already in the wishlist', async () => {
+    authState.session = {
+      user: {
+        id: 'user-1',
+        email: 'buyer@simket.test',
+        name: 'Simket Buyer',
+      },
+      session: {
+        id: 'session-1',
+      },
+    };
+    authState.isVendureReady = true;
     const api = createApi(true);
     const user = userEvent.setup();
 
@@ -105,5 +164,23 @@ describe('WishlistButton', () => {
       expect(screen.getByRole('button', { name: /add to wishlist/i })).toBeInTheDocument(),
     );
     expect(api.removeFromWishlist).toHaveBeenCalledWith('product-1');
+  });
+
+  it('redirects guests to sign-in instead of calling the wishlist API', async () => {
+    authState.session = null;
+    authState.isVendureReady = false;
+    navigateMock.mockReset();
+    const api = createApi(false);
+    const user = userEvent.setup();
+
+    render(<WishlistButton api={api} productId="product-1" />, { wrapper: createWrapper() });
+
+    await user.click(screen.getByRole('button', { name: /add to wishlist/i }));
+
+    expect(api.isInWishlist).not.toHaveBeenCalled();
+    expect(api.addToWishlist).not.toHaveBeenCalled();
+    expect(navigateMock).toHaveBeenCalledWith('/sign-in', {
+      state: { from: '/product/shader-starter-kit' },
+    });
   });
 });

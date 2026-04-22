@@ -14,7 +14,6 @@ import {
   sanitizeIframeEmbed,
   isAllowedEmbedDomain,
   stripDangerousAttributes,
-  ALLOWED_EMBED_DOMAINS,
 } from './html-sanitize.service';
 
 describe('HtmlSanitizeService', () => {

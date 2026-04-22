@@ -11,7 +11,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { editorReducer, INITIAL_EDITOR_STATE } from './editor-reducer';
-import type { EditorState, StorePage, EditorElement } from '../types/editor-types';
+import type { StorePage, EditorElement } from '../types/editor-types';
 import { DEFAULT_THEME } from '../types/editor-types';
 
 function makePage(elements: EditorElement[] = []): StorePage {

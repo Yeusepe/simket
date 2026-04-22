@@ -181,14 +181,11 @@ function approximateHueDegrees(backgroundHex: string): number | null {
   const delta = max - min;
   if (delta === 0) return 0;
 
-  let hue = 0;
-  if (max === r) {
-    hue = ((g - b) / delta) % 6;
-  } else if (max === g) {
-    hue = (b - r) / delta + 2;
-  } else {
-    hue = (r - g) / delta + 4;
-  }
+  const hue = max === r
+    ? ((g - b) / delta) % 6
+    : max === g
+      ? (b - r) / delta + 2
+      : (r - g) / delta + 4;
 
   const degrees = hue * 60;
   return degrees < 0 ? degrees + 360 : degrees;

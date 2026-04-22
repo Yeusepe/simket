@@ -49,9 +49,11 @@ describe('DashboardHome', () => {
     );
 
     expect(screen.getByRole('heading', { name: 'Welcome back, Alex Creator' })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Overview' })).toBeInTheDocument();
     expect(screen.getByText('$9,999.00')).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Recent Activity' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'New Product' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'View templates' })).toBeInTheDocument();
 
     vi.useRealTimers();
   });

@@ -25,7 +25,7 @@ identity model, and ownership rules.
 | `OrderLine`             | Vendure core           | Vendure DB                    | Vendure auto-increment ID                        | A single item in an order.                                                                               |
 | `Gift`                  | Gifts                  | Vendure DB                    | Vendure auto-increment ID + unique gift code     | A purchased gift code that can be claimed by another user for a product entitlement.                     |
 | `Tag`                   | Tagging                | Vendure DB                    | Vendure auto-increment ID                        | A classification label applied to products.                                                              |
-| `StorePage`             | Storefront             | Vendure DB                    | Vendure auto-increment ID                        | A content page (post-sale info, product details).                                                        |
+| `StorePage`             | Storefront             | Vendure DB                    | Vendure auto-increment ID                        | A creator-owned persisted Framely page schema for store and product presentation surfaces.               |
 | `Template`              | Storefront             | Vendure DB                    | Vendure auto-increment ID                        | A reusable Framely block preset for store, product, or landing pages.                                   |
 | `CheckoutFlow`          | Flow                   | Vendure DB                    | Vendure auto-increment ID                        | A checkout flow definition with ordered steps.                                                           |
 | `Experiment`            | AB testing             | Vendure DB                    | UUID                                             | A creator-owned A/B test definition with weighted variants, audience rules, and lifecycle state.         |
@@ -140,8 +140,11 @@ erDiagram
 
     StorePage {
         int id
+        string creatorId
+        string slug
         json content
         string scope
+        int productId
         boolean isTemplate
         boolean isPostSale
     }
@@ -295,15 +298,19 @@ Persisted invitation state for collaboration onboarding before an active split e
 
 ### 4.5 StorePage
 
-Content pages associated with product or the platform.
+Creator-owned persisted Framely page records served on public creator storefront
+routes and product detail routes.
 
-| Responsibility | Details                                                                       |
-| -------------- | ----------------------------------------------------------------------------- |
-| **Scope**      | `universal` (visible on all products) or `product` (specific to one product). |
-| **Post-sale**  | `isPostSale: true` only visible to buyers who own the product.                |
-| **Templates**  | `isTemplate: true` can be duplicated to create new pages.                     |
-| **Content**    | TipTap JSON document with rich text, embeds, and media.                       |
-| **Ordering**   | `sortOrder` controls display sequence.                                        |
+| Responsibility | Details |
+| -------------- | ------- |
+| **Ownership**  | `creatorId` stores the Better Auth user ID of the creator who owns the page. |
+| **Scope**      | `universal` targets creator store pages, while `product` targets a single product detail page. |
+| **Canonical slots** | `scope='universal'` + `slug='home'` is the creator storefront home page. `scope='product'` + `slug='product-detail'` is the creator's custom product page slot. |
+| **Post-sale**  | `isPostSale: true` only visible to buyers who own the product. |
+| **Templates**  | `isTemplate: true` can be duplicated to create new pages. |
+| **Content**    | Canonical Framely page schema JSON consumed by the shared page renderer and editor. |
+| **Delivery**   | Public creator store queries return enabled `universal` pages for the creator, and product detail payloads attach the enabled `product` schema for that creator/product pair. |
+| **Ordering**   | `sortOrder` controls display sequence for creator store sub-pages. |
 
 ### 4.6 Template
 

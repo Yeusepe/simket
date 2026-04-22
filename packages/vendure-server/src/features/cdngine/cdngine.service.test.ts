@@ -8,7 +8,7 @@
  *   - CDNgine internal API contract (see cdngine.types.ts)
  *   - https://github.com/connor4312/cockatiel (resilience wrapping)
  */
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { CdngineService } from './cdngine.service.js';
 import {
   SUPPORTED_MIME_TYPES,

@@ -16,6 +16,7 @@ import { describe, expect, it } from 'vitest';
 import { MemoryRouter, Outlet, Route, Routes } from 'react-router-dom';
 import { StoreLayout } from './StoreLayout';
 import { StorePageRoute } from './StorePageRoute';
+import { seededStoreService } from './store-service';
 import { useStore } from './use-store';
 
 function StoreConsumer() {
@@ -33,7 +34,7 @@ function renderStoreRoute(route: string, hostname = 'simket.com') {
   return render(
     <MemoryRouter initialEntries={[route]}>
       <Routes>
-        <Route path="store/:creatorSlug" element={<StoreLayout hostname={hostname} />}>
+        <Route path="store/:creatorSlug" element={<StoreLayout hostname={hostname} storeService={seededStoreService} />}>
           <Route index element={<><StoreConsumer /><StorePageRoute /></>} />
           <Route path=":pageSlug" element={<StorePageRoute />} />
         </Route>
@@ -53,7 +54,7 @@ describe('StoreLayout', () => {
 
     expect(screen.getByTestId('store-layout')).toHaveAttribute(
       'style',
-      expect.stringContaining('--store-primary-color: #7c3aed'),
+      expect.stringContaining('--store-font-family: "CreatorFont", system-ui, sans-serif'),
     );
     expect(screen.getByTestId('store-consumer-name')).toHaveTextContent('Alex Artist');
     expect(screen.getByRole('link', { name: 'Product link' })).toHaveAttribute(

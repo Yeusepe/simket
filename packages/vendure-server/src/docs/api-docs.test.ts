@@ -63,9 +63,9 @@ describe('buildOpenApiSpec', () => {
   });
 
   it('should have required fields on each endpoint', () => {
-    for (const [path, methods] of Object.entries(spec.paths)) {
+    for (const methods of Object.values(spec.paths)) {
       expect(methods).toBeDefined();
-      for (const [method, operation] of Object.entries(methods as Record<string, unknown>)) {
+      for (const operation of Object.values(methods as Record<string, unknown>)) {
         const op = operation as {
           summary?: string;
           responses?: Record<string, unknown>;

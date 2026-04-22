@@ -14,6 +14,12 @@ export {
   sortPages,
   filterPagesByScope,
   duplicatePage,
+  isStorePageScope,
 } from './storefront.plugin.js';
 export { StorePageEntity } from './storefront.entity.js';
 export type { StorePageScope } from './storefront.entity.js';
+export {
+  DEFAULT_PRODUCT_PAGE_SLUG,
+  DEFAULT_STORE_HOME_PAGE_SLUG,
+  StorefrontPageService,
+} from './storefront.service.js';

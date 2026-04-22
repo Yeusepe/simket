@@ -15,7 +15,7 @@ import { DefaultStoreTemplate } from './DefaultStoreTemplate';
 import { useStore } from './use-store';
 
 export function StorePageRoute() {
-  const { currentPage, resolution, store } = useStore();
+  const { currentPage, hrefs, resolution, store } = useStore();
 
   if (resolution.routeKind === 'page') {
     if (!currentPage?.schema) {
@@ -36,6 +36,15 @@ export function StorePageRoute() {
             ...(currentPage.schema.theme ?? {}),
           },
         }}
+        context={{
+          kind: 'store',
+          store: store as unknown as Record<string, unknown>,
+          hrefs: {
+            home: hrefs.home,
+            page: hrefs.page,
+            product: hrefs.product,
+          },
+        }}
       />
     );
   }
@@ -48,6 +57,15 @@ export function StorePageRoute() {
           theme: {
             ...store.theme,
             ...(currentPage.schema.theme ?? {}),
+          },
+        }}
+        context={{
+          kind: 'store',
+          store: store as unknown as Record<string, unknown>,
+          hrefs: {
+            home: hrefs.home,
+            page: hrefs.page,
+            product: hrefs.product,
           },
         }}
       />

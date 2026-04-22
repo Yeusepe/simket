@@ -16,12 +16,16 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { MOCK_PRODUCTS } from '../../mock-data';
-
 const useEditorialMock = vi.fn();
 
 vi.mock('./use-editorial', () => ({
   useEditorial: () => useEditorialMock(),
+}));
+
+vi.mock('./TrendingProductsSection', () => ({
+  TrendingProductsSection: ({ title }: { readonly title: string }) => (
+    <div>{`${title} products`}</div>
+  ),
 }));
 
 import { TodaySection } from './TodaySection';
@@ -125,7 +129,7 @@ describe('TodaySection', () => {
 
     expect(screen.getByTestId('today-layout-trending-products')).toBeInTheDocument();
     await waitFor(() => {
-      expect(screen.getByText(MOCK_PRODUCTS[0]!.name)).toBeInTheDocument();
+      expect(screen.getByText('Trending This Week products')).toBeInTheDocument();
     });
   });
 
@@ -161,6 +165,25 @@ describe('TodaySection', () => {
 
     expect(screen.getByText(/editorial service unavailable/i)).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: /try again/i }));
+    expect(refetch).toHaveBeenCalledTimes(1);
+  });
+
+  it('renders an explicit empty state when no public sections are available yet', () => {
+    const refetch = vi.fn();
+    useEditorialMock.mockReturnValue({
+      sections: [],
+      isLoading: false,
+      error: undefined,
+      version: 0,
+      hasFreshContent: false,
+      dismissFreshContent: vi.fn(),
+      refetch,
+    });
+
+    render(<TodaySection />);
+
+    expect(screen.getByText('Today is getting ready')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /refresh today/i }));
     expect(refetch).toHaveBeenCalledTimes(1);
   });
 

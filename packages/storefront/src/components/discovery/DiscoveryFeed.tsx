@@ -8,6 +8,7 @@
  * External references:
  *   - https://developer.mozilla.org/en-US/docs/Web/API/IntersectionObserver
  *   - https://heroui.com/react/llms.txt
+ *   - https://www.heroui.com/docs/react/components/carousel
  * Tests:
  *   - packages/storefront/src/components/discovery/DiscoveryFeed.test.tsx
  */
@@ -28,6 +29,8 @@ export interface DiscoveryFeedProps {
 }
 
 const DISCOVERY_SPOTLIGHT_LIMIT = 5;
+const CAROUSEL_NAVIGATION_BUTTON_CLASS =
+  'transition-opacity data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-0';
 
 export function DiscoveryFeed({
   userId,
@@ -184,24 +187,21 @@ export function DiscoveryFeed({
                 </Carousel.Content>
 
                 {spotlightItems.length > 1 && (
-                  <div className="flex items-center gap-2 pt-1 sm:gap-4">
-                    <div className="min-h-8 min-w-0 flex-1" aria-hidden />
-                    <div className="flex min-h-8 flex-1 justify-center">
-                      <Carousel.Dots className="mt-0" />
-                    </div>
-                    <div className="flex min-h-8 flex-1 justify-end gap-2">
-                      <Carousel.Previous
-                        aria-label="Previous discovery spotlight"
-                        variant="outline"
-                        icon={<Icon name="arrow-left" size={16} />}
-                      />
-                      <Carousel.Next
-                        aria-label="Next discovery spotlight"
-                        variant="outline"
-                        icon={<Icon name="arrow-right" size={16} />}
-                      />
-                    </div>
-                  </div>
+                  <>
+                    <Carousel.Previous
+                      aria-label="Previous discovery spotlight"
+                      className={CAROUSEL_NAVIGATION_BUTTON_CLASS}
+                      variant="outline"
+                      icon={<Icon name="arrow-left" size={16} />}
+                    />
+                    <Carousel.Next
+                      aria-label="Next discovery spotlight"
+                      className={CAROUSEL_NAVIGATION_BUTTON_CLASS}
+                      variant="outline"
+                      icon={<Icon name="arrow-right" size={16} />}
+                    />
+                    <Carousel.Dots className="mt-0 pt-1" />
+                  </>
                 )}
               </Carousel>
             )}

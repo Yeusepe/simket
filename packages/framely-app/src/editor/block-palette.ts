@@ -10,7 +10,7 @@
  *   - packages/framely-app/src/editor/block-palette.test.ts
  */
 
-import type { PaletteBlock, PropertyField } from '../types/editor-types';
+import type { PaletteBlock, PropertyField } from '../types/editor-types.js';
 
 export interface PaletteBlockWithSchema extends PaletteBlock {
   readonly propSchema: readonly PropertyField[];

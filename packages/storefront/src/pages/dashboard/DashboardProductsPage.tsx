@@ -12,6 +12,7 @@
  */
 import { useEffect, useMemo, useState } from 'react';
 import { Button } from '@heroui/react';
+import { useNavigate } from 'react-router-dom';
 import {
   ProductForm,
   ProductList,
@@ -19,6 +20,7 @@ import {
   type ProductSummary,
   useProducts,
 } from '../../components/dashboard';
+import { useAuth } from '../../auth/AuthProvider';
 import { createCreatorProductsApi } from '../../services/catalog-api';
 
 const PRODUCT_TAG_SUGGESTIONS = ['unity', 'shader', 'textures', 'tools', 'workflow'] as const;
@@ -47,6 +49,8 @@ function buildInitialFormData(summary: ProductSummary): Partial<ProductFormData>
 export function DashboardProductsPage() {
   const [editingProductId, setEditingProductId] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+  const navigate = useNavigate();
+  const { session } = useAuth();
   const productsApi = useMemo(() => createCreatorProductsApi(), []);
   const { products, actions, isLoading, error } = useProducts({ api: productsApi });
 
@@ -144,6 +148,24 @@ export function DashboardProductsPage() {
         products={products}
         onCreateProduct={() => setIsCreating(true)}
         onEditProduct={(productId) => setEditingProductId(productId)}
+        onCustomizePage={(productId) => {
+          const product = products.find((candidate) => candidate.id === productId);
+          if (!product) {
+            return;
+          }
+
+          const params = new URLSearchParams({
+            scope: 'product',
+            productId,
+            productName: product.name,
+            productSlug: product.slug,
+          });
+          if (session?.user.id) {
+            params.set('creatorId', session.user.id);
+          }
+
+          navigate(`/dashboard/templates?${params.toString()}`);
+        }}
         onDuplicateProduct={(productId) => void actions.duplicateProduct(productId)}
         onArchiveProduct={(productId) => void handleArchiveProduct(productId)}
         onDeleteProduct={(productId) => void actions.deleteProduct(productId)}

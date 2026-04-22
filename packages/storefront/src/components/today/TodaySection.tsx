@@ -168,6 +168,21 @@ export function TodaySection({ bentoShellColor }: TodaySectionProps = {}) {
         </div>
       )}
 
+      {!isLoading && !error && renderPlan.length === 0 && (
+        <div className="rounded-3xl border border-border/70 bg-surface-secondary p-6">
+          <p className="text-lg font-semibold text-foreground">Today is getting ready</p>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
+            Public editorial picks and featured catalog highlights will appear here as soon as
+            they are available.
+          </p>
+          <div className="mt-4">
+            <Button variant="secondary" onPress={refetch}>
+              Refresh Today
+            </Button>
+          </div>
+        </div>
+      )}
+
       {renderPlan.map((entry) =>
         entry.kind === 'bento' ? (
           <BentoTodayHero

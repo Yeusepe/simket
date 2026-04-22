@@ -21,13 +21,17 @@
  */
 
 export interface Env {
-  VENDURE_API_URL: string;
-  BETTER_AUTH_URL: string;
+  VENDURE_API_URL?: string;
+  BETTER_AUTH_URL?: string;
   ENVIRONMENT: string;
   // Future bindings:
   // STORE_CACHE: KVNamespace;
   // ASSETS_BUCKET: R2Bucket;
   // DB: Hyperdrive;
+}
+
+interface StorefrontWorkerHandler {
+  fetch(request: Request, env: Env): Response | Promise<Response>;
 }
 
 export default {
@@ -69,7 +73,7 @@ export default {
     // ensures index.html is served for client-side routes.
     return fetch(request);
   },
-} satisfies ExportedHandler<Env>;
+} satisfies StorefrontWorkerHandler;
 
 /**
  * Proxies a request to the Vendure backend API.
@@ -79,7 +83,10 @@ async function proxyToVendure(
   url: URL,
   env: Env,
 ): Promise<Response> {
-  const vendureUrl = new URL(url.pathname + url.search, env.VENDURE_API_URL);
+  const vendureUrl = resolveUpstreamUrl(url.pathname + url.search, env.VENDURE_API_URL, 'VENDURE_API_URL');
+  if (vendureUrl instanceof Response) {
+    return vendureUrl;
+  }
 
   const proxyRequest = new Request(vendureUrl.toString(), {
     method: request.method,
@@ -106,7 +113,10 @@ async function proxyToBetterAuth(
   url: URL,
   env: Env,
 ): Promise<Response> {
-  const betterAuthUrl = new URL(url.pathname + url.search, env.BETTER_AUTH_URL);
+  const betterAuthUrl = resolveUpstreamUrl(url.pathname + url.search, env.BETTER_AUTH_URL, 'BETTER_AUTH_URL');
+  if (betterAuthUrl instanceof Response) {
+    return betterAuthUrl;
+  }
 
   const proxyRequest = new Request(betterAuthUrl.toString(), {
     method: request.method,
@@ -124,6 +134,29 @@ async function proxyToBetterAuth(
     statusText: response.statusText,
     headers: responseHeaders,
   });
+}
+
+function resolveUpstreamUrl(pathnameWithQuery: string, upstreamBase: string | undefined, bindingName: string): URL | Response {
+  const normalizedBase = upstreamBase?.trim();
+  if (!normalizedBase) {
+    return new Response(`Worker binding "${bindingName}" is not configured.`, {
+      status: 500,
+      headers: {
+        'Content-Type': 'text/plain; charset=utf-8',
+      },
+    });
+  }
+
+  try {
+    return new URL(pathnameWithQuery, normalizedBase);
+  } catch {
+    return new Response(`Worker binding "${bindingName}" is not a valid URL.`, {
+      status: 500,
+      headers: {
+        'Content-Type': 'text/plain; charset=utf-8',
+      },
+    });
+  }
 }
 
 /**

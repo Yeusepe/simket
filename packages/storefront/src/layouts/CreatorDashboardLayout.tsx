@@ -12,6 +12,7 @@
 import type { ReactNode } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { DashboardLayout } from '../components/dashboard/DashboardLayout';
+import { DashboardPreferencesProvider } from '../components/dashboard/dashboard-preferences';
 import type { DashboardSection } from '../components/dashboard/dashboard-types';
 
 interface CreatorDashboardLayoutProps {
@@ -28,9 +29,15 @@ export function CreatorDashboardLayout({ children }: CreatorDashboardLayoutProps
   };
 
   return (
-    <DashboardLayout currentSection={currentSection} onNavigate={handleNavigate}>
-      {children}
-    </DashboardLayout>
+    <DashboardPreferencesProvider>
+      <DashboardLayout
+        currentSection={currentSection}
+        onNavigate={handleNavigate}
+        onNavigateToHref={(href) => navigate(href)}
+      >
+        {children}
+      </DashboardLayout>
+    </DashboardPreferencesProvider>
   );
 }
 

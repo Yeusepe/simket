@@ -29,6 +29,10 @@ export default defineConfig({
         replacement: path.resolve(__dirname, './node_modules/@gravity-ui/icons/esm/$1.js'),
       },
       {
+        find: '@simket/framely-app',
+        replacement: path.resolve(__dirname, '../framely-app/src/index.ts'),
+      },
+      {
         find: '@',
         replacement: path.resolve(__dirname, './src'),
       },

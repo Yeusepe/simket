@@ -16,7 +16,6 @@ import {
   buildEmailPayload,
   validateEmailAddress,
   renderSubjectLine,
-  type EmailPayload,
 } from './email-notifications.service.js';
 
 describe('EmailNotificationService', () => {

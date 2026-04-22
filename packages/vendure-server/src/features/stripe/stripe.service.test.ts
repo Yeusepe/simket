@@ -11,13 +11,11 @@
  *   - https://stripe.com/docs/api/payment_intents/create
  *   - https://stripe.com/docs/webhooks/signatures
  */
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { StripeService } from './stripe.service.js';
 import type {
   StripeConnectConfig,
-  CreatePaymentIntentParams,
   CollaborationSplit,
-  CreateTransferParams,
 } from './stripe.types.js';
 import type Stripe from 'stripe';
 

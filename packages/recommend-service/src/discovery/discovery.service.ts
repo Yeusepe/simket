@@ -110,11 +110,8 @@ export function decodeDiscoveryCursor(cursor?: string): number {
 
     return offset;
   } catch (error) {
-    throw new Error(
-      `Invalid discovery cursor: ${
-        error instanceof Error ? error.message : String(error)
-      }`,
-    );
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(`Invalid discovery cursor: ${message}`, { cause: error });
   }
 }
 

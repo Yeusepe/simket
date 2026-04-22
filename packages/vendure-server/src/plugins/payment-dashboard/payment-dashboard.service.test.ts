@@ -17,7 +17,6 @@ import {
   buildTransactionHistoryEntry,
   filterTransactionsByDateRange,
   type TransactionEntry,
-  type RevenueSummary,
 } from './payment-dashboard.service.js';
 
 describe('PaymentDashboardService', () => {

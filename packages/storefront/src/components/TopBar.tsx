@@ -38,12 +38,12 @@ interface TopBarProps {
 }
 
 export function TopBar({ wishlistApi }: TopBarProps) {
-  const { session, signOut } = useAuth();
+  const { session, isVendureReady, signOut } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const location = useLocation();
   const navigate = useNavigate();
   const totalItems = useCartState((state) => state.totalItems);
-  const { wishlistCount } = useWishlist({ api: wishlistApi, enabled: Boolean(session) });
+  const { wishlistCount } = useWishlist({ api: wishlistApi, enabled: Boolean(session && isVendureReady) });
   const [searchQuery, setSearchQuery] = useState('');
 
   const displayName = session?.user.name ?? 'Guest';
@@ -145,7 +145,7 @@ export function TopBar({ wishlistApi }: TopBarProps) {
                   ) : null}
                 </Badge.Anchor>
 
-                <NotificationBell />
+                <NotificationBell enabled={isVendureReady} />
 
                 <Button
                   isIconOnly

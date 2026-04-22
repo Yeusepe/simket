@@ -47,7 +47,7 @@ export interface LoadScenarioDefinition {
   thresholds: LoadThresholds;
 }
 
-interface LoadScenarioConfig extends Required<LoadScenarioOverrides> {}
+type LoadScenarioConfig = Required<LoadScenarioOverrides>;
 
 const DURATION_PATTERN = /^\d+(s|m|h)$/;
 const DEFAULT_ERROR_RATE_THRESHOLD = 0.001;

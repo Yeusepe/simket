@@ -6,14 +6,16 @@
  *   - docs/domain-model.md
  * External references:
  *   - https://heroui.com/react/llms.txt
- *   - https://www.heroui.com/docs/react/components/table
- *   - https://www.heroui.com/docs/react/components/search-field
+ *   - https://heroui.com/docs/react/components/table
+ *   - https://heroui.com/docs/react/components/search-field
  * Tests:
  *   - packages/storefront/src/components/dashboard/products/ProductList.test.tsx
  */
 import { useMemo, useState } from 'react';
-import { Button, Card, Chip, Input } from '@heroui/react';
+import { Button, Card, Chip, SearchField, Table } from '@heroui/react';
+import { Segment } from '@heroui-pro/react';
 import type { ProductFormData, ProductSummary } from './product-types';
+import { useDashboardPreferences } from '../dashboard-preferences';
 import { formatPrice } from './use-products';
 
 type SortKey = 'name' | 'price' | 'sales' | 'date';
@@ -24,6 +26,7 @@ interface ProductListProps {
   readonly error?: string | null;
   readonly onCreateProduct?: () => void;
   readonly onEditProduct?: (productId: string) => void;
+  readonly onCustomizePage?: (productId: string) => void;
   readonly onDuplicateProduct?: (productId: string) => void;
   readonly onArchiveProduct?: (productId: string) => void;
   readonly onDeleteProduct?: (productId: string) => void;
@@ -73,10 +76,12 @@ export function ProductList({
   error = null,
   onCreateProduct,
   onEditProduct,
+  onCustomizePage,
   onDuplicateProduct,
   onArchiveProduct,
   onDeleteProduct,
 }: ProductListProps) {
+  const { preferences } = useDashboardPreferences();
   const [search, setSearch] = useState('');
   const [visibilityFilter, setVisibilityFilter] = useState<'all' | ProductSummary['visibility']>('all');
   const [sortKey, setSortKey] = useState<SortKey>('name');
@@ -97,53 +102,63 @@ export function ProductList({
   }, [products, search, sortKey, visibilityFilter]);
 
   return (
-    <Card>
+    <Card className="rounded-[28px] border border-border/70 bg-surface/95">
       <Card.Header className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div className="space-y-1">
           <Card.Title>Products</Card.Title>
-          <Card.Description>Manage pricing, status, storefront art, and publishing actions for your creator catalog.</Card.Description>
+          <Card.Description>
+            Manage pricing, publishing state, and custom Framely product pages for the creator catalog.
+          </Card.Description>
         </div>
-        <Button onPress={onCreateProduct}>New Product</Button>
+        <Button variant="primary" onPress={onCreateProduct}>
+          New Product
+        </Button>
       </Card.Header>
 
-      <Card.Content className="space-y-4">
-        <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-          <Input
-            type="search"
+      <Card.Content className="space-y-5">
+        <div className="grid gap-4 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
+          <SearchField
             aria-label="Search creator products"
-            placeholder="Search by product name"
             value={search}
-            onChange={(event) => setSearch(event.currentTarget.value)}
-            className="w-full xl:max-w-md"
-          />
+            onChange={setSearch}
+            variant="secondary"
+            fullWidth
+          >
+            <SearchField.Group className="rounded-2xl">
+              <SearchField.SearchIcon />
+              <SearchField.Input placeholder="Search by name or slug" />
+              <SearchField.ClearButton />
+            </SearchField.Group>
+          </SearchField>
 
-          <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
-            <div className="flex flex-wrap gap-2">
+          <div className="grid gap-3 lg:grid-cols-2">
+            <Segment
+              aria-label="Filter creator products by visibility"
+              selectedKey={visibilityFilter}
+              onSelectionChange={(value) =>
+                setVisibilityFilter(String(value) as 'all' | ProductSummary['visibility'])
+              }
+              size="sm"
+            >
               {VISIBILITY_OPTIONS.map((option) => (
-                <Button
-                  key={option}
-                  size="sm"
-                  variant={visibilityFilter === option ? 'secondary' : 'ghost'}
-                  onPress={() => setVisibilityFilter(option)}
-                >
-                  {option === 'all' ? 'All' : option[0].toUpperCase() + option.slice(1)}
-                </Button>
+                <Segment.Item key={option} id={option}>
+                  {option === 'all' ? 'All' : option.charAt(0).toUpperCase() + option.slice(1)}
+                </Segment.Item>
               ))}
-            </div>
+            </Segment>
 
-            <div className="flex flex-wrap gap-2">
+            <Segment
+              aria-label="Sort creator products"
+              selectedKey={sortKey}
+              onSelectionChange={(value) => setSortKey(String(value) as SortKey)}
+              size="sm"
+            >
               {(['name', 'price', 'sales', 'date'] as const).map((option) => (
-                <Button
-                  key={option}
-                  size="sm"
-                  variant={sortKey === option ? 'secondary' : 'ghost'}
-                  aria-label={`Sort by ${option}`}
-                  onPress={() => setSortKey(option)}
-                >
-                  {option[0].toUpperCase() + option.slice(1)}
-                </Button>
+                <Segment.Item key={option} id={option} aria-label={`Sort by ${option}`}>
+                  {option.charAt(0).toUpperCase() + option.slice(1)}
+                </Segment.Item>
               ))}
-            </div>
+            </Segment>
           </div>
         </div>
 
@@ -160,70 +175,96 @@ export function ProductList({
         ) : null}
 
         {!isLoading && filteredProducts.length > 0 ? (
-          <div role="table" aria-label="Creator products" className="space-y-2">
-            <div
-              role="row"
-              className="hidden grid-cols-[6rem_minmax(0,1.6fr)_0.9fr_0.9fr_0.7fr_0.9fr_1.3fr] gap-3 rounded-2xl bg-default-50 px-4 py-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground lg:grid"
-            >
-              <div role="columnheader">Image</div>
-              <div role="columnheader">Name</div>
-              <div role="columnheader">Price</div>
-              <div role="columnheader">Status</div>
-              <div role="columnheader">Sales</div>
-              <div role="columnheader">Revenue</div>
-              <div role="columnheader">Actions</div>
-            </div>
+          <Table variant="secondary">
+            <Table.ScrollContainer>
+              <Table.Content aria-label="Creator products">
+                <Table.Header>
+                  <Table.Column isRowHeader>Product</Table.Column>
+                  <Table.Column>Price</Table.Column>
+                  <Table.Column>Status</Table.Column>
+                  <Table.Column>Sales</Table.Column>
+                  <Table.Column>Revenue</Table.Column>
+                  <Table.Column>Actions</Table.Column>
+                </Table.Header>
 
-            {filteredProducts.map((product) => (
-              <div
-                key={product.id}
-                role="row"
-                className="grid gap-4 rounded-2xl border border-default-200 px-4 py-4 lg:grid-cols-[6rem_minmax(0,1.6fr)_0.9fr_0.9fr_0.7fr_0.9fr_1.3fr]"
-              >
-                <div role="cell">
-                  {product.heroImageUrl ? (
-                    <img
-                      src={product.heroImageUrl}
-                      alt=""
-                      className="h-12 w-20 rounded-xl object-cover"
-                    />
-                  ) : (
-                    <div className="h-12 w-20 rounded-xl bg-default-100" />
-                  )}
-                </div>
-                <div role="cell">
-                  <div className="space-y-1">
-                    <p className="font-medium">{product.name}</p>
-                    <p className="text-xs text-muted-foreground">/{product.slug}</p>
-                  </div>
-                </div>
-                <div role="cell">{formatPrice(product.price, product.currency)}</div>
-                <div role="cell">
-                  <Chip color={getVisibilityColor(product.visibility)} variant="soft">
-                    <Chip.Label className="capitalize">{product.visibility}</Chip.Label>
-                  </Chip>
-                </div>
-                <div role="cell">{product.salesCount}</div>
-                <div role="cell">{formatPrice(product.revenue, product.currency)}</div>
-                <div role="cell">
-                  <div className="flex flex-wrap gap-2">
-                    <Button size="sm" variant="ghost" aria-label={`Edit ${product.name}`} onPress={() => onEditProduct?.(product.id)}>
-                      Edit
-                    </Button>
-                    <Button size="sm" variant="ghost" aria-label={`Duplicate ${product.name}`} onPress={() => onDuplicateProduct?.(product.id)}>
-                      Duplicate
-                    </Button>
-                    <Button size="sm" variant="ghost" aria-label={`Archive ${product.name}`} onPress={() => onArchiveProduct?.(product.id)}>
-                      Archive
-                    </Button>
-                    <Button size="sm" variant="ghost" aria-label={`Delete ${product.name}`} onPress={() => onDeleteProduct?.(product.id)}>
-                      Delete
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+                <Table.Body>
+                  {filteredProducts.map((product) => (
+                    <Table.Row key={product.id} id={product.id}>
+                      <Table.Cell>
+                        <div className={`flex items-center gap-3 ${preferences.density === 'compact' ? 'py-1' : 'py-2'}`}>
+                          {product.heroImageUrl ? (
+                            <img
+                              src={product.heroImageUrl}
+                              alt=""
+                              className="h-14 w-20 rounded-2xl object-cover"
+                            />
+                          ) : (
+                            <div className="h-14 w-20 rounded-2xl bg-default-100" />
+                          )}
+                          <div className="min-w-0 space-y-1">
+                            <p className="font-medium text-foreground">{product.name}</p>
+                            <p className="text-xs text-muted-foreground">/{product.slug}</p>
+                          </div>
+                        </div>
+                      </Table.Cell>
+                      <Table.Cell>{formatPrice(product.price, product.currency)}</Table.Cell>
+                      <Table.Cell>
+                        <Chip color={getVisibilityColor(product.visibility)} variant="soft">
+                          <Chip.Label className="capitalize">{product.visibility}</Chip.Label>
+                        </Chip>
+                      </Table.Cell>
+                      <Table.Cell>{product.salesCount}</Table.Cell>
+                      <Table.Cell>{formatPrice(product.revenue, product.currency)}</Table.Cell>
+                      <Table.Cell>
+                        <div className="flex flex-wrap gap-2">
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            aria-label={`Edit ${product.name}`}
+                            onPress={() => onEditProduct?.(product.id)}
+                          >
+                            Edit
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            aria-label={`Customize ${product.name} page`}
+                            onPress={() => onCustomizePage?.(product.id)}
+                          >
+                            Customize Page
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            aria-label={`Duplicate ${product.name}`}
+                            onPress={() => onDuplicateProduct?.(product.id)}
+                          >
+                            Duplicate
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            aria-label={`Archive ${product.name}`}
+                            onPress={() => onArchiveProduct?.(product.id)}
+                          >
+                            Archive
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            aria-label={`Delete ${product.name}`}
+                            onPress={() => onDeleteProduct?.(product.id)}
+                          >
+                            Delete
+                          </Button>
+                        </div>
+                      </Table.Cell>
+                    </Table.Row>
+                  ))}
+                </Table.Body>
+              </Table.Content>
+            </Table.ScrollContainer>
+          </Table>
         ) : null}
       </Card.Content>
     </Card>

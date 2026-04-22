@@ -38,7 +38,7 @@ export function resolveStorefrontOrigin(): string {
   return trimTrailingSlash(
     process.env['STOREFRONT_PUBLIC_URL']
       ?? process.env['SIMKET_STOREFRONT_URL']
-      ?? 'http://localhost:5173',
+      ?? 'http://localhost:3000',
   );
 }
 

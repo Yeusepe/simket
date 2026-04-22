@@ -15,7 +15,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import Database from 'better-sqlite3';
-import { betterAuth, type Auth } from 'better-auth';
+import { betterAuth, type Auth, type BetterAuthOptions } from 'better-auth';
 import { genericOAuth, jwt } from 'better-auth/plugins';
 import { Kysely, SqliteDialect, type UpdateObject } from 'kysely';
 import { BETTER_AUTH_PROVIDER_ID, resolveBetterAuthDatabasePath, resolveBetterAuthJwtAudience, resolveBetterAuthJwtIssuer, resolveBetterAuthPublicBaseUrl, resolveStorefrontOrigin, resolveYucpDiscoveryUrl, resolveYucpIssuer } from './config.js';
@@ -55,7 +55,7 @@ export const authDatabase = new Kysely<BetterAuthDatabase>({
   }),
 });
 
-export const auth: Auth<any> = betterAuth({
+const authOptions: BetterAuthOptions = {
   baseURL: resolveBetterAuthPublicBaseUrl(),
   trustedOrigins: [resolveStorefrontOrigin(), resolveBetterAuthPublicBaseUrl()],
   database: betterAuthDatabaseDriver,
@@ -145,7 +145,9 @@ export const auth: Auth<any> = betterAuth({
       },
     }),
   ],
-});
+};
+
+export const auth: Auth = betterAuth(authOptions);
 
 async function applySeedProfile(seed: DevelopmentUserSeed): Promise<void> {
   const values: UpdateObject<BetterAuthDatabase, 'user', 'user'> = {

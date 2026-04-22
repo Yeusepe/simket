@@ -70,7 +70,7 @@ export function validateClamavConfig(config: ClamavConfig): ClamavConfig {
 }
 
 export function parseClamdResponse(_response: string): Pick<ScanResult, 'verdict' | 'threat' | 'error'> {
-  const response = _response.replace(/\u0000/g, '').trim();
+  const response = _response.replaceAll('\0', '').trim();
 
   if (/:\s+OK$/i.test(response)) {
     return { verdict: 'clean' };

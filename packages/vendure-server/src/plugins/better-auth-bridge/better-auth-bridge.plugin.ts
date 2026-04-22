@@ -13,6 +13,7 @@
  */
 import { Injectable, type OnApplicationBootstrap } from '@nestjs/common';
 import { LanguageCode, Logger, PluginCommonModule, RequestContextService, VendurePlugin, type CustomFieldConfig, type RuntimeVendureConfig } from '@vendure/core';
+import { templateJsonScalar } from '../storefront/template.scalar.js';
 import { BetterAuthBridgeResolver, betterAuthBridgeShopApiExtensions } from './better-auth-bridge.api.js';
 import { CreatorCatalogService } from './better-auth-bridge.service.js';
 import { BetterAuthAuthenticationStrategy } from './better-auth.strategy.js';
@@ -134,6 +135,9 @@ export class BetterAuthBridgeBootstrapService implements OnApplicationBootstrap 
   shopApiExtensions: {
     schema: betterAuthBridgeShopApiExtensions,
     resolvers: [BetterAuthBridgeResolver],
+    scalars: {
+      JSON: templateJsonScalar,
+    },
   },
   compatibility: '^3.0.0',
 })

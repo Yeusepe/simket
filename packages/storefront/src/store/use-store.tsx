@@ -10,7 +10,7 @@
  *   - packages/storefront/src/store/StoreLayout.test.tsx
  */
 import { createContext, useContext, type ReactNode } from 'react';
-import type { ProductDetail } from '../types/product';
+import type { CreatorStoreProduct } from '../types/product';
 import { buildStoreHomePath, buildStorePagePath, buildStoreProductPath, type StoreRouteResolution } from './routing';
 import type { CreatorStore, CreatorStorePage } from './types';
 
@@ -18,7 +18,7 @@ export interface StoreContextValue {
   readonly store: CreatorStore;
   readonly resolution: StoreRouteResolution;
   readonly currentPage: CreatorStorePage | null;
-  readonly currentProduct: ProductDetail | null;
+  readonly currentProduct: CreatorStoreProduct | null;
   readonly hrefs: {
     readonly home: string;
     readonly page: (pageSlug: string) => string;

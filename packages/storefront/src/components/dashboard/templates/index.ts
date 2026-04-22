@@ -11,7 +11,9 @@
  *   - packages/storefront/src/components/dashboard/templates/TemplatePicker.test.tsx
  */
 export { TemplateGallery } from './TemplateGallery';
+export { TemplateBuilderStudio } from './TemplateBuilderStudio';
 export { TemplatePicker } from './TemplatePicker';
+export { useStorefrontPage } from './use-storefront-pages';
 export { createTemplatesApi, useTemplates } from './use-templates';
 export type {
   DeleteTemplateInput,
@@ -27,4 +29,12 @@ export type {
   UseTemplatesOptions,
   UseTemplatesResult,
 } from './template-types';
+export type {
+  CreatorStorefrontPageApi,
+  CreatorStorefrontPageRecord,
+  EditableStorefrontPageTarget,
+  StorefrontPageScope,
+  UpsertCreatorStorefrontPageInput,
+  UseStorefrontPageOptions,
+} from './use-storefront-pages';
 export { TEMPLATE_CATEGORY_LABELS } from './template-types';

@@ -13,7 +13,7 @@
  *   - packages/storefront/src/pages/dashboard/DashboardFlowsPage.test.tsx
  */
 import { Button, Card, Chip, Modal, Spinner, useOverlayState } from '@heroui/react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -60,10 +60,10 @@ const STEP_TYPE_LABEL: Record<FlowStepType, string> = {
   'thank-you': 'Thank You',
 };
 
-const STEP_TYPE_COLOR: Record<FlowStepType, 'primary' | 'secondary' | 'success' | 'warning'> = {
-  checkout: 'primary',
+const STEP_TYPE_COLOR: Record<FlowStepType, 'accent' | 'default' | 'success' | 'warning'> = {
+  checkout: 'accent',
   upsell: 'warning',
-  'post-purchase': 'secondary',
+  'post-purchase': 'default',
   'thank-you': 'success',
 };
 
@@ -79,7 +79,7 @@ export function DashboardFlowsPage({ api }: DashboardFlowsPageProps) {
   const [flows, setFlows] = useState<readonly CheckoutFlow[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
-  const { isOpen, onOpen, onClose } = useOverlayState();
+  const modalState = useOverlayState();
 
   const loadFlows = async () => {
     if (!api) return;
@@ -94,10 +94,9 @@ export function DashboardFlowsPage({ api }: DashboardFlowsPageProps) {
     }
   };
 
-  // Load on mount
-  useState(() => {
+  useEffect(() => {
     void loadFlows();
-  });
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -108,7 +107,7 @@ export function DashboardFlowsPage({ api }: DashboardFlowsPageProps) {
             Configure checkout flows, upsell sequences, and post-purchase pages for your products.
           </p>
         </div>
-        <Button variant="primary" onPress={onOpen}>
+        <Button variant="primary" onPress={modalState.open}>
           Create Flow
         </Button>
       </div>
@@ -156,23 +155,28 @@ export function DashboardFlowsPage({ api }: DashboardFlowsPageProps) {
         </div>
       )}
 
-      <Modal isOpen={isOpen} onClose={onClose}>
-        <Modal.Header>
-          <Modal.Title>Create Checkout Flow</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <p className="text-muted-foreground">
-            Flow creation form will be wired here once the backend API is available.
-          </p>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="ghost" onPress={onClose}>
-            Cancel
-          </Button>
-          <Button variant="primary" onPress={onClose}>
-            Create
-          </Button>
-        </Modal.Footer>
+      <Modal state={modalState}>
+        <Modal.Backdrop />
+        <Modal.Container>
+          <Modal.Dialog>
+            <Modal.Header>
+              <Modal.Heading>Create Checkout Flow</Modal.Heading>
+            </Modal.Header>
+            <Modal.Body>
+              <p className="text-muted-foreground">
+                Flow creation form will be wired here once the backend API is available.
+              </p>
+            </Modal.Body>
+            <Modal.Footer>
+              <Button variant="ghost" onPress={modalState.close}>
+                Cancel
+              </Button>
+              <Button variant="primary" onPress={modalState.close}>
+                Create
+              </Button>
+            </Modal.Footer>
+          </Modal.Dialog>
+        </Modal.Container>
       </Modal>
     </div>
   );

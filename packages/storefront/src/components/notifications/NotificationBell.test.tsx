@@ -71,4 +71,17 @@ describe('NotificationBell', () => {
     await user.click(screen.getByRole('button', { name: /purchase complete/i }));
     expect(onNavigateTo).toHaveBeenCalledWith('/library');
   });
+
+  it('stays idle until the Vendure bridge is ready', () => {
+    const api = createApi();
+
+    render(
+      <MemoryRouter>
+        <NotificationBell api={api} enabled={false} pollIntervalMs={0} />
+      </MemoryRouter>,
+    );
+
+    expect(api.listNotifications).not.toHaveBeenCalled();
+    expect(screen.queryByText('2')).not.toBeInTheDocument();
+  });
 });

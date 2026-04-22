@@ -1,5 +1,6 @@
 /**
- * Purpose: StorePageEntity — TypeORM entity for universal and product-scoped storefront pages.
+ * Purpose: StorePageEntity — TypeORM entity for creator-owned universal and
+ *          product-scoped storefront pages.
  * Governing docs:
  *   - docs/architecture.md (§5 Service ownership, Storefront plugin)
  *   - docs/domain-model.md (§4.5 StorePage)
@@ -19,7 +20,7 @@ import { sanitizeStorePageContentValue } from '../../sanitization/sanitization.s
 export type StorePageScope = 'universal' | 'product';
 
 @Entity()
-@Index('idx_store_page_scope_product_slug_unique', ['scope', 'productId', 'slug'], {
+@Index('idx_store_page_creator_scope_product_slug_unique', ['creatorId', 'scope', 'productId', 'slug'], {
   unique: true,
 })
 export class StorePageEntity extends VendureEntity {
@@ -32,6 +33,9 @@ export class StorePageEntity extends VendureEntity {
 
   @Column({ type: 'varchar' })
   slug!: string;
+
+  @Column({ type: 'varchar', nullable: true, default: null })
+  creatorId!: string | null;
 
   @Column({
     type: 'simple-enum',

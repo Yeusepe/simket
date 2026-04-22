@@ -9,6 +9,7 @@
  * Tests:
  *   - Type-only module; validated through component tests
  */
+import type { PageSchema } from '../builder';
 
 /** Optional person line on product cards (primary creator + collaborators). */
 export interface ProductCreatorRef {
@@ -163,6 +164,7 @@ export interface ProductDetail {
   readonly requiredProductIds: readonly string[];
   readonly dependencyRequirements: readonly CartDependencyRequirement[];
   readonly availableBundles: readonly ProductBundleOffer[];
+  readonly framelyPageSchema?: PageSchema | null;
   readonly createdAt: string;
   readonly updatedAt: string;
 }
@@ -170,3 +172,5 @@ import type {
   CartBundleInputProduct,
   CartDependencyRequirement,
 } from './cart';
+
+export type CreatorStoreProduct = ProductListItem;

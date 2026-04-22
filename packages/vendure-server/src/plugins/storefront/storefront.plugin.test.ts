@@ -26,6 +26,7 @@ function createPage(overrides: Partial<StorePageEntity> = {}): StorePageEntity {
   const page = new StorePageEntity({
     title: 'Welcome Page',
     slug: 'welcome-page',
+    creatorId: 'creator-1',
     scope: 'universal',
     productId: null,
     isPostSale: false,
@@ -60,6 +61,7 @@ describe('StorefrontPlugin', () => {
 
       expect(page.title).toBe('Setup Guide');
       expect(page.slug).toBe('setup-guide');
+      expect(page.creatorId).toBe('creator-1');
       expect(page.scope).toBe('product');
       expect(page.productId).toBe('prod-1');
       expect(page.isPostSale).toBe(true);
@@ -258,6 +260,7 @@ describe('StorefrontPlugin', () => {
       expect(duplicate.content).toBe(source.content);
       expect(JSON.parse(duplicate.content)).toEqual(JSON.parse(source.content));
       expect(duplicate.title).toBe(source.title);
+      expect(duplicate.creatorId).toBe(source.creatorId);
       expect(duplicate.id).toBeUndefined();
     });
 

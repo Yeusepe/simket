@@ -66,6 +66,7 @@ export const betterAuthBridgeShopApiExtensions = gql`
     requiredProductIds: [String!]!
     dependencyRequirements: [String!]!
     availableBundles: [String!]!
+    framelyPageSchema: JSON
     createdAt: DateTime!
     updatedAt: DateTime!
   }

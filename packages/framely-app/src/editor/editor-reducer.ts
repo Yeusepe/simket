@@ -15,7 +15,7 @@ import type {
   EditorAction,
   EditorElement,
   HistoryEntry,
-} from '../types/editor-types';
+} from '../types/editor-types.js';
 
 const MAX_HISTORY = 50;
 

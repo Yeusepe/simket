@@ -316,8 +316,13 @@ async function loadEditorialState(
 
 function isDevMode(): boolean {
   try {
-    return (import.meta as ImportMeta & { readonly env?: Record<string, string | undefined> }).env?.DEV === 'true'
-      || (import.meta as ImportMeta & { readonly env?: Record<string, string | undefined> }).env?.MODE === 'development';
+    const env = (import.meta as ImportMeta & {
+      readonly env?: {
+        readonly DEV?: boolean;
+        readonly MODE?: string;
+      };
+    }).env;
+    return env?.DEV === true || env?.MODE === 'development';
   } catch {
     return false;
   }
@@ -342,9 +347,14 @@ export function useEditorial(options: UseEditorialOptions = {}): UseEditorialRes
     if (!devMode) return;
     fetchCatalogProducts(12).then((products) => {
       setSections(buildCatalogFallbackSections(products));
+      setError(undefined);
       setVersion(1);
       setIsLoading(false);
-    }).catch(() => {
+    }).catch((reason: unknown) => {
+      setSections([]);
+      setError(
+        reason instanceof Error ? reason : new Error('Failed to load public editorial fallback.'),
+      );
       setIsLoading(false);
     });
   }, [devMode]);

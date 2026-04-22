@@ -12,6 +12,12 @@
 import type { ActivityItem, DashboardStats, QuickAction } from '../components/dashboard/dashboard-types';
 import type { CreatorProductsApi } from '../components/dashboard/products/use-products';
 import type { ProductFormData, ProductSummary } from '../components/dashboard/products/product-types';
+import type {
+  CreatorStorefrontPageApi,
+  CreatorStorefrontPageRecord,
+  UpsertCreatorStorefrontPageInput,
+} from '../components/dashboard/templates/use-storefront-pages';
+import type { CreatorStore } from '../store/types';
 import type { ProductDetail, ProductListItem } from '../types/product';
 import { fetchShopGraphql } from '../lib/shop-api';
 
@@ -68,6 +74,7 @@ const CATALOG_PRODUCT_QUERY = `
       requiredProductIds
       dependencyRequirements
       availableBundles
+      framelyPageSchema
       createdAt
       updatedAt
     }
@@ -163,6 +170,79 @@ const DUPLICATE_CREATOR_PRODUCT_MUTATION = `
   }
 `;
 
+const CREATOR_STORE_QUERY = `
+  query CreatorStore($creatorSlug: String!) {
+    creatorStore(creatorSlug: $creatorSlug) {
+      creator {
+        id
+        slug
+        displayName
+        avatarUrl
+        tagline
+        bio
+      }
+      theme
+      pages {
+        id
+        title
+        slug
+        scope
+        productId
+        enabled
+        schema
+      }
+      products {
+        id
+        slug
+        name
+        description
+        priceMin
+        priceMax
+        currencyCode
+        heroImageUrl
+        heroTransparentUrl
+        creatorName
+        creatorAvatarUrl
+        tags
+        categorySlug
+        previewColor
+      }
+    }
+  }
+`;
+
+const CREATOR_STOREFRONT_PAGE_QUERY = `
+  query CreatorStorefrontPage($scope: String!, $slug: String!, $productId: ID) {
+    creatorStorefrontPage(scope: $scope, slug: $slug, productId: $productId) {
+      id
+      title
+      slug
+      scope
+      productId
+      enabled
+      schema
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
+const UPSERT_CREATOR_STOREFRONT_PAGE_MUTATION = `
+  mutation UpsertCreatorStorefrontPage($input: UpsertCreatorStorefrontPageInput!) {
+    upsertCreatorStorefrontPage(input: $input) {
+      id
+      title
+      slug
+      scope
+      productId
+      enabled
+      schema
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
 interface CreatorDashboardResponse {
   readonly creatorDashboardData: {
     readonly creatorName: string;
@@ -182,6 +262,14 @@ interface CatalogProductsResponse {
 
 interface CatalogProductResponse {
   readonly catalogProduct: ProductDetail;
+}
+
+interface CreatorStoreResponse {
+  readonly creatorStore: CreatorStore | null;
+}
+
+interface CreatorStorefrontPageResponse {
+  readonly creatorStorefrontPage: CreatorStorefrontPageRecord | null;
 }
 
 function toCreatorProductInput(data: ProductFormData) {
@@ -208,6 +296,11 @@ export async function fetchCatalogProducts(limit = 12): Promise<readonly Product
 export async function fetchCatalogProduct(slug: string): Promise<ProductDetail> {
   const data = await fetchShopGraphql<CatalogProductResponse>(CATALOG_PRODUCT_QUERY, { slug });
   return data.catalogProduct;
+}
+
+export async function fetchCreatorStore(creatorSlug: string): Promise<CreatorStore | null> {
+  const data = await fetchShopGraphql<CreatorStoreResponse>(CREATOR_STORE_QUERY, { creatorSlug });
+  return data.creatorStore;
 }
 
 export async function fetchCreatorDashboardData(): Promise<CreatorDashboardResponse['creatorDashboardData']> {
@@ -256,6 +349,41 @@ export function createCreatorProductsApi(): CreatorProductsApi {
         { productId },
       );
       return data.duplicateCreatorProduct;
+    },
+  };
+}
+
+export function createCreatorStorefrontPagesApi(): CreatorStorefrontPageApi {
+  return {
+    async loadPage({ scope, slug, productId }) {
+      const data = await fetchShopGraphql<CreatorStorefrontPageResponse>(
+        CREATOR_STOREFRONT_PAGE_QUERY,
+        {
+          scope,
+          slug,
+          productId: productId ?? null,
+        },
+      );
+
+      return data.creatorStorefrontPage;
+    },
+    async savePage(input: UpsertCreatorStorefrontPageInput) {
+      const data = await fetchShopGraphql<{ upsertCreatorStorefrontPage: CreatorStorefrontPageRecord }>(
+        UPSERT_CREATOR_STOREFRONT_PAGE_MUTATION,
+        {
+          input: {
+            pageId: input.pageId ?? null,
+            title: input.title,
+            slug: input.slug,
+            scope: input.scope,
+            productId: input.productId ?? null,
+            content: input.schema,
+            enabled: input.enabled ?? true,
+          },
+        },
+      );
+
+      return data.upsertCreatorStorefrontPage;
     },
   };
 }

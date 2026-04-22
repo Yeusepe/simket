@@ -12,7 +12,7 @@
  *   - packages/storefront/src/store/routing.test.ts
  */
 import type { PageSchema, ThemeOverrides } from '../builder';
-import type { ProductDetail } from '../types/product';
+import type { CreatorStoreProduct } from '../types/product';
 
 export interface CreatorStoreTheme extends ThemeOverrides {
   readonly foregroundColor?: string;
@@ -39,5 +39,5 @@ export interface CreatorStore {
   readonly creator: CreatorProfile;
   readonly theme: CreatorStoreTheme;
   readonly pages: readonly CreatorStorePage[];
-  readonly products: readonly ProductDetail[];
+  readonly products: readonly CreatorStoreProduct[];
 }

@@ -19,14 +19,38 @@ export type {
   PaletteBlock,
   PropertyField,
   HistoryEntry,
-} from './types/editor-types';
-export { DEFAULT_THEME } from './types/editor-types';
+} from './types/editor-types.js';
+export { DEFAULT_THEME } from './types/editor-types.js';
 
-export { editorReducer, INITIAL_EDITOR_STATE } from './editor/editor-reducer';
+export { editorReducer, INITIAL_EDITOR_STATE } from './editor/editor-reducer.js';
 export {
   PALETTE_BLOCKS,
   BLOCK_CATEGORIES,
   getBlocksByCategory,
   getPaletteBlock,
-} from './editor/block-palette';
-export type { PaletteBlockWithSchema } from './editor/block-palette';
+} from './editor/block-palette.js';
+export type { PaletteBlockWithSchema } from './editor/block-palette.js';
+
+export {
+  CURRENT_PAGE_SCHEMA_VERSION,
+  createPageSchema,
+  validatePageSchema,
+  type BlockDefinition,
+  type FramelyRenderContext,
+  type PageBlock,
+  type PageSchema,
+  type PageSchemaValidationResult,
+  type PropField,
+  type PropSchema,
+  type ThemeOverrides,
+} from './runtime/types.js';
+export {
+  clearRegisteredBlocks,
+  getAllBlocks,
+  getBlock,
+  registerBlock,
+  type BlockComponent,
+  type RegisteredBlock,
+} from './runtime/block-registry.js';
+export { PageRenderer } from './runtime/page-renderer.js';
+export { useBuilder } from './runtime/use-builder.js';

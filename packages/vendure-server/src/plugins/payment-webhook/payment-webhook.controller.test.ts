@@ -5,7 +5,8 @@
  *   - Event type parsing and action determination
  *   - Missing/malformed payload handling
  */
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { createHmac } from 'node:crypto';
+import { describe, it, expect } from 'vitest';
 import {
   parseWebhookEventType,
   extractPaymentIdFromEvent,
@@ -111,7 +112,6 @@ describe('PaymentWebhookController logic', () => {
     });
 
     it('returns true for valid HMAC-SHA256 signature', () => {
-      const { createHmac } = require('node:crypto');
       const body = '{"event_type":"payment_intent_success"}';
       const secret = 'test_webhook_secret';
       const sig = createHmac('sha256', secret).update(body).digest('hex');

@@ -15,6 +15,11 @@ export { DashboardNav } from './DashboardNav';
 export { DashboardStats } from './DashboardStats';
 export { QuickActions } from './QuickActions';
 export { RecentActivity } from './RecentActivity';
+export {
+  DashboardPreferencesProvider,
+  useDashboardPreferences,
+  DEFAULT_DASHBOARD_PREFERENCES,
+} from './dashboard-preferences';
 export * from './analytics';
 export * from './licenses';
 export * from './products';
@@ -25,3 +30,10 @@ export type {
   DashboardStats as DashboardStatsData,
   QuickAction,
 } from './dashboard-types';
+export type {
+  DashboardDensity,
+  DashboardPreviewDevice,
+  DashboardPreviewMode,
+  DashboardPreferences,
+  DashboardShellStyle,
+} from './dashboard-preferences';

@@ -13,40 +13,43 @@ import userEvent from '@testing-library/user-event';
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { DashboardNav } from './DashboardNav';
+import { DashboardPreferencesProvider } from './dashboard-preferences';
+
+function renderDashboardNav(currentSection: Parameters<typeof DashboardNav>[0]['currentSection'], onNavigate = vi.fn()) {
+  return render(
+    <DashboardPreferencesProvider>
+      <DashboardNav currentSection={currentSection} onNavigate={onNavigate} />
+    </DashboardPreferencesProvider>,
+  );
+}
 
 describe('DashboardNav', () => {
   it('renders all dashboard sections', () => {
-    render(
-      <DashboardNav currentSection="home" onNavigate={vi.fn()} />,
-    );
+    renderDashboardNav('home');
 
-    expect(screen.getByRole('button', { name: 'Home' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Products' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Licenses' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Templates' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Collaborations' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Flows' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Settings' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Home/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Products/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Licenses/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Templates/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Collaborations/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Flows/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Settings/ })).toBeInTheDocument();
   });
 
   it('marks the active section', () => {
-    render(
-      <DashboardNav currentSection="licenses" onNavigate={vi.fn()} />,
-    );
+    renderDashboardNav('licenses');
 
-    expect(screen.getByRole('button', { name: 'Licenses' })).toHaveAttribute('aria-current', 'page');
-    expect(screen.getByRole('button', { name: 'Home' })).not.toHaveAttribute('aria-current', 'page');
+    expect(screen.getByRole('button', { name: /Licenses/ })).toHaveAttribute('aria-current', 'page');
+    expect(screen.getByRole('button', { name: /Home/ })).not.toHaveAttribute('aria-current', 'page');
   });
 
   it('calls onNavigate when a section is pressed', async () => {
     const user = userEvent.setup();
     const onNavigate = vi.fn();
 
-    render(
-      <DashboardNav currentSection="home" onNavigate={onNavigate} />,
-    );
+    renderDashboardNav('home', onNavigate);
 
-    await user.click(screen.getByRole('button', { name: 'Licenses' }));
+    await user.click(screen.getByRole('button', { name: /Licenses/ }));
 
     expect(onNavigate).toHaveBeenCalledWith('licenses');
   });

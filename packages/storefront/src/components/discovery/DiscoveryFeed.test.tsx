@@ -24,6 +24,19 @@ import { DiscoveryFeed } from './DiscoveryFeed';
 import type { DiscoveryFeedItem } from './discovery-types';
 import type { UseDiscoveryReturn } from './use-discovery';
 
+vi.mock('../../auth/AuthProvider', () => ({
+  useAuth: () => ({
+    session: null,
+    isPending: false,
+    isVendureReady: false,
+    error: null,
+    signInBuyer: vi.fn(),
+    signUpBuyer: vi.fn(),
+    signInCreator: vi.fn(),
+    signOut: vi.fn(),
+  }),
+}));
+
 function renderWithRouter(node: ReactNode) {
   const queryClient = new QueryClient();
   return render(
@@ -112,6 +125,14 @@ describe('DiscoveryFeed', () => {
     expect(screen.getAllByText('Discovery Product 2').length).toBeGreaterThan(0);
     expect(screen.getByText('Picked to help you find your next favorite product')).toBeInTheDocument();
     expect(screen.getByTestId('discovery-spotlight-track')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Previous discovery spotlight' })).toHaveClass(
+      'data-[disabled=true]:opacity-0',
+      'data-[disabled=true]:pointer-events-none',
+    );
+    expect(screen.getByRole('button', { name: 'Next discovery spotlight' })).toHaveClass(
+      'data-[disabled=true]:opacity-0',
+      'data-[disabled=true]:pointer-events-none',
+    );
   });
 
   it('shows loading skeletons while the first page is fetching', () => {

@@ -11,6 +11,7 @@
  *   - This file
  */
 
+import { createHmac } from 'node:crypto';
 import { describe, it, expect } from 'vitest';
 import {
   parseWebhookEventType,
@@ -168,9 +169,7 @@ describe('PaymentWebhookService', () => {
       const body = '{"event":"test"}';
       const secret = 'test-webhook-secret';
       // We compute expected in the function, so just verify consistent behavior:
-      const crypto = require('node:crypto');
-      const expected = crypto
-        .createHmac('sha256', secret)
+      const expected = createHmac('sha256', secret)
         .update(body)
         .digest('hex');
       expect(verifyWebhookSignature(body, expected, secret)).toBe(true);
@@ -178,9 +177,7 @@ describe('PaymentWebhookService', () => {
 
     it('returns false for tampered body', () => {
       const secret = 'test-secret';
-      const crypto = require('node:crypto');
-      const validSig = crypto
-        .createHmac('sha256', secret)
+      const validSig = createHmac('sha256', secret)
         .update('original')
         .digest('hex');
       expect(verifyWebhookSignature('tampered', validSig, secret)).toBe(false);

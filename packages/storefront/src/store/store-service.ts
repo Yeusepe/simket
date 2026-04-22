@@ -12,52 +12,26 @@
  *   - packages/storefront/src/App.test.tsx
  */
 import { CURRENT_PAGE_SCHEMA_VERSION, type PageSchema } from '../builder';
-import type { ProductDetail, ProductListItem } from '../types/product';
+import { fetchCreatorStore } from '../services/catalog-api';
+import type { CreatorStoreProduct } from '../types/product';
 import type { CreatorStore } from './types';
 
-function createStoreProduct(overrides: Partial<ProductDetail>): ProductDetail {
+function createStoreProduct(overrides: Partial<CreatorStoreProduct>): CreatorStoreProduct {
   return {
     id: 'product-id',
     slug: 'product-slug',
     name: 'Product name',
-    tiptapDescription: {
-      type: 'doc',
-      content: [
-        {
-          type: 'paragraph',
-          content: [{ type: 'text', text: 'Creator-crafted digital product.' }],
-        },
-      ],
-    },
     description: 'Creator-crafted digital product.',
-    variants: [
-      {
-        id: 'variant-id',
-        name: 'Default',
-        price: 2400,
-        currencyCode: 'USD',
-        sku: 'SKU-DEFAULT',
-        stockLevel: 'IN_STOCK',
-      },
-    ],
     currencyCode: 'USD',
-    heroMediaUrl: 'https://cdn.simket.example/products/default/hero.webp',
-    heroMediaType: 'image',
+    priceMin: 2400,
+    priceMax: 2400,
+    heroImageUrl: 'https://cdn.simket.example/products/default/hero.webp',
     heroTransparentUrl: null,
-    heroBackgroundUrl: null,
-    termsOfService: null,
     tags: ['creator-store'],
     categorySlug: 'tools',
-    creator: {
-      id: 'creator-id',
-      name: 'Creator',
-      avatarUrl: null,
-    },
-    requiredProductIds: [],
-    dependencyRequirements: [],
-    availableBundles: [],
-    createdAt: '2025-01-01T00:00:00.000Z',
-    updatedAt: '2025-01-01T00:00:00.000Z',
+    creatorName: 'Creator',
+    creatorAvatarUrl: null,
+    previewColor: '#7c3aed',
     ...overrides,
   };
 }
@@ -131,12 +105,9 @@ const alexArtistStore: CreatorStore = {
       slug: 'shader-starter-kit',
       name: 'Shader Starter Kit',
       description: 'Stylized shader pack for creator storefront launches.',
-      heroMediaUrl: 'https://cdn.simket.example/products/shader-starter-kit/hero.webp',
-      creator: {
-        id: 'creator-alex-artist',
-        name: 'Alex Artist',
-        avatarUrl: 'https://cdn.simket.example/avatars/alex-artist.webp',
-      },
+      heroImageUrl: 'https://cdn.simket.example/products/shader-starter-kit/hero.webp',
+      creatorName: 'Alex Artist',
+      creatorAvatarUrl: 'https://cdn.simket.example/avatars/alex-artist.webp',
       tags: ['shaders', 'vfx'],
     }),
     createStoreProduct({
@@ -144,23 +115,12 @@ const alexArtistStore: CreatorStore = {
       slug: 'lighting-atlas',
       name: 'Lighting Atlas',
       description: 'Lighting references and presets for showcase-ready scenes.',
-      heroMediaUrl: 'https://cdn.simket.example/products/lighting-atlas/hero.webp',
-      creator: {
-        id: 'creator-alex-artist',
-        name: 'Alex Artist',
-        avatarUrl: 'https://cdn.simket.example/avatars/alex-artist.webp',
-      },
+      heroImageUrl: 'https://cdn.simket.example/products/lighting-atlas/hero.webp',
+      creatorName: 'Alex Artist',
+      creatorAvatarUrl: 'https://cdn.simket.example/avatars/alex-artist.webp',
       tags: ['lighting', 'reference'],
-      variants: [
-        {
-          id: 'alex-product-2-variant',
-          name: 'Default',
-          price: 1800,
-          currencyCode: 'USD',
-          sku: 'LIGHT-ATLAS',
-          stockLevel: 'IN_STOCK',
-        },
-      ],
+      priceMin: 1800,
+      priceMax: 1800,
     }),
   ],
 };
@@ -188,12 +148,9 @@ const pixelLabStore: CreatorStore = {
       slug: 'fx-matte-pack',
       name: 'FX Matte Pack',
       description: 'Layered matte illustrations for digital product pages.',
-      heroMediaUrl: 'https://cdn.simket.example/products/fx-matte-pack/hero.webp',
-      creator: {
-        id: 'creator-pixel-lab',
-        name: 'Pixel Lab',
-        avatarUrl: 'https://cdn.simket.example/avatars/pixel-lab.webp',
-      },
+      heroImageUrl: 'https://cdn.simket.example/products/fx-matte-pack/hero.webp',
+      creatorName: 'Pixel Lab',
+      creatorAvatarUrl: 'https://cdn.simket.example/avatars/pixel-lab.webp',
       tags: ['mattes', 'illustration'],
     }),
   ],
@@ -214,22 +171,8 @@ export const seededStoreService: StoreService = {
   },
 };
 
-export function toProductListItem(product: ProductDetail): ProductListItem {
-  const firstVariant = product.variants[0];
-
-  return {
-    id: product.id,
-    slug: product.slug,
-    name: product.name,
-    description: product.description,
-    priceMin: firstVariant?.price ?? 0,
-    priceMax: firstVariant?.price ?? 0,
-    currencyCode: firstVariant?.currencyCode ?? product.currencyCode,
-    heroImageUrl: product.heroMediaType === 'image' ? product.heroMediaUrl : null,
-    heroTransparentUrl: product.heroTransparentUrl,
-    creatorName: product.creator.name,
-    creatorAvatarUrl: product.creator.avatarUrl,
-    tags: product.tags,
-    categorySlug: product.categorySlug,
-  };
-}
+export const liveStoreService: StoreService = {
+  async getStoreBySlug(creatorSlug) {
+    return fetchCreatorStore(creatorSlug);
+  },
+};

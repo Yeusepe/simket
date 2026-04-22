@@ -7,7 +7,7 @@
  *   - https://github.com/adobe/leonardo
  */
 import { describe, it, expect, afterEach } from 'vitest';
-import { renderHook, act } from '@testing-library/react';
+import { renderHook } from '@testing-library/react';
 import { useAdaptiveColors } from './use-adaptive-colors';
 
 function getCSSVar(name: string): string {

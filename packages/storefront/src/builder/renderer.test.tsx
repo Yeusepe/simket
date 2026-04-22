@@ -13,6 +13,7 @@
  */
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
+import { MemoryRouter } from 'react-router-dom';
 import { PageRenderer } from './renderer';
 import { CURRENT_PAGE_SCHEMA_VERSION } from './types';
 
@@ -136,5 +137,73 @@ describe('PageRenderer', () => {
     expect(
       screen.getByRole('link', { name: /explore creator pages/i }),
     ).toHaveAttribute('href', '/creators');
+  });
+
+  it('renders live store blocks when preview context provides creator data', () => {
+    render(
+      <MemoryRouter>
+        <PageRenderer
+          schema={{
+            version: CURRENT_PAGE_SCHEMA_VERSION,
+            blocks: [
+              {
+                id: 'store-profile-1',
+                type: 'store-profile',
+                props: {},
+              },
+              {
+                id: 'store-catalog-1',
+                type: 'store-catalog',
+                props: {
+                  heading: 'Featured catalog',
+                },
+              },
+            ],
+          }}
+          context={{
+            kind: 'preview',
+            store: {
+              creator: {
+                id: 'creator-1',
+                slug: 'alex-artist',
+                displayName: 'Alex Artist',
+                avatarUrl: null,
+                tagline: 'Realtime shaders, lighting kits, and launch-ready VFX packs.',
+                bio: 'Browse the creator store.',
+              },
+              theme: {},
+              pages: [],
+              products: [
+                {
+                  id: 'product-1',
+                  slug: 'shader-pack',
+                  name: 'Shader Pack',
+                  description: 'Creator product.',
+                  priceMin: 2200,
+                  priceMax: 2200,
+                  currencyCode: 'USD',
+                  heroImageUrl: null,
+                  heroTransparentUrl: null,
+                  creatorName: 'Alex Artist',
+                  creatorAvatarUrl: null,
+                  tags: ['shaders'],
+                  categorySlug: 'tools',
+                },
+              ],
+            },
+            hrefs: {
+              product: (productSlug: string) => `/store/alex-artist/product/${productSlug}`,
+            },
+          }}
+        />
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByRole('heading', { name: 'Alex Artist' })).toBeInTheDocument();
+    expect(screen.getByText('Featured catalog')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Shader Pack/ })).toHaveAttribute(
+      'href',
+      '/store/alex-artist/product/shader-pack',
+    );
   });
 });

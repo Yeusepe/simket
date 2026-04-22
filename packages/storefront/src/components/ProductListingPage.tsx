@@ -25,14 +25,14 @@ import {
   CheckboxGroup,
   Checkbox,
   Pagination,
-  Spinner,
 } from '@heroui/react';
+import type { Key } from 'react';
 import { ProductCard, ProductCardSkeleton } from './ProductCard';
 import {
   useProductListing,
   type ProductListingFetcher,
 } from '../hooks/use-product-listing';
-import type { FacetGroup, ProductSortOption } from '../types/product';
+import type { FacetGroup, ProductFilters, ProductSortOption } from '../types/product';
 import { DEFAULT_PER_PAGE } from '../types/product';
 
 /** Maps sort key string ↔ ProductSortOption for the Select. */
@@ -68,7 +68,7 @@ export function ProductListingPage({ fetcher }: ProductListingPageProps) {
     filters,
   } = useProductListing({ fetcher });
 
-  const handleSortChange = (value: string | string[] | null) => {
+  const handleSortChange = (value: Key | null) => {
     if (typeof value !== 'string') return;
     const option = SORT_OPTIONS.find((o) => o.key === value);
     if (option) setSort(option.value);
@@ -159,7 +159,7 @@ function SortSelect({
   onChange,
 }: {
   currentKey: string;
-  onChange: (value: string | string[] | null) => void;
+  onChange: (value: Key | null) => void;
 }) {
   return (
     <Select
@@ -191,7 +191,7 @@ function FilterSidebar({
   onFacetChange,
 }: {
   facets: readonly FacetGroup[];
-  filters: Record<string, unknown>;
+  filters: ProductFilters;
   onFacetChange: (facetName: string, values: string[]) => void;
 }) {
   if (facets.length === 0) return null;
@@ -228,7 +228,7 @@ function FilterSidebar({
   );
 }
 
-function getSelectedForFacet(name: string, filters: Record<string, unknown>): string[] {
+function getSelectedForFacet(name: string, filters: ProductFilters): string[] {
   if (name === 'Category' && typeof filters.categorySlug === 'string') {
     return [filters.categorySlug];
   }

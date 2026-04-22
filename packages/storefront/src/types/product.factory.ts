@@ -121,6 +121,7 @@ export function makeProductDetail(
     requiredProductIds: [],
     dependencyRequirements: [],
     availableBundles: [],
+    framelyPageSchema: null,
     createdAt: '2025-01-15T10:00:00Z',
     updatedAt: '2025-01-15T10:00:00Z',
     ...overrides,

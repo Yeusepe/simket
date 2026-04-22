@@ -11,7 +11,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { resolveRegion, isRegionGroup, COUNTRY_TO_REGION } from './regions.js';
+import { resolveRegion, isRegionGroup } from './regions.js';
 import {
   resolveRegionalDiscount,
   applyRegionalDiscount,

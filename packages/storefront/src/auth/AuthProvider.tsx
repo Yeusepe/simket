@@ -10,7 +10,7 @@
  * Tests:
  *   - packages/storefront/src/components/settings/use-settings.test.ts
  */
-import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { authClient, getAuthBaseUrl } from '../lib/auth-client';
 import { clearVendureAuthState, fetchShopGraphqlWithResponse, getVendureAuthState, readVendureAuthToken, setVendureAuthState } from '../lib/shop-api';
@@ -37,10 +37,6 @@ const AUTHENTICATE_WITH_BETTER_AUTH_MUTATION = `
         errorCode
         message
       }
-      ... on NativeAuthStrategyError {
-        errorCode
-        message
-      }
     }
   }
 `;
@@ -58,7 +54,7 @@ interface SimketUser {
   readonly authSource?: string;
 }
 
-interface SimketSession {
+export interface SimketSession {
   readonly user: SimketUser;
   readonly session: {
     readonly id: string;
@@ -75,8 +71,8 @@ interface AuthContextValue {
   readonly isPending: boolean;
   readonly isVendureReady: boolean;
   readonly error: string | null;
-  readonly signInBuyer: (email: string, password: string) => Promise<void>;
-  readonly signUpBuyer: (name: string, email: string, password: string) => Promise<void>;
+  readonly signInBuyer: (email: string, password: string) => Promise<SimketSession | null>;
+  readonly signUpBuyer: (name: string, email: string, password: string) => Promise<SimketSession | null>;
   readonly signInCreator: () => Promise<void>;
   readonly signOut: () => Promise<void>;
 }
@@ -125,7 +121,10 @@ function normalizeSessionPayload(value: unknown): SimketSession | null {
 
 function getAuthEndpoint(path: string): string {
   const baseUrl = getAuthBaseUrl();
-  const normalizedBaseUrl = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
+  const authBaseUrl = /\/api\/auth\/?$/.test(baseUrl)
+    ? baseUrl
+    : new URL('/api/auth/', `${baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`}`).toString();
+  const normalizedBaseUrl = authBaseUrl.endsWith('/') ? authBaseUrl : `${authBaseUrl}/`;
   return new URL(path.replace(/^\//, ''), normalizedBaseUrl).toString();
 }
 
@@ -192,42 +191,49 @@ async function exchangeBetterAuthJwt(session: SimketSession): Promise<void> {
 
 export function AuthProvider({ children }: { readonly children: ReactNode }) {
   const sessionQuery = authClient.useSession();
-  const normalizedSession = normalizeSessionPayload(sessionQuery.data);
   const [session, setSession] = useState<SimketSession | null>(null);
   const [isResolvingSession, setIsResolvingSession] = useState(false);
+  const [sessionError, setSessionError] = useState<string | null>(null);
   const [bridgeError, setBridgeError] = useState<string | null>(null);
   const [isVendureReady, setIsVendureReady] = useState(false);
 
-  useEffect(() => {
+  const refreshSessionState = useCallback(async () => {
+    setIsResolvingSession(true);
+    setSessionError(null);
+
+    const sessionResult = await authClient.getSession();
+    if (sessionResult.error) {
+      const isUnauthorized = sessionResult.error.status === 401;
+      if (!isUnauthorized) {
+        setSessionError(sessionResult.error.message ?? 'Unable to load the active session.');
+      }
+      setSession(null);
+      setIsResolvingSession(false);
+      return null;
+    }
+
+    const normalizedSession = normalizeSessionPayload(sessionResult.data);
     if (!normalizedSession) {
       setSession(null);
       setIsResolvingSession(false);
-      return;
+      return null;
     }
 
-    let cancelled = false;
-    setIsResolvingSession(true);
-    void resolveSessionRole(normalizedSession)
-      .then((nextSession) => {
-        if (!cancelled) {
-          setSession(nextSession);
-        }
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setSession(normalizedSession);
-        }
-      })
-      .finally(() => {
-        if (!cancelled) {
-          setIsResolvingSession(false);
-        }
-      });
+    try {
+      const nextSession = await resolveSessionRole(normalizedSession);
+      setSession(nextSession);
+      return nextSession;
+    } catch {
+      setSession(normalizedSession);
+      return normalizedSession;
+    } finally {
+      setIsResolvingSession(false);
+    }
+  }, []);
 
-    return () => {
-      cancelled = true;
-    };
-  }, [normalizedSession]);
+  useEffect(() => {
+    void refreshSessionState();
+  }, [refreshSessionState]);
 
   useEffect(() => {
     if (!session) {
@@ -273,6 +279,7 @@ export function AuthProvider({ children }: { readonly children: ReactNode }) {
       isVendureReady,
       error:
         bridgeError
+        ?? sessionError
         ?? (sessionQuery.error instanceof Error ? sessionQuery.error.message : null),
       async signInBuyer(email, password) {
         const result = await authClient.signIn.email({
@@ -282,6 +289,8 @@ export function AuthProvider({ children }: { readonly children: ReactNode }) {
         if (result.error) {
           throw new Error(result.error.message ?? 'Unable to sign in.');
         }
+        await sessionQuery.refetch();
+        return await refreshSessionState();
       },
       async signUpBuyer(name, email, password) {
         const result = await authClient.signUp.email({
@@ -292,6 +301,8 @@ export function AuthProvider({ children }: { readonly children: ReactNode }) {
         if (result.error) {
           throw new Error(result.error.message ?? 'Unable to create your account.');
         }
+        await sessionQuery.refetch();
+        return await refreshSessionState();
       },
       async signInCreator() {
         const result = await authClient.signIn.oauth2({
@@ -310,9 +321,11 @@ export function AuthProvider({ children }: { readonly children: ReactNode }) {
         if (result.error) {
           throw new Error(result.error.message ?? 'Unable to sign out.');
         }
+        await sessionQuery.refetch();
+        await refreshSessionState();
       },
     }),
-    [bridgeError, isResolvingSession, isVendureReady, session, sessionQuery.error, sessionQuery.isPending],
+    [bridgeError, isResolvingSession, isVendureReady, refreshSessionState, session, sessionError, sessionQuery.error, sessionQuery.isPending],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
@@ -326,12 +339,22 @@ export function useAuth(): AuthContextValue {
   return context;
 }
 
-export function RequireAuth({ children }: { readonly children: ReactNode }) {
-  const { session, isPending } = useAuth();
+interface RequireAuthProps {
+  readonly children: ReactNode;
+  readonly requireVendureReady?: boolean;
+  readonly pendingMessage?: string;
+}
+
+export function RequireAuth({
+  children,
+  requireVendureReady = false,
+  pendingMessage = 'Loading your session…',
+}: RequireAuthProps) {
+  const { session, isPending, isVendureReady } = useAuth();
   const location = useLocation();
 
-  if (isPending) {
-    return <div className="mx-auto max-w-4xl px-4 py-16 text-sm text-muted-foreground">Loading your session…</div>;
+  if (isPending || (requireVendureReady && session && !isVendureReady)) {
+    return <div className="mx-auto max-w-4xl px-4 py-16 text-sm text-muted-foreground">{pendingMessage}</div>;
   }
 
   if (!session) {

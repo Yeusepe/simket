@@ -127,7 +127,7 @@ describe('useProductListing', () => {
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
     expect(result.current.facets).toHaveLength(2);
-    expect(result.current.facets[0].name).toBe('Category');
+    expect(result.current.facets[0]?.name).toBe('Category');
   });
 
   it('passes correct params to fetcher', async () => {

@@ -12,7 +12,6 @@
  */
 import { Avatar, Card } from '@heroui/react';
 import { ProductCard } from '../components/ProductCard';
-import { toProductListItem } from './store-service';
 import { useStore } from './use-store';
 
 export function DefaultStoreTemplate() {
@@ -47,8 +46,9 @@ export function DefaultStoreTemplate() {
         {store.products.map((product) => (
           <ProductCard
             key={product.id}
-            product={toProductListItem(product)}
+            product={product}
             href={hrefs.product(product.slug)}
+            showWishlistButton={false}
           />
         ))}
       </div>

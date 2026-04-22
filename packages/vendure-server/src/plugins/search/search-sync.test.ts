@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import {
   searchProducts,
   upsertProduct,
@@ -8,7 +8,6 @@ import {
   DEFAULT_PER_PAGE,
   MAX_PER_PAGE,
 } from './search-sync.js';
-import { PRODUCTS_COLLECTION, PRODUCTS_SCHEMA } from './typesense.js';
 import type { ProductDocument } from './typesense.js';
 import type { SearchQuery } from './search-sync.js';
 

@@ -8,8 +8,7 @@
  *   - Spinner: <Spinner size="lg" />
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, within, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { ProductListingPage } from './ProductListingPage';
 import {
@@ -45,11 +44,13 @@ describe('ProductListingPage', () => {
 
   it('renders product cards after data loads', async () => {
     const response = makeProductListingResponse(4);
+    const firstProduct = response.products.items[0];
+    expect(firstProduct).toBeDefined();
     mockFetcher.mockResolvedValue(response);
     renderPage(mockFetcher);
 
     // Wait for products to appear by finding the first product name
-    const firstName = response.products.items[0].name;
+    const firstName = firstProduct!.name;
     await waitFor(() => {
       expect(screen.getByText(firstName)).toBeInTheDocument();
     });
@@ -121,7 +122,9 @@ describe('ProductListingPage', () => {
 
   it('does not render pagination for a single page', async () => {
     const response = makeProductListingResponse(4);
-    const firstName = response.products.items[0].name;
+    const firstProduct = response.products.items[0];
+    expect(firstProduct).toBeDefined();
+    const firstName = firstProduct!.name;
     mockFetcher.mockResolvedValue(response);
     renderPage(mockFetcher);
 

@@ -27,10 +27,12 @@ export interface NotificationBellProps {
   readonly api?: NotificationsApi;
   readonly onNavigateTo?: (href: string) => void;
   readonly pollIntervalMs?: number;
+  readonly enabled?: boolean;
 }
 
 export function NotificationBell({
   api,
+  enabled = true,
   onNavigateTo,
   pollIntervalMs,
 }: NotificationBellProps) {
@@ -45,6 +47,7 @@ export function NotificationBell({
     markAllAsRead,
   } = useNotifications({
     api,
+    autoLoad: enabled,
     pageSize: 5,
     pollIntervalMs,
   });

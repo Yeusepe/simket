@@ -61,9 +61,18 @@ export function AppRoutes({ hostname }: AppRoutesProps) {
         <Route path="sign-in" element={<SignInPage />} />
         <Route path="product/:slug" element={<ProductDetailPage />} />
         <Route path="cart" element={<CartPage />} />
-        <Route path="wishlist" element={<RequireAuth><WishlistPage /></RequireAuth>} />
-        <Route path="library" element={<RequireAuth><LibraryPage /></RequireAuth>} />
-        <Route path="notifications" element={<RequireAuth><NotificationsPage /></RequireAuth>} />
+        <Route
+          path="wishlist"
+          element={<RequireAuth requireVendureReady pendingMessage="Preparing your account…"><WishlistPage /></RequireAuth>}
+        />
+        <Route
+          path="library"
+          element={<RequireAuth requireVendureReady pendingMessage="Preparing your account…"><LibraryPage /></RequireAuth>}
+        />
+        <Route
+          path="notifications"
+          element={<RequireAuth requireVendureReady pendingMessage="Preparing your account…"><NotificationsPage /></RequireAuth>}
+        />
         <Route path="profile" element={<RequireAuth><ProfilePage /></RequireAuth>} />
         <Route path="dashboard/*" element={<RequireCreator><CreatorDashboardPage /></RequireCreator>} />
         <Route path="*" element={<NotFoundPage />} />

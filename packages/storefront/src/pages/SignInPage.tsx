@@ -10,25 +10,32 @@
  *   - https://heroui.com/docs/react/components/card
  *   - https://heroui.com/docs/react/components/text-field
  * Tests:
- *   - packages/storefront/src/components/settings/use-settings.test.ts
+ *   - packages/storefront/src/pages/SignInPage.test.tsx
  */
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Button, Card, FieldError, Input, Label, TextField } from '@heroui/react';
-import { useAuth } from '../auth/AuthProvider';
+import { type SimketSession, useAuth } from '../auth/AuthProvider';
 
 type Mode = 'sign-in' | 'sign-up';
 
-function getRedirectTarget(location: ReturnType<typeof useLocation>): string {
+function getRequestedRedirectTarget(location: ReturnType<typeof useLocation>): string | null {
   const locationState = location.state as { readonly from?: string } | null;
-  return locationState?.from ?? '/profile';
+  return locationState?.from ?? null;
+}
+
+function resolvePostAuthRedirect(
+  location: ReturnType<typeof useLocation>,
+  session: SimketSession | null,
+): string {
+  return getRequestedRedirectTarget(location)
+    ?? (session?.user.role === 'creator' ? '/dashboard' : '/profile');
 }
 
 export function SignInPage() {
   const { signInBuyer, signInCreator, signUpBuyer, error } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const redirectTarget = useMemo(() => getRedirectTarget(location), [location]);
   const [mode, setMode] = useState<Mode>('sign-in');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -41,13 +48,14 @@ export function SignInPage() {
     setIsPending(true);
 
     try {
+      let session: SimketSession | null;
       if (mode === 'sign-in') {
-        await signInBuyer(email, password);
+        session = await signInBuyer(email, password);
       } else {
-        await signUpBuyer(name, email, password);
+        session = await signUpBuyer(name, email, password);
       }
 
-      navigate(redirectTarget, { replace: true });
+      navigate(resolvePostAuthRedirect(location, session), { replace: true });
     } catch (submissionError) {
       setFormError(
         submissionError instanceof Error ? submissionError.message : 'Authentication failed.',
@@ -77,8 +85,8 @@ export function SignInPage() {
           <Card.Header className="space-y-2">
             <Card.Title className="text-3xl">Welcome to Simket</Card.Title>
             <Card.Description>
-              Sign in with your Simket account for buyer flows, or use your YUCP creator account to
-              open the creator dashboard.
+              Sign in with your Simket account for buyer flows. Local development creator accounts
+              also use the email/password form here.
             </Card.Description>
           </Card.Header>
           <Card.Content className="space-y-4">
@@ -119,6 +127,19 @@ export function SignInPage() {
             <Button fullWidth isPending={isPending} onPress={() => void handleBuyerSubmit()}>
               {mode === 'sign-in' ? 'Continue with Simket' : 'Create Simket account'}
             </Button>
+            <div className="rounded-2xl border border-border/70 bg-surface-secondary p-4 text-sm text-muted-foreground">
+              <p className="font-medium text-foreground">Local development email/password accounts</p>
+              <p className="mt-2">
+                Buyer: <span className="font-mono">buyer@simket.test</span> / <span className="font-mono">SimketBuyer123</span>
+              </p>
+              <p className="mt-1">
+                Creator: <span className="font-mono">alex.creator@simket.test</span> / <span className="font-mono">SimketCreator123</span>
+              </p>
+              <p className="mt-2">
+                Local development creator accounts use the email/password form on the left and open
+                the creator dashboard after sign-in.
+              </p>
+            </div>
           </Card.Content>
         </Card>
 
@@ -127,18 +148,14 @@ export function SignInPage() {
             <Card.Title className="text-2xl">Creator sign-in</Card.Title>
             <Card.Description>
               Creator identity is federated through YUCP. Use your creator account there and Simket
-              will sync the local customer and dashboard ownership automatically.
+              will sync the local customer and dashboard ownership automatically. Use Continue with
+              YUCP only for real YUCP OAuth creators.
             </Card.Description>
           </Card.Header>
           <Card.Content className="space-y-4">
             <Button fullWidth variant="secondary" isPending={isPending} onPress={() => void handleCreatorSignIn()}>
               Continue with YUCP
             </Button>
-            <div className="rounded-2xl border border-border/70 bg-surface-secondary p-4 text-sm text-muted-foreground">
-              <p className="font-medium text-foreground">Local development accounts</p>
-              <p className="mt-2">Buyer: <span className="font-mono">buyer@simket.test</span> / <span className="font-mono">SimketBuyer123</span></p>
-              <p className="mt-1">Creator: <span className="font-mono">alex.creator@simket.test</span> / <span className="font-mono">SimketCreator123</span></p>
-            </div>
           </Card.Content>
         </Card>
       </div>

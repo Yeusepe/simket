@@ -20,7 +20,6 @@ import type {
   RecommendCandidate,
   RecommendRequest,
   RecommenderBackend,
-  RecommendFeedback,
 } from './types.js';
 
 import {

@@ -13,21 +13,41 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { DashboardLayout } from './DashboardLayout';
+import { DashboardPreferencesProvider } from './dashboard-preferences';
 
 describe('DashboardLayout', () => {
   it('renders navigation, header, and main content', () => {
     render(
-      <DashboardLayout
-        currentSection="products"
-        onNavigate={vi.fn()}
-      >
-        <div>Products content</div>
-      </DashboardLayout>,
+      <DashboardPreferencesProvider>
+        <DashboardLayout
+          currentSection="products"
+          onNavigate={vi.fn()}
+          onNavigateToHref={vi.fn()}
+        >
+          <div>Products content</div>
+        </DashboardLayout>
+      </DashboardPreferencesProvider>,
     );
 
-    expect(screen.getByRole('navigation', { name: 'Creator dashboard sections' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Products' })).toBeInTheDocument();
+    expect(screen.getByRole('treegrid', { name: 'Creator dashboard sections' })).toBeInTheDocument();
+    expect(screen.getAllByRole('heading', { name: 'Products' }).length).toBeGreaterThanOrEqual(2);
+    expect(screen.getByRole('button', { name: 'Search dashboard' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'New product' })).toBeInTheDocument();
+    expect(screen.getByText('Creator workspace')).toBeInTheDocument();
     expect(screen.getByText('Products content')).toBeInTheDocument();
-    expect(screen.getAllByText('Creator Dashboard')).toHaveLength(2);
+  });
+
+  it('renders the template-backed home shell without the section header card', () => {
+    render(
+      <DashboardPreferencesProvider>
+        <DashboardLayout currentSection="home" onNavigate={vi.fn()} onNavigateToHref={vi.fn()}>
+          <div>Home content</div>
+        </DashboardLayout>
+      </DashboardPreferencesProvider>,
+    );
+
+    expect(screen.getByRole('heading', { name: 'Creator dashboard' })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Dashboard' })).not.toBeInTheDocument();
+    expect(screen.getByText('Home content')).toBeInTheDocument();
   });
 });

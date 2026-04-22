@@ -9,14 +9,16 @@
  *   - https://docs.vendure.io/guides/developer-guide/plugins/
  *   - https://docs.vendure.io/reference/graphql-api/shop/object-types/#product
  * Tests:
- *   - packages/vendure-server/src/plugins/better-auth-bridge/better-auth-bridge.plugin.test.ts
+ *   - packages/vendure-server/src/plugins/better-auth-bridge/better-auth-bridge.service.test.ts
  */
 import { Injectable } from '@nestjs/common';
-import { Customer, CustomerService, ExternalAuthenticationService, LanguageCode, ProductService, ProductVariantService, TransactionalConnection, type RequestContext } from '@vendure/core';
+import { Channel, Customer, CustomerService, ExternalAuthenticationService, LanguageCode, ProductService, ProductVariantService, TransactionalConnection, Zone, type RequestContext } from '@vendure/core';
 import type { CreateProductInput, CreateProductVariantInput, UpdateProductInput, UpdateProductVariantInput } from '@vendure/common/lib/generated-types';
 import { Kysely, SqliteDialect } from 'kysely';
 import Database from 'better-sqlite3';
 import { resolveBetterAuthDatabasePath } from '../../auth/config.js';
+import { StorePageEntity } from '../storefront/storefront.entity.js';
+import { DEFAULT_PRODUCT_PAGE_SLUG } from '../storefront/storefront.service.js';
 import { DEVELOPMENT_PRODUCT_SEEDS, type DevelopmentProductSeed } from '../../auth/development-seeds.js';
 
 type BetterAuthUserRow = {
@@ -95,6 +97,7 @@ export interface CatalogProductDetail {
   readonly requiredProductIds: readonly string[];
   readonly dependencyRequirements: readonly never[];
   readonly availableBundles: readonly never[];
+  readonly framelyPageSchema: Record<string, unknown> | null;
   readonly createdAt: string;
   readonly updatedAt: string;
 }
@@ -194,6 +197,15 @@ function tiptapDocument(text: string): string {
   });
 }
 
+function parseStorefrontSchema(content: string): Record<string, unknown> | null {
+  try {
+    const parsed = JSON.parse(content) as unknown;
+    return typeof parsed === 'object' && parsed !== null ? parsed as Record<string, unknown> : null;
+  } catch {
+    return null;
+  }
+}
+
 function splitName(name: string): { firstName: string; lastName: string } {
   const [firstName, ...rest] = name.trim().split(/\s+/);
   return {
@@ -252,6 +264,16 @@ export class CreatorCatalogService {
       sku: variant.sku,
       stockLevel: variant.enabled ? 'IN_STOCK' : 'OUT_OF_STOCK',
     } satisfies CatalogProductDetail['variants'][number]));
+    const productPage = await this.connection.getRepository(ctx, StorePageEntity).findOneBy({
+      creatorId:
+        typeof customFields['betterAuthUserId'] === 'string'
+          ? String(customFields['betterAuthUserId'])
+          : undefined,
+      scope: 'product',
+      productId: String(product.id),
+      slug: DEFAULT_PRODUCT_PAGE_SLUG,
+      enabled: true,
+    });
 
     return {
       id: String(product.id),
@@ -294,6 +316,7 @@ export class CreatorCatalogService {
       requiredProductIds: [],
       dependencyRequirements: [],
       availableBundles: [],
+      framelyPageSchema: productPage ? parseStorefrontSchema(productPage.content) : null,
       createdAt: product.createdAt.toISOString(),
       updatedAt: product.updatedAt.toISOString(),
     };
@@ -459,16 +482,8 @@ export class CreatorCatalogService {
     };
 
     const product = await this.productService.create(ctx, productInput);
-    const variantInput: CreateProductVariantInput = {
-      productId: product.id,
-      sku: `${input.slug.toUpperCase().replace(/[^A-Z0-9]+/g, '-')}-DEFAULT`,
-      enabled: input.visibility === 'published',
-      price: input.price,
-      stockOnHand: input.visibility === 'archived' ? 0 : 999,
-      translations: [{ languageCode: LanguageCode.en, name: `${input.name} Default` }],
-    };
-
-    await this.productVariantService.create(ctx, [variantInput]);
+    await this.ensureActiveTaxZone(ctx);
+    await this.productVariantService.create(ctx, [this.buildPrimaryVariantCreateInput(product.id, input)]);
     return product;
   }
 
@@ -479,6 +494,7 @@ export class CreatorCatalogService {
     customFields: Record<string, unknown>,
   ) {
     const product = await this.requireOwnedProduct(ctx, productId);
+    await this.ensureActiveTaxZone(ctx);
     const nextCustomFields = {
       ...getProductCustomFields(product.customFields),
       ...customFields,
@@ -503,7 +519,8 @@ export class CreatorCatalogService {
     const variants = await this.productVariantService.getVariantsByProductId(ctx, product.id);
     const primaryVariant = variants.items[0];
     if (!primaryVariant) {
-      throw new Error(`Creator product "${productId}" has no primary variant.`);
+      await this.productVariantService.create(ctx, [this.buildPrimaryVariantCreateInput(product.id, input)]);
+      return updatedProduct;
     }
 
     const variantUpdate: UpdateProductVariantInput = {
@@ -644,6 +661,62 @@ export class CreatorCatalogService {
     return primaryVariant.price;
   }
 
+  private buildPrimaryVariantCreateInput(
+    productId: string | number,
+    input: Pick<CreatorProductInput, 'name' | 'slug' | 'price' | 'visibility'>,
+  ): CreateProductVariantInput {
+    return {
+      productId,
+      sku: `${input.slug.toUpperCase().replace(/[^A-Z0-9]+/g, '-')}-DEFAULT`,
+      enabled: input.visibility === 'published',
+      price: input.price,
+      stockOnHand: input.visibility === 'archived' ? 0 : 999,
+      translations: [{ languageCode: LanguageCode.en, name: `${input.name} Default` }],
+    };
+  }
+
+  private async ensureActiveTaxZone(ctx: RequestContext): Promise<void> {
+    const channelRepository = this.connection.getRepository(ctx, Channel);
+    const zoneRepository = this.connection.getRepository(ctx, Zone);
+    const channel = await channelRepository.findOne({
+      where: { id: ctx.channelId },
+      relations: {
+        defaultTaxZone: true,
+        defaultShippingZone: true,
+      },
+    });
+
+    if (!channel) {
+      throw new Error(`Unable to load channel "${String(ctx.channelId)}" for development seeding.`);
+    }
+
+    const existingZone = channel.defaultTaxZone ?? channel.defaultShippingZone;
+    const defaultZone = existingZone
+      ?? await zoneRepository.save(
+        zoneRepository.create({
+          name: 'Development Default Zone',
+        }),
+      );
+
+    let shouldSaveChannel = false;
+    if (!channel.defaultTaxZone) {
+      channel.defaultTaxZone = defaultZone;
+      shouldSaveChannel = true;
+    }
+    if (!channel.defaultShippingZone) {
+      channel.defaultShippingZone = defaultZone;
+      shouldSaveChannel = true;
+    }
+
+    if (shouldSaveChannel) {
+      await channelRepository.save(channel);
+    }
+
+    const requestChannel = ctx.channel as Channel;
+    requestChannel.defaultTaxZone = channel.defaultTaxZone;
+    requestChannel.defaultShippingZone = channel.defaultShippingZone;
+  }
+
   private async ensureDevelopmentSeeded(ctx: RequestContext): Promise<void> {
     if (process.env['NODE_ENV'] === 'production') {
       return;
@@ -738,6 +811,7 @@ export class CreatorCatalogService {
     owner: BetterAuthSeedIdentity,
     seed: DevelopmentProductSeed,
   ): Promise<void> {
+    await this.ensureActiveTaxZone(ctx);
     const existingProduct = await this.productService.findOneBySlug(ctx, seed.slug);
     const customFields = this.buildSeedProductCustomFields(owner, seed);
 
@@ -756,14 +830,12 @@ export class CreatorCatalogService {
       });
 
       await this.productVariantService.create(ctx, [
-        {
-          productId: createdProduct.id,
-          enabled: seed.visibility === 'published',
-          sku: `${seed.seedKey.toUpperCase().replace(/[^A-Z0-9]+/g, '-')}-DEFAULT`,
+        this.buildPrimaryVariantCreateInput(createdProduct.id, {
+          name: seed.name,
+          slug: seed.slug,
           price: seed.price,
-          stockOnHand: seed.visibility === 'archived' ? 0 : 999,
-          translations: [{ languageCode: LanguageCode.en, name: `${seed.name} Default` }],
-        },
+          visibility: seed.visibility,
+        }),
       ]);
       return;
     }
@@ -787,7 +859,15 @@ export class CreatorCatalogService {
     const variants = await this.productVariantService.getVariantsByProductId(ctx, existingProduct.id);
     const primaryVariant = variants.items[0];
     if (!primaryVariant) {
-      throw new Error(`Seed product "${seed.slug}" is missing a primary variant.`);
+      await this.productVariantService.create(ctx, [
+        this.buildPrimaryVariantCreateInput(existingProduct.id, {
+          name: seed.name,
+          slug: seed.slug,
+          price: seed.price,
+          visibility: seed.visibility,
+        }),
+      ]);
+      return;
     }
 
     await this.productVariantService.update(ctx, [

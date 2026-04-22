@@ -17,8 +17,6 @@ import {
   detectCustomerSyncDrift,
   detectLicenseDrift,
   detectAssetReferenceDrift,
-  ReconciliationResult,
-  DriftType,
 } from './reconciliation-workers.service';
 
 describe('ReconciliationWorkers', () => {

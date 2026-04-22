@@ -35,8 +35,9 @@ export class TakeRateBoostRanker implements Ranker {
 
   async rank(
     candidates: RawCandidate[],
-    _context: PipelineContext,
+    context: PipelineContext,
   ): Promise<ScoredCandidate[]> {
+    void context;
     return candidates.map((candidate) => {
       const takeRateBoost = this.takeRateMap.get(candidate.productId) ?? 0;
       return {

@@ -4,6 +4,7 @@
  *   - docs/architecture.md
  * External references:
  *   - https://heroui.com/react/llms.txt
+ *   - https://www.heroui.com/docs/react/components/carousel
  *   - https://www.heroui.com/docs/react/components/button
  * Tests:
  *   - packages/storefront/src/components/today/ProductHorizontalScroll.test.tsx
@@ -13,6 +14,9 @@ import { Carousel } from '@heroui-pro/react/carousel';
 import type { ProductListItem } from '../../types/product';
 import { Icon } from '../common/Icon';
 import { TrendingProductCard } from './TrendingProductCard';
+
+const CAROUSEL_NAVIGATION_BUTTON_CLASS =
+  'transition-opacity data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-0';
 
 export interface ProductHorizontalScrollProps {
   readonly title: string;
@@ -47,24 +51,21 @@ export function ProductHorizontalScroll({ title, products }: ProductHorizontalSc
         </Carousel.Content>
 
         {products.length > 1 && (
-          <div className="flex items-center gap-2 pt-1 sm:gap-3">
-            <div className="min-h-8 min-w-0 flex-1" aria-hidden />
-            <div className="flex min-h-8 flex-1 justify-center">
-              <Carousel.Dots className="mt-0" />
-            </div>
-            <div className="flex min-h-8 flex-1 justify-end gap-2">
-              <Carousel.Previous
-                aria-label="Previous trending product"
-                variant="outline"
-                icon={<Icon name="arrow-left" size={16} />}
-              />
-              <Carousel.Next
-                aria-label="Next trending product"
-                variant="outline"
-                icon={<Icon name="arrow-right" size={16} />}
-              />
-            </div>
-          </div>
+          <>
+            <Carousel.Previous
+              aria-label="Previous trending product"
+              className={CAROUSEL_NAVIGATION_BUTTON_CLASS}
+              variant="outline"
+              icon={<Icon name="arrow-left" size={16} />}
+            />
+            <Carousel.Next
+              aria-label="Next trending product"
+              className={CAROUSEL_NAVIGATION_BUTTON_CLASS}
+              variant="outline"
+              icon={<Icon name="arrow-right" size={16} />}
+            />
+            <Carousel.Dots className="mt-0 pt-1" />
+          </>
         )}
       </Carousel>
     </section>

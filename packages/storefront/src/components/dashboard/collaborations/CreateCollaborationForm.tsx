@@ -23,7 +23,7 @@ import {
   Select,
   TextField,
 } from '@heroui/react';
-import { useMemo, useState, type FormEvent } from 'react';
+import { useMemo, useState, type FormEvent, type Key } from 'react';
 import type { CollaborationProductOption, CreateCollaborationInput } from './collab-types';
 import { formatCurrency, getSplitTotal } from './collaboration-utils';
 
@@ -73,7 +73,7 @@ export function CreateCollaborationForm({
   onCancel,
   onSubmit,
 }: CreateCollaborationFormProps) {
-  const [productId, setProductId] = useState<string | string[] | null>(initialProductId ?? null);
+  const [productId, setProductId] = useState<string | null>(initialProductId ?? null);
   const [ownerSplitPercent, setOwnerSplitPercent] = useState(String(initialOwnerSplitPercent));
   const [invitees, setInvitees] = useState<readonly InviteeDraft[]>([createInviteeDraft(1)]);
   const [errors, setErrors] = useState<ValidationErrors>({});
@@ -153,7 +153,7 @@ export function CreateCollaborationForm({
         placeholder="Select a product"
         value={productId}
         onChange={(value) => {
-          setProductId(value);
+          setProductId(typeof value === 'string' ? value : value == null ? null : String(value as Key));
           setErrors((current) => ({ ...current, productId: undefined }));
         }}
       >

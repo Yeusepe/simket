@@ -797,7 +797,8 @@ type FlowStep = {
 
 ### 7.7 Storefront plugin
 
-Manages page templates and configurations:
+Owns creator-facing storefront page persistence, template reuse, and public page
+delivery for Framely-rendered store/product surfaces:
 
 **Entities**: `StorePage`, `Template`
 
@@ -805,7 +806,9 @@ Manages page templates and configurations:
 @Entity()
 class StorePage extends VendureEntity {
   @Column() title: string;
-  @Column('json') content: TipTapDocument;
+  @Column() creatorId: string;
+  @Column() slug: string;
+  @Column('json') content: FramelyPageSchema;
   @Column() scope: 'universal' | 'product';
   @ManyToOne(() => Product, { nullable: true }) product: Product | null;
   @Column() isTemplate: boolean;
@@ -815,12 +818,27 @@ class StorePage extends VendureEntity {
 ```
 
 **Template duplication**: `duplicateStorePage(id)` creates
-a deep copy of a page, including its TipTap content, with `isTemplate: false`.
+a deep copy of a page, including its Framely schema, with `isTemplate: false`
+and the same creator ownership.
 
 **Template gallery queries**: `templates(category?, scope?, creatorId?)` returns
 system templates plus creator-owned templates, while `createTemplateFromPage`,
 `duplicateTemplate`, and `deleteTemplate` provide creator CRUD over persisted
 Framely block presets.
+
+**Creator storefront queries**:
+`creatorStore(creatorSlug)` returns the public creator profile, enabled creator
+store pages, and published product summaries used to render `/store/:slug`
+routes. `creatorStorefrontPage(scope, slug, productId?)` returns a creator-owned
+page for dashboard editing, while `upsertCreatorStorefrontPage(input)` and
+`deleteCreatorStorefrontPage(pageId)` provide authenticated creator CRUD.
+
+**Product page delivery**: the Better Auth bridge's `catalogProduct` payload now
+includes `framelyPageSchema` when the creator has an enabled
+`scope='product'` page for that product at the canonical
+`slug='product-detail'` slot. The storefront renders that schema through the
+shared Framely runtime and falls back to the default product detail component
+when no custom schema exists.
 
 ### 7.8 Recommend plugin (Vendure side)
 

@@ -2,7 +2,8 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@simket/framely-app": ["../framely-app/src/index.ts"]
     },
     "target": "ES2022",
     "module": "ESNext",

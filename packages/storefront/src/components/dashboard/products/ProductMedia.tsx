@@ -36,6 +36,9 @@ function reorderGallery(ids: readonly string[], fromId: string, toId: string): r
 
   const next = [...ids];
   const [moved] = next.splice(fromIndex, 1);
+  if (!moved) {
+    return ids;
+  }
   next.splice(toIndex, 0, moved);
   return next;
 }
